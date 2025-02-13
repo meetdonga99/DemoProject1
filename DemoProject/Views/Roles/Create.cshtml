@@ -1,0 +1,110 @@
+﻿@model DemoProject.Models.RolesModel
+@using DemoProject.Model
+@*@using DemoProject.Model;*@
+@{
+    if (Model.Id > 0)
+    {
+        ViewBag.Title = "Edit Role";
+    }
+    else
+    {
+        ViewBag.Title = "Add Role";
+    }
+}
+@*@Html.Hidden("hdnFormAccessCode", eRecruitment.Model.AuthorizeFormAccess.FormAccessCode.ROLES.ToString())*@
+@using (Html.BeginForm("Create", "Roles", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="coman_content">
+        <!--This is Title div -->
+        <div class="subheader">
+            <div class="left_title">
+                @if (Model.Id > 0)
+                {
+                    <h2>Edit Roles</h2>
+                }
+                else
+                {
+                    <h2>Add Roles</h2>
+                }
+                <div class="left breadcrumb_list">
+                    <ul>
+                        <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                        <li><a href="@Url.Action("Index","Roles")">Roles</a></li>
+                        @if (Model.Id > 0)
+                        {
+                            <li>Edit Role</li>
+                        }
+                        else
+                        {
+                            <li>Add Role</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!--END Title div-->
+        @Html.HiddenFor(model => model.Id)
+        <div class="content_box">
+            <div class="common_white_box">
+                <div class="form_element">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Name <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Name, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Name)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Code <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @if (Model.Id > 0)
+                                        {
+                                            @Html.TextBoxFor(model => model.RoleCode, new { @class = "form-control", @readonly = "readonly" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(model => model.RoleCode, new { @class = "form-control", @style = "text-transform:uppercase" })
+                                        }
+                                        @Html.ValidationMessageFor(model => model.RoleCode)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label for="">Is Active</label>
+                                    <div class="input_box">
+                                        <div class="on_off_btn sms_not">
+                                            @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
+                                            <i></i>
+                                            <span class="span_yes">Yes</span>
+                                            <span class="span_no">No</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*@if (AccessPermission.Add || AccessPermission.Edit)
+                        {*@
+                    <div class="button_div">
+                        <div class="form-group">
+                            <label for="">&nbsp;</label>
+                            <div class="input_box">
+                                <button type="submit" class="button button_primary">Save</button>
+                                <a href="@Url.Action("Index", "Roles")" class="button button_cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                    @*}*@
+                </div>
+            </div>
+        </div>
+    </div>
+}
+

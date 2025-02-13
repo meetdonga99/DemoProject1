@@ -12,7 +12,7 @@ using System.Configuration;
 using static DemoProject.Model.SessionHelper;
 using System.Runtime.Remoting.Messaging;
 using System.Web.ApplicationServices;
-using AIRecruitment.Filters;
+using DemoProject.Filters;
 
 namespace DemoProject.Controllers
 {

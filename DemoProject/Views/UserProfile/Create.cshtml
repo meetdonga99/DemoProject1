@@ -1,0 +1,220 @@
+﻿@using Kendo.Mvc.UI
+@model DemoProject.Models.UserProfileModel
+@using DemoProject.Model
+@{
+    //string formCode = AuthorizeFormAccess.FormAccessCode.USER.ToString();
+    if (Model.UserId > 0)
+    {
+        ViewBag.Title = "Edit User";
+    }
+    else
+    {
+        ViewBag.Title = "Add User";
+    }
+}
+@*@Html.Hidden("hdnFormAccessCode", formCode)*@
+@using (Html.BeginForm("Create", "UserProfile", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(m => m.UserId)
+
+    <div class="coman_content">
+        <!--This is Title div -->
+        <div class="subheader">
+            <div class="left_title">
+                @if (Model.UserId > 0)
+                {
+                    <h2>Edit User</h2>
+                }
+                else
+                {
+                    <h2>Add User</h2>
+                }
+                <div class="left breadcrumb_list">
+                    <ul>
+                        <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                        <li><a href="@Url.Action("Index", "UserProfile")">User</a></li>
+                        @if (Model.UserId > 0)
+                        {
+                            <li>Edit User</li>
+                        }
+                        else
+                        {
+                            <li>Add User</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--END Title div-->
+
+        <div class="content_box">
+            <div class="common_white_box">
+                <div class="form_element">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Role <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.DropDownListFor(model => model.Role, Model._RoleList, new { @class = "form-control" })
+                                        <span id="valirole" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @*<div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Organization <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @(Html.Kendo().MultiSelect()
+                                                  .Name("OrganizationId")
+                                                  .DataTextField("Name")
+                                                  .DataValueField("Id")
+                                                  .Placeholder("Select Organization")
+                                                  .Value(Model.OrganizationId)
+                                                  .AutoBind(true)
+                                                  .DataSource(source =>
+                                                  {
+                                                      source.Read(read =>
+                                                      {
+                                                          read.Action("Get_Organizations", "Organization");
+                                                      })
+                                                      .ServerFiltering(true);
+                                                  })
+                                        )
+                                        @Html.ValidationMessageFor(model => model.OrganizationId)
+                                    </div>
+                                </div>
+                            </div>*@
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Name <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Name, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Name)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>User Name <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.UserName, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.UserName)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Email <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Email, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Email)
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Designation</label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Designation, new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>*@
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Mobile No</label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.MobileNo, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.MobileNo)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Phone No</label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.PhoneNo, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.PhoneNo)
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.UserId == 0)
+                            {
+                                <div class="form_input_box">
+                                    <div class="form-group">
+                                        <label>Password <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                        <div class="input_box">
+                                            @Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                                            @Html.ValidationMessageFor(model => model.Password)
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            @*<div class="form_input_box">
+                                <div class="form-group">
+                                    <label for="">@Html.LabelFor(model => model.DefaultFormId)</label>
+                                    <div class="input_box">
+                                        @Html.DropDownListFor(model => model.DefaultFormId, Model._DefaultFormList, new { @class = "form-control" })
+
+                                    </div>
+                                </div>
+                            </div>*@
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label for="">Is Active</label>
+                                    <div class="input_box">
+                                        <div class="on_off_btn sms_not">
+                                            @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
+                                            <i></i>
+                                            <span class="span_yes">Yes</span>
+                                            <span class="span_no">No</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*@if (AccessPermission.Add || AccessPermission.Edit)
+                        {*@
+                    <div class="button_div">
+                        <div class="form-group">
+                            <label for="">&nbsp;</label>
+                            <div class="input_box">
+                                <button type="submit" class="button button_primary">Save</button>
+                                <a href="@Url.Action("Index", "UserProfile")" class="button button_cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                    @*}*@
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        $('#frm').submit(function () {
+            var role = $('#Role').val();
+            if (role == "" || role == null) {
+                $('#valirole').html("Please select atleast one role.").fadeIn(1000).fadeOut(5000);
+                return false;
+            }
+        });
+        $("#Role").on("change", function () {
+            $.ajax({
+                url: '@Url.Action("CasCadeForm", "UserProfile")',
+                type: 'GET',
+                datatype: 'JSON',
+                data: { Role: $(this).val() },
+                success: function (result) {
+                    $('#DefaultFormId').html('');
+                    $.each(result, function (i, item) {
+                        $('#DefaultFormId').append($('<option></option>').val(item.Value).html(item.Text));
+                    });
+                }
+            });
+        });
+    });
+</script>

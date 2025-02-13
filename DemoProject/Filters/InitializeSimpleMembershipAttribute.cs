@@ -8,7 +8,7 @@ using DemoProject.Model;
 using System.Web.Security;
 using DemoProject.Models;
 
-namespace AIRecruitment.Filters
+namespace DemoProject.Filters
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     [DbConfigurationType(typeof(DemoProjectContextConfiguration))]

@@ -1,74 +1,108 @@
 ﻿@model DemoProject.Models.LoginModel
+@using System.Web;
+@using System.Web.Optimization;
 @{
+    ViewBag.Title = "Log in";
     Layout = null;
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <title>@ViewBag.Title</title>
+
+    <!-- BEGIN META -->
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <meta name="keywords" content="your,keywords">
+    <meta name="description" content="Short explanation about this website">
+    <!-- END META -->
+    <!-- BEGIN STYLESHEETS -->
+    <link href="~/Content/images/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/css/fonts/fonts.css")" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/inc/bootstrap/css/bootstrap.min.css")" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/inc/font-awesome/css/font-awesome.min.css")" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/inc/et-line-icon/fonts/et-line.css")" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/inc/line-awesome-icon/css/line-awesome.min.css")" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/inc/material-icons/material-icon.css")" />
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-    <!-- Optional Bootstrap Icons (if you need them) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
+    <!-- Main Stylesheet -->
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/css/style.css")" />
+    <link type="text/css" rel="stylesheet" href="@Url.Content("~/Content/css/login.css")" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ3Q2Xk6cuWEvM2M8J7K8r/4Wm5vZTlYhmz6yyXkQk/kN1u6Q0z8A3yVftq5" crossorigin="anonymous">
 </head>
+
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Left side: Image -->
-            <div class="col-md-6 d-none d-md-block">
-                <img src="~/Content/Images/login.jpg" alt="Login Image" class="img-fluid h-100 w-100 object-cover">
+    <div style="background: url('../../Content/images/login2.jpg') no-repeat center/cover; position: absolute; width: 50%; top: 0; height: 100%;"></div>
+
+    <div class="loginwrapper">
+        
+
+        <div class="loginmiddel_box">
+            <!-- Title Div -->
+            <div style="background-color: rgb(10, 94, 211); text-align: center; padding: 15px; margin-bottom: 10px; border-radius: 5px; color:white">
+                <h2>Login to Your Account</h2>
             </div>
+            <div class="loginbox">
+                @if (TempData["Success"] != null)
+                {
+                    <label class="bg-success text-white alertmsg">@TempData["Success"]</label>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <label class="bg-error text-white alertmsg">@TempData["Error"]</label>
+                }
 
-            <!-- Right side: Login Form -->
-            <div class="col-md-6 d-flex justify-content-center align-items-center">
-                <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
-                    <h4 class="text-center mb-4">Login</h4>
-
-                    @using (Html.BeginForm())
-                    {
-                        @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-                        <div class="mb-3">
-                            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "form-label" })
-                            @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
-                            @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                <span class="field-validation-error">@ViewData["ErrorMessage"]</span>
+                @using (Html.BeginForm(new { returnUrl = ViewBag.ReturnUrl }))
+                {
+                    @Html.HiddenFor(m => m.TimeZone)
+                    <div class="logininputs">
+                        <div class="inputbox">
+                            <label for="Username">Username</label>
+                            <div class="div_input">
+                                @Html.TextBoxFor(m => m.UserName, new { @placeholder = "Username" })
+                                @Html.ValidationMessageFor(m => m.UserName)
+                            </div>
+                        </div>
+                        <div class="inputbox">
+                            <label for="Password">Password</label>
+                            <div class="div_input">
+                                @Html.PasswordFor(m => m.Password, new { @placeholder = "Password" })
+                                @Html.ValidationMessageFor(m => m.Password)
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "form-label" })
-                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
-                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        <div class="inputbox button_div loginBtn">
+                            <div class="div_input">
+                                <input type="submit" value="Login" class="button button_primary">
+                            </div>
+                            <div class="frg_psw"><a href="@Url.Action("ForgotPassword","Account")">Forgot password?</a></div>
                         </div>
-
-                        <div class="mb-3 text-center">
-                            <input type="submit" value="Login" class="btn btn-primary w-100" />
-                        </div>
-
-                        <div class="mb-3 text-center">
-                            <!-- Back to List button styled similar to Login but with a different color -->
-                            @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-secondary w-100" })
-                        </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    @Scripts.Render("~/Content/inc/jquery/jquery-2.1.0.min.js")
+    @Scripts.Render("~/Scripts/jstz-1.0.4.min.js")
 
-    <!-- jQuery Validation -->
-    <script src="~/Scripts/jquery.validate.min.js"></script>
-    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        function fnSetTimezone() {
+            var tz = jstz.determine();
+            var timezone = tz.name();
+            $("#TimeZone").val(timezone);
+        }
+        $(document).ready(function () {
+            fnSetTimezone();
+        });
 
-    <!-- Bootstrap JS and Popper.js -->
-    @*<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>*@
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+        $(document).ready(function () {
+            var successElement = $(".alertmsg");
+            if (successElement) {
+                setTimeout(function () { successElement.hide(); }, 7000);
+            }
+        });
+    </script>
 </body>
 </html>

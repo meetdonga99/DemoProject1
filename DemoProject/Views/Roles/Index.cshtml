@@ -1,0 +1,79 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+@using Kendo.Mvc.UI
+@using DemoProject.Model
+@using DemoProject.Controllers
+@using DemoProject.Helper
+@using DemoProject.Service
+@{
+//RoleService _roleService = new RoleService();
+//List<RolesGridModel>  data = _roleService.GetAllRolesGrid().ToList();
+//string role = _roleService.GetRolesById(SessionHelper.RoleId).RoleName;
+
+    }
+<div class="coman_content">
+    <!--This is Title div -->
+    <div class="subheader">
+        <div class="left_title">
+            <h1>Roles</h1>
+            <div class="left breadcrumb_list">
+            </div>
+        </div>
+        <div class="subheader_right">
+            <a class="button button_primary button_rounded" href="@Url.Action("Create", "Roles")">Add New Role</a>
+        </div>
+    </div>
+    <!--END Title div-->
+    <div class="common_white_box listingpage">
+        <div class="page-loader k-loading-image"></div>
+        @(Html.Kendo().Grid<DemoProject.Models.RolesGridModel>()
+          .Name("gridRoles")
+          .AutoBind(false)
+          .Columns(columns =>
+          {
+
+              columns.Bound(c => c.Name).Title("Name");
+              columns.Bound(c => c.RoleCode).Title("Role Code");
+              columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
+              //if (role == "sadmin")
+              //{
+              //    columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'><a title='Permission' style='width:18px;' class='fa fa-cog' href='" + Url.Action("ViewPermission", "FormRoleMapping") + "/#=Id#'" + "></a>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Roles") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width(100).Sortable(false);
+              //}
+              //else
+              //{
+              //    columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Roles") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
+              //}
+              columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + "<a title='Edit' href='" + Url.Action("Create", "Roles") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
+
+          })
+          .Events(evt => evt
+              .DataBinding("fnKendoGridCommonDataBinding")
+              .DataBound("fnKendoGridDataBoundEvent")
+          )
+          .NoRecords("No record found")
+          .Sortable()
+          .Pageable(pageable => pageable
+              .Refresh(true)
+              .PageSizes(new[] {10,20, 50, 100, 200 })
+              .ButtonCount(5)
+          )
+           .Filterable(filter => filter
+                .Mode(GridFilterMode.Row)
+                .Extra(false)
+                .Operators(o => o.ForString(f => f.Clear().Contains("Contains").DoesNotContain("Does Not Contain").StartsWith("Starts With").EndsWith("Ends With").IsEqualTo("Equal To").IsNotEqualTo("Not Equal To")))
+                .Operators(o => o.ForNumber(g => g.Clear().IsEqualTo("EqualTo").IsNotEqualTo("Not Equal To").IsGreaterThan("Greater Than").IsGreaterThanOrEqualTo("Greater Than Or Equal To").IsLessThan("Less Than").IsLessThanOrEqualTo("Less Than Or Equal To")))
+          )
+          .DataSource(dataSource => dataSource
+              .Ajax()
+              .Read(read => read.Action("GetGridData", "Roles")).PageSize(10)
+          ))
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#gridRoles').data('kendoGrid').dataSource.read();
+        $('#gridRoles').data('kendoGrid').refresh();
+    });
+</script>

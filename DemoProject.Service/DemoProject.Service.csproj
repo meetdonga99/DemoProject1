@@ -42,6 +42,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RoleService.cs" />
+    <Compile Include="UserProfileService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DemoProject.Data\DemoProject.Data.csproj">
+      <Project>{9f64fce1-0cb0-4b8c-92fd-1f7f4cd9508a}</Project>
+      <Name>DemoProject.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DemoProject.Helper\DemoProject.Helper.csproj">
+      <Project>{6f5e0552-3e34-4906-ba9d-95a4c0c816b3}</Project>
+      <Name>DemoProject.Helper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DemoProject.Model\DemoProject.Model.csproj">
+      <Project>{f4fa9ff9-2e34-401e-9329-1802e67d6b41}</Project>
+      <Name>DemoProject.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
