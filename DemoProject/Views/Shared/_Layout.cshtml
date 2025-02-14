@@ -57,7 +57,7 @@
                     <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
                     <li>@Html.ActionLink("Users", "Index", "UserProfile", new { area = "" }, new { @class = "nav-link" })</li>
                     <li>@Html.ActionLink("Roles", "Index", "Roles", new { area = "" }, new { @class = "nav-link" })</li>
-
+                    <li>@Html.ActionLink("Forms","Index", "Form", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
                 @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { @class = "form-inline" }))
                 {
