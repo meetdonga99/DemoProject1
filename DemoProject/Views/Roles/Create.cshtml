@@ -2,6 +2,8 @@
 @using DemoProject.Model
 @*@using DemoProject.Model;*@
 @{
+    string formCode = AuthorizeFormAccess.FormAccessCode.ROLES.ToString();
+
     if (Model.Id > 0)
     {
         ViewBag.Title = "Edit Role";
@@ -11,6 +13,8 @@
         ViewBag.Title = "Add Role";
     }
 }
+@Html.Hidden("hdnFormAccessCode", formCode)
+
 @*@Html.Hidden("hdnFormAccessCode", eRecruitment.Model.AuthorizeFormAccess.FormAccessCode.ROLES.ToString())*@
 @using (Html.BeginForm("Create", "Roles", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {

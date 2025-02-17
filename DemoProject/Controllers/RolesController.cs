@@ -13,7 +13,7 @@ using Kendo.Mvc.Extensions;
 namespace DemoProject.Controllers
 {
     [Authorize]
-    public class RolesController : Controller
+    public class RolesController : BaseController
     {
         // GET: Roles
 
@@ -25,14 +25,32 @@ namespace DemoProject.Controllers
         }
         public ActionResult Index()
         {
-            
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
 
             return View();
         }
 
         public ActionResult Create(int? id)
         {
-        
+            //var a = 5;
+            //var b = a / 0;
+            string actionPermission = "";
+            if (id == null)
+            {
+                actionPermission = AccessPermission.IsAdd;
+            }
+            else if ((id ?? 0) > 0)
+            {
+                actionPermission = AccessPermission.IsEdit;
+            }
+
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), actionPermission))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
 
             int userId = SessionHelper.UserId;
             RolesModel model = new RolesModel();
@@ -53,7 +71,21 @@ namespace DemoProject.Controllers
         [HttpPost]
         public ActionResult Create(RolesModel model)
         {
-           
+            string actionPermission = "";
+            if (model.Id == 0)
+            {
+                actionPermission = AccessPermission.IsAdd;
+            }
+            else if (model.Id > 0)
+            {
+                actionPermission = AccessPermission.IsEdit;
+            }
+
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), actionPermission))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
+
             int userId = SessionHelper.UserId;
             if (ModelState.IsValid)
             {
@@ -94,10 +126,10 @@ namespace DemoProject.Controllers
         [HttpPost]
         public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
         {
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), AccessPermission.IsView))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
             var data = _rolesService.GetAllRolesGrid();
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }

@@ -16,13 +16,13 @@ using WebMatrix.WebData;
 namespace DemoProject.Controllers
 {
     [Authorize]
-    public class UserProfileController : Controller
+    public class UserProfileController : BaseController
     {
         // GET: UserProfile
         private readonly UserProfileService _userProfileService;
         private readonly RoleService _rolesService;
-        //private readonly FormsService _formsService;
-        //private readonly FormRoleMappingService _formRoleMapping;
+        private readonly FormsService _formsService;
+        private readonly FormRoleMappingService _formRoleMapping;
         //private readonly OrganizationService _organizationService;
         //private readonly UserOrganizationMappingService _userOrganizationMappingService;
         //private readonly CandidateUtility _candidateUtility;
@@ -31,8 +31,8 @@ namespace DemoProject.Controllers
         {
             _userProfileService = new UserProfileService();
             _rolesService = new RoleService();
-            //_formsService = new FormsService();
-            //_formRoleMapping = new FormRoleMappingService();
+            _formsService = new FormsService();
+            _formRoleMapping = new FormRoleMappingService();
             //_organizationService = new OrganizationService();
             //_userOrganizationMappingService = new UserOrganizationMappingService();
             //_candidateUtility = new CandidateUtility();
@@ -40,27 +40,27 @@ namespace DemoProject.Controllers
         }
         public ActionResult Index()
         {
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), AccessPermission.IsView))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
             return View();
         }
 
         public ActionResult Create(int? id)
         {
-            //string actionPermission = "";
-            //if (id == null)
-            //{
-            //    actionPermission = AccessPermission.IsAdd;
-            //}
-            //else if ((id ?? 0) > 0)
-            //{
-            //    actionPermission = AccessPermission.IsEdit;
-            //}
+            string actionPermission = "";
+            if (id == null)
+            {
+                actionPermission = AccessPermission.IsAdd;
+            }
+            else if ((id ?? 0) > 0)
+            {
+                actionPermission = AccessPermission.IsEdit;
+            }
 
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), actionPermission))
-            //    return RedirectToAction("AccessDenied", "Base");
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), actionPermission))
+                return RedirectToAction("AccessDenied", "Base");
 
             UserProfileModel model = new UserProfileModel();
             if (id > 0)
@@ -92,21 +92,21 @@ namespace DemoProject.Controllers
         [HttpPost]
         public ActionResult Create(UserProfileModel model)
         {
-            //string actionPermission = "";
-            //if (model.UserId == 0)
-            //{
-            //    actionPermission = AccessPermission.IsAdd;
-            //}
-            //else if (model.UserId > 0)
-            //{
-            //    actionPermission = AccessPermission.IsEdit;
-            //}
+            string actionPermission = "";
+            if (model.UserId == 0)
+            {
+                actionPermission = AccessPermission.IsAdd;
+            }
+            else if (model.UserId > 0)
+            {
+                actionPermission = AccessPermission.IsEdit;
+            }
 
 
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), actionPermission))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), actionPermission))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
             if (model.UserId > 0)
             {
                 ModelState.Remove("Password");
@@ -197,14 +197,14 @@ namespace DemoProject.Controllers
         //    if (model.UserId > 0)
         //    {
         //        int RoleId = _rolesService.GetRolesByName(model.Role).RoleId;
-                //List<int> getformId = _formRoleMapping.GetAllRoleRightsByRoleId(RoleId).Select(x => x.MenuId).ToList();
+        //        List<int> getformId = _formRoleMapping.GetAllRoleRightsByRoleId(RoleId).Select(x => x.MenuId).ToList();
 
-                //var getchildform = _formsService.GetAllForms().Where(x => x.NavigateURL != "#" && getformId.Contains(x.Id)).Select(a => new FormModel { Id = a.Id, Name = a.Name }).OrderBy(a => a.Name);
+        //        var getchildform = _formsService.GetAllForms().Where(x => x.NavigateURL != "#" && getformId.Contains(x.Id)).Select(a => new FormModel { Id = a.Id, Name = a.Name }).OrderBy(a => a.Name);
 
-                //foreach (var item in getchildform)
-                //{
-                //    model._DefaultFormList.Add(new SelectListItem() { Text = item.Name, Value = item.Id.ToString() });
-                //}
+        //        foreach (var item in getchildform)
+        //        {
+        //            model._DefaultFormList.Add(new SelectListItem() { Text = item.Name, Value = item.Id.ToString() });
+        //        }
         //    }
         //    return model;
         //}
@@ -247,31 +247,31 @@ namespace DemoProject.Controllers
 
         public ActionResult User_Read([DataSourceRequest] DataSourceRequest request)
         {
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), AccessPermission.IsView))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
             var getallusers = _userProfileService.GetAllUserProfileGrid();
             return Json(getallusers.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
 
-        //public JsonResult CasCadeForm(string Role)
-        //{
-        //    List<SelectListItem> _DefaultFormList = new List<SelectListItem>();
-        //    _DefaultFormList.Add(new SelectListItem() { Text = "Select Form", Value = "" });
-        //    if (!string.IsNullOrWhiteSpace(Role))
-        //    {
-        //        int RoleId = _rolesService.GetRolesByName(Role).RoleId;
-        //        List<int> getformId = _formRoleMapping.GetAllRoleRightsByRoleId(RoleId).Select(x => x.MenuId).ToList();
-        //        var getparentform = _formsService.GetAllForms().Where(x => x.NavigateURL != "#" && getformId.Contains(x.Id)).Select(a => new FormModel { Id = a.Id, Name = a.Name }).OrderBy(a => a.Name);
+        public JsonResult CasCadeForm(string Role)
+        {
+            List<SelectListItem> _DefaultFormList = new List<SelectListItem>();
+            _DefaultFormList.Add(new SelectListItem() { Text = "Select Form", Value = "" });
+            if (!string.IsNullOrWhiteSpace(Role))
+            {
+                int RoleId = _rolesService.GetRolesByName(Role).RoleId;
+                List<int> getformId = _formRoleMapping.GetAllRoleRightsByRoleId(RoleId).Select(x => x.MenuId).ToList();
+                var getparentform = _formsService.GetAllForms().Where(x => x.NavigateURL != "#" && getformId.Contains(x.Id)).Select(a => new FormModel { Id = a.Id, Name = a.Name }).OrderBy(a => a.Name);
 
-        //        foreach (var item in getparentform)
-        //        {
-        //            _DefaultFormList.Add(new SelectListItem() { Text = item.Name, Value = item.Id.ToString() });
-        //        }
-        //    }
-        //    return Json(_DefaultFormList, JsonRequestBehavior.AllowGet);
-        //}
+                foreach (var item in getparentform)
+                {
+                    _DefaultFormList.Add(new SelectListItem() { Text = item.Name, Value = item.Id.ToString() });
+                }
+            }
+            return Json(_DefaultFormList, JsonRequestBehavior.AllowGet);
+        }
     }
 }

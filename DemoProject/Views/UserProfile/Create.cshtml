@@ -2,7 +2,7 @@
 @model DemoProject.Models.UserProfileModel
 @using DemoProject.Model
 @{
-    //string formCode = AuthorizeFormAccess.FormAccessCode.USER.ToString();
+    string formCode = AuthorizeFormAccess.FormAccessCode.USER.ToString();
     if (Model.UserId > 0)
     {
         ViewBag.Title = "Edit User";
@@ -12,7 +12,7 @@
         ViewBag.Title = "Add User";
     }
 }
-@*@Html.Hidden("hdnFormAccessCode", formCode)*@
+@Html.Hidden("hdnFormAccessCode", formCode)
 @using (Html.BeginForm("Create", "UserProfile", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
 {
     @Html.HiddenFor(m => m.UserId)

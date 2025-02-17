@@ -13,7 +13,7 @@ using System.Web.Mvc;
 namespace DemoProject.Controllers
 {
     [Authorize]
-    public class FormController : Controller
+    public class FormController : BaseController
     {
         private readonly FormsService _formsService;
         public FormController()
@@ -23,30 +23,30 @@ namespace DemoProject.Controllers
         // GET: Form
         public ActionResult Index()
         {
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), AccessPermission.IsView))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
 
             return View();
         }
 
         public ActionResult Create(int? id)
         {
-            //string actionPermission = "";
-            //if (id == null)
-            //{
-            //    actionPermission = AccessPermission.IsAdd;
-            //}
-            //else if ((id ?? 0) > 0)
-            //{
-            //    actionPermission = AccessPermission.IsEdit;
-            //}
+            string actionPermission = "";
+            if (id == null)
+            {
+                actionPermission = AccessPermission.IsAdd;
+            }
+            else if ((id ?? 0) > 0)
+            {
+                actionPermission = AccessPermission.IsEdit;
+            }
 
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), actionPermission))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), actionPermission))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
 
             int userId = SessionHelper.UserId;
             FormModel model = new FormModel();
@@ -74,20 +74,20 @@ namespace DemoProject.Controllers
         [HttpPost]
         public ActionResult Create(FormModel model)
         {
-            //string actionPermission = "";
-            //if (model.Id == 0)
-            //{
-            //    actionPermission = AccessPermission.IsAdd;
-            //}
-            //else if (model.Id > 0)
-            //{
-            //    actionPermission = AccessPermission.IsEdit;
-            //}
+            string actionPermission = "";
+            if (model.Id == 0)
+            {
+                actionPermission = AccessPermission.IsAdd;
+            }
+            else if (model.Id > 0)
+            {
+                actionPermission = AccessPermission.IsEdit;
+            }
 
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), actionPermission))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), actionPermission))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
 
             int userId = SessionHelper.UserId;
 
@@ -136,10 +136,10 @@ namespace DemoProject.Controllers
         [HttpPost]
         public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
         {
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), AccessPermission.IsView))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
             var data = _formsService.GetAllFormsGrid();
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }

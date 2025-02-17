@@ -1,6 +1,10 @@
 ﻿@using Kendo.Mvc.UI
+@using DemoProject.Model
+@using DemoProject.Controllers
+@using DemoProject.Helper
+@using DemoProject.Service
 @model IEnumerable<DemoProject.Model.UserProfileGridModel>
-@*@{
+@{
     string formCode = AuthorizeFormAccess.FormAccessCode.USER.ToString();
     var formName = FormUtility.GetFormName(formCode);
     string parentFormname = FormUtility.GetParentFormName(formCode);
@@ -9,27 +13,27 @@
     bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
     bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
     bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
-}*@
-@*@Html.Hidden("hdnFormAccessCode", formCode)*@
+}
+@Html.Hidden("hdnFormAccessCode", formCode)
 <div class="coman_content">
     <!--This is Title div -->
     <div class="subheader">
         <div class="left_title">
-            <h1>Users</h1>
-            @*<div class="left breadcrumb_list">
+            <h1 class="mr-3">Users</h1>
+            <div class="left breadcrumb_list">
                 <ul>
                     <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
                     <li><a href="javascript:void(0)">@parentFormname</a></li>
                     <li>@formName</li>
                 </ul>
-            </div>*@
+            </div>
         </div>
-        @*@if (AllowedAdd)
-        {*@
+        @if (AllowedAdd)
+        {
             <div class="subheader_right">
                 <a class="button button_primary button_rounded" href="@Url.Action("Create", "UserProfile")">Add New User</a>
             </div>
-        @*}*@
+        }
     </div>
     <!--END Title div-->
 
@@ -47,7 +51,8 @@
             columns.Bound(c => c.Email).Width("14%").Title("Email");
             columns.Bound(c => c.Role).Width("14%").Title("Role");
             columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
-            columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + "<a title='Edit' href='" + Url.Action("Create", "UserProfile") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" + "</div>").Filterable(false).Title("Edit").Width("5%").Sortable(false);
+            columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "UserProfile") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Edit").Width("5%").Sortable(false);
+
         })
         .NoRecords("No record found")
         .Events(evt => evt
