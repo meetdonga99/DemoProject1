@@ -48,11 +48,13 @@
               if (role == "sadmin")
               {
                   columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'><a title='Permission' style='width:18px;' class='fa fa-cog' href='" + Url.Action("ViewPermission", "FormRoleMapping") + "/#=Id#'" + "></a>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Roles") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width(100).Sortable(false);
-
+                  columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedDelete ? "<a title='Delete' href='" + Url.Action("Delete", "Roles") + "/#=Id#'" + "><i class='fa fa-trash delete-icon'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
               }
               else
               {
                   columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Roles") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
+                  columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedDelete ? "<a title='Delete' href='" + Url.Action("Delete", "Roles") + "/#=Id#'" + "><i class='fa fa-trash delete-icon'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
+
 
               }
 

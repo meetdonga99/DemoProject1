@@ -1,0 +1,28 @@
+﻿@model DemoProject.Models.RolesModel
+
+<h2 class="mt-2">Delete Role</h2>
+
+<div class="alert alert-danger">
+    <p>Are you sure you want to delete the following role?</p>
+    <ul>
+        <li><strong>Role Name:</strong> @Model.Name</li>
+        <li><strong>Role Code:</strong> @Model.RoleCode</li>
+        <li><strong>Active:</strong> @(Model.IsActive ? "Yes" : "No")</li>
+    </ul>
+</div>
+
+@using (Html.BeginForm("ConfirmDelete", "Roles", FormMethod.Post))
+{
+    @Html.HiddenFor(model => model.Id)
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="@Url.Action("Index", "Roles")" class="btn btn-secondary">Cancel</a>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        window.onload = function () {
+            alert("@TempData["ErrorMessage"]");
+        };
+    </script>
+}

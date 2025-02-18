@@ -26,7 +26,7 @@ namespace DemoProject.Controllers
         //private readonly OrganizationService _organizationService;
         //private readonly UserOrganizationMappingService _userOrganizationMappingService;
         //private readonly CandidateUtility _candidateUtility;
-        //private readonly MessageService _messageService;
+        private readonly MessageService _messageService;
         public UserProfileController()
         {
             _userProfileService = new UserProfileService();
@@ -36,7 +36,7 @@ namespace DemoProject.Controllers
             //_organizationService = new OrganizationService();
             //_userOrganizationMappingService = new UserOrganizationMappingService();
             //_candidateUtility = new CandidateUtility();
-            //_messageService = new MessageService();
+            _messageService = new MessageService();
         }
         public ActionResult Index()
         {
@@ -209,41 +209,41 @@ namespace DemoProject.Controllers
         //    return model;
         //}
 
-        //public JsonResult CheckDuplicateUserEmail(string Email, int UserId)
-        //{
-        //    var checkduplicate = _userProfileService.CheckDuplicateUserEmail(Email).ToList();
-        //    if (UserId > 0)
-        //    {
-        //        checkduplicate = checkduplicate.Where(x => x.UserId != UserId).ToList();
-        //    }
-        //    if (checkduplicate.Count() > 0)
-        //    {
-        //        var message = _messageService.GetMessageByCode(Constants.MessageCode.EMAILEXIST);
-        //        return Json(message, JsonRequestBehavior.AllowGet);
-        //    }
-        //    else
-        //    {
-        //        return Json(true, JsonRequestBehavior.AllowGet);
-        //    }
-        //}
+        public JsonResult CheckDuplicateUserEmail(string Email, int UserId)
+        {
+            var checkduplicate = _userProfileService.CheckDuplicateUserEmail(Email).ToList();
+            if (UserId > 0)
+            {
+                checkduplicate = checkduplicate.Where(x => x.UserId != UserId).ToList();
+            }
+            if (checkduplicate.Count() > 0)
+            {
+                var message = _messageService.GetMessageByCode(Constants.MessageCode.EMAILEXIST);
+                return Json(message, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+        }
 
-        //public JsonResult CheckDuplicateUserName(string UserName, int UserId)
-        //{
-        //    var checkduplicate = _userProfileService.CheckDuplicateUserName(UserName).ToList();
-        //    if (UserId > 0)
-        //    {
-        //        checkduplicate = checkduplicate.Where(x => x.UserId != UserId).ToList();
-        //    }
-        //    if (checkduplicate.Count() > 0)
-        //    {
-        //        var message = _messageService.GetMessageByCode(Constants.MessageCode.USERNAMEEXIST);
-        //        return Json(message, JsonRequestBehavior.AllowGet);
-        //    }
-        //    else
-        //    {
-        //        return Json(true, JsonRequestBehavior.AllowGet);
-        //    }
-        //}
+        public JsonResult CheckDuplicateUserName(string UserName, int UserId)
+        {
+            var checkduplicate = _userProfileService.CheckDuplicateUserName(UserName).ToList();
+            if (UserId > 0)
+            {
+                checkduplicate = checkduplicate.Where(x => x.UserId != UserId).ToList();
+            }
+            if (checkduplicate.Count() > 0)
+            {
+                var message = _messageService.GetMessageByCode(Constants.MessageCode.USERNAMEEXIST);
+                return Json(message, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+        }
 
         public ActionResult User_Read([DataSourceRequest] DataSourceRequest request)
         {

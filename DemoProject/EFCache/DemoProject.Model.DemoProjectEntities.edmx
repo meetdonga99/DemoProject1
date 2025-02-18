@@ -3,6 +3,38 @@
   <Runtime>
     <ConceptualModels>
       <Schema Namespace="DemoProject.Model" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="ActivityLog" customannotation:ClrType="DemoProject.Model.ActivityLog, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="FullMessage" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PageUrl" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="IPAddress" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ActionName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ControllerName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="BrowserName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="UserId" Type="Int32" />
+          <Property Name="LogDate" Type="DateTime" />
+          <NavigationProperty Name="UserProfile" Relationship="Self.ActivityLog_UserProfile" FromRole="ActivityLog_UserProfile_Source" ToRole="ActivityLog_UserProfile_Target" />
+        </EntityType>
+        <EntityType Name="UserProfile" customannotation:ClrType="DemoProject.Model.UserProfile, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="IsDeleted" Type="Boolean" Nullable="false" />
+          <Property Name="CreatedOn" Type="DateTime" />
+          <Property Name="CreatedBy" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedOn" Type="DateTime" />
+          <Property Name="UpdatedBy" Type="Int32" />
+          <Property Name="MobileNo" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNo" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
         <EntityType Name="ErrorLog" customannotation:ClrType="DemoProject.Model.ErrorLog, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -63,22 +95,19 @@
           <Property Name="UpdatedBy" Type="Int32" />
           <Property Name="UpdatedOn" Type="DateTime" />
         </EntityType>
-        <EntityType Name="UserProfile" customannotation:ClrType="DemoProject.Model.UserProfile, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <EntityType Name="Message_Mst" customannotation:ClrType="DemoProject.Model.Message_Mst, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
-            <PropertyRef Name="UserId" />
+            <PropertyRef Name="Id" />
           </Key>
-          <Property Name="UserId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="UserName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Name" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Email" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Code" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Message" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="IsActive" Type="Boolean" Nullable="false" />
-          <Property Name="IsDeleted" Type="Boolean" Nullable="false" />
+          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CreatedBy" Type="Int32" />
           <Property Name="CreatedOn" Type="DateTime" />
-          <Property Name="CreatedBy" Type="Int32" Nullable="false" />
-          <Property Name="UpdatedOn" Type="DateTime" />
-          <Property Name="UpdatedBy" Type="Int32" />
-          <Property Name="MobileNo" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="PhoneNo" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ModifiedBy" Type="Int32" />
+          <Property Name="ModifiedOn" Type="DateTime" />
         </EntityType>
         <EntityType Name="webpages_Membership" customannotation:ClrType="DemoProject.Model.webpages_Membership, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
@@ -122,21 +151,72 @@
           <Property Name="UserId" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="RoleId" Type="Int32" Nullable="false" />
         </EntityType>
+        <Association Name="ActivityLog_UserProfile">
+          <End Role="ActivityLog_UserProfile_Source" Type="Self.ActivityLog" Multiplicity="*" />
+          <End Role="ActivityLog_UserProfile_Target" Type="Self.UserProfile" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="ActivityLog_UserProfile_Target">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="ActivityLog_UserProfile_Source">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="DemoProjectEntities" customannotation:UseClrTypes="true">
+          <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" />
+          <EntitySet Name="UserProfile" EntityType="Self.UserProfile" />
           <EntitySet Name="ErrorLog" EntityType="Self.ErrorLog" />
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" />
-          <EntitySet Name="UserProfile" EntityType="Self.UserProfile" />
+          <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" />
           <EntitySet Name="webpages_Roles" EntityType="Self.webpages_Roles" />
           <EntitySet Name="webpages_UsersInRoles" EntityType="Self.webpages_UsersInRoles" />
+          <AssociationSet Name="ActivityLog_UserProfile" Association="Self.ActivityLog_UserProfile">
+            <End Role="ActivityLog_UserProfile_Source" EntitySet="ActivityLog" />
+            <End Role="ActivityLog_UserProfile_Target" EntitySet="UserProfile" />
+          </AssociationSet>
         </EntityContainer>
       </Schema>
     </ConceptualModels>
     <Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="CodeFirstDatabase" CdmEntityContainer="DemoProjectEntities">
+          <EntitySetMapping Name="ActivityLog">
+            <EntityTypeMapping TypeName="DemoProject.Model.ActivityLog">
+              <MappingFragment StoreEntitySet="ActivityLog">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="FullMessage" ColumnName="FullMessage" />
+                <ScalarProperty Name="PageUrl" ColumnName="PageUrl" />
+                <ScalarProperty Name="IPAddress" ColumnName="IPAddress" />
+                <ScalarProperty Name="ActionName" ColumnName="ActionName" />
+                <ScalarProperty Name="ControllerName" ColumnName="ControllerName" />
+                <ScalarProperty Name="BrowserName" ColumnName="BrowserName" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="LogDate" ColumnName="LogDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserProfile">
+            <EntityTypeMapping TypeName="DemoProject.Model.UserProfile">
+              <MappingFragment StoreEntitySet="UserProfile">
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="UserName" ColumnName="UserName" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="IsDeleted" ColumnName="IsDeleted" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="MobileNo" ColumnName="MobileNo" />
+                <ScalarProperty Name="PhoneNo" ColumnName="PhoneNo" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="ErrorLog">
             <EntityTypeMapping TypeName="DemoProject.Model.ErrorLog">
               <MappingFragment StoreEntitySet="ErrorLog">
@@ -200,21 +280,18 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="UserProfile">
-            <EntityTypeMapping TypeName="DemoProject.Model.UserProfile">
-              <MappingFragment StoreEntitySet="UserProfile">
-                <ScalarProperty Name="UserId" ColumnName="UserId" />
-                <ScalarProperty Name="UserName" ColumnName="UserName" />
-                <ScalarProperty Name="Name" ColumnName="Name" />
-                <ScalarProperty Name="Email" ColumnName="Email" />
+          <EntitySetMapping Name="Message_Mst">
+            <EntityTypeMapping TypeName="DemoProject.Model.Message_Mst">
+              <MappingFragment StoreEntitySet="Message_Mst">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="Message" ColumnName="Message" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
-                <ScalarProperty Name="IsDeleted" ColumnName="IsDeleted" />
-                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="Comment" ColumnName="Comment" />
                 <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
-                <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
-                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
-                <ScalarProperty Name="MobileNo" ColumnName="MobileNo" />
-                <ScalarProperty Name="PhoneNo" ColumnName="PhoneNo" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
+                <ScalarProperty Name="ModifiedOn" ColumnName="ModifiedOn" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -269,6 +346,37 @@
     </Mappings>
     <StorageModels>
       <Schema Namespace="CodeFirstDatabaseSchema" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="ActivityLog">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="FullMessage" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="PageUrl" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="IPAddress" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="ActionName" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="ControllerName" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="BrowserName" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="UserId" Type="int" customannotation:Index="{ Name: IX_UserId, Order: 0 }" Nullable="true" />
+          <Property Name="LogDate" Type="datetime" Nullable="true" />
+        </EntityType>
+        <EntityType Name="UserProfile">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserName" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Name" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Email" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="IsDeleted" Type="bit" Nullable="false" />
+          <Property Name="CreatedOn" Type="datetime" Nullable="true" />
+          <Property Name="CreatedBy" Type="int" Nullable="false" />
+          <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
+          <Property Name="UpdatedBy" Type="int" Nullable="true" />
+          <Property Name="MobileNo" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="PhoneNo" Type="nvarchar(max)" Nullable="true" />
+        </EntityType>
         <EntityType Name="ErrorLog">
           <Key>
             <PropertyRef Name="Id" />
@@ -329,22 +437,19 @@
           <Property Name="UpdatedBy" Type="int" Nullable="true" />
           <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
         </EntityType>
-        <EntityType Name="UserProfile">
+        <EntityType Name="Message_Mst">
           <Key>
-            <PropertyRef Name="UserId" />
+            <PropertyRef Name="Id" />
           </Key>
-          <Property Name="UserId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="UserName" Type="nvarchar(max)" Nullable="true" />
-          <Property Name="Name" Type="nvarchar(max)" Nullable="true" />
-          <Property Name="Email" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Code" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Message" Type="nvarchar(max)" Nullable="false" />
           <Property Name="IsActive" Type="bit" Nullable="false" />
-          <Property Name="IsDeleted" Type="bit" Nullable="false" />
+          <Property Name="Comment" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="CreatedBy" Type="int" Nullable="true" />
           <Property Name="CreatedOn" Type="datetime" Nullable="true" />
-          <Property Name="CreatedBy" Type="int" Nullable="false" />
-          <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
-          <Property Name="UpdatedBy" Type="int" Nullable="true" />
-          <Property Name="MobileNo" Type="nvarchar(max)" Nullable="true" />
-          <Property Name="PhoneNo" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="ModifiedBy" Type="int" Nullable="true" />
+          <Property Name="ModifiedOn" Type="datetime" Nullable="true" />
         </EntityType>
         <EntityType Name="webpages_Membership">
           <Key>
@@ -388,15 +493,33 @@
           <Property Name="UserId" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="RoleId" Type="int" Nullable="false" />
         </EntityType>
+        <Association Name="ActivityLog_UserProfile">
+          <End Role="UserProfile" Type="Self.UserProfile" Multiplicity="0..1" />
+          <End Role="ActivityLog" Type="Self.ActivityLog" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserProfile">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="ActivityLog">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="CodeFirstDatabase">
+          <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" Schema="dbo" Table="ActivityLog" />
+          <EntitySet Name="UserProfile" EntityType="Self.UserProfile" Schema="dbo" Table="UserProfile" />
           <EntitySet Name="ErrorLog" EntityType="Self.ErrorLog" Schema="dbo" Table="ErrorLog" />
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" Schema="dbo" Table="FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" Schema="dbo" Table="Forms" />
-          <EntitySet Name="UserProfile" EntityType="Self.UserProfile" Schema="dbo" Table="UserProfile" />
+          <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" Schema="dbo" Table="Message_Mst" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" Schema="dbo" Table="webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" Schema="dbo" Table="webpages_OAuthMembership" />
           <EntitySet Name="webpages_Roles" EntityType="Self.webpages_Roles" Schema="dbo" Table="webpages_Roles" />
           <EntitySet Name="webpages_UsersInRoles" EntityType="Self.webpages_UsersInRoles" Schema="dbo" Table="webpages_UsersInRoles" />
+          <AssociationSet Name="ActivityLog_UserProfile" Association="Self.ActivityLog_UserProfile">
+            <End Role="UserProfile" EntitySet="UserProfile" />
+            <End Role="ActivityLog" EntitySet="ActivityLog" />
+          </AssociationSet>
         </EntityContainer>
       </Schema>
     </StorageModels>

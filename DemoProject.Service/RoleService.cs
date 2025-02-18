@@ -48,5 +48,20 @@ namespace DemoProject.Service
         {
             return _roleProvider.CheckDuplicateRoleCode(RoleCode);
         }
+
+        public bool DeleteRole(int roleId)
+        {
+            return _roleProvider.DeleteRole(roleId);
+        }
+
+        public bool IsAnyUserForThisRole(int roleId)
+        {
+            return _roleProvider.IsAnyUserForThisRole(roleId);
+        }
+
+        public bool IsAnyActiveUserForThisRole(int roleId)
+        {
+            return _roleProvider.IsAnyActiveUserForThisRole(roleId);
+        }
     }
 }

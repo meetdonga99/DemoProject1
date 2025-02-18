@@ -51,10 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivityLogProvider.cs" />
     <Compile Include="BaseProvider.cs" />
     <Compile Include="ErrorLogProvider.cs" />
     <Compile Include="FormRoleMappingProvider.cs" />
     <Compile Include="FormsProvider.cs" />
+    <Compile Include="MessageProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RolesProvider.cs" />
     <Compile Include="UserProfileProvider.cs" />

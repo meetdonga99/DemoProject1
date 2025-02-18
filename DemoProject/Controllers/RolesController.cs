@@ -18,10 +18,11 @@ namespace DemoProject.Controllers
         // GET: Roles
 
         private readonly RoleService _rolesService;
+        private readonly MessageService _messageService;
         public RolesController()
         {
             _rolesService = new RoleService();
-           
+            _messageService = new MessageService();
         }
         public ActionResult Index()
         {
@@ -35,8 +36,6 @@ namespace DemoProject.Controllers
 
         public ActionResult Create(int? id)
         {
-            //var a = 5;
-            //var b = a / 0;
             string actionPermission = "";
             if (id == null)
             {
@@ -133,22 +132,76 @@ namespace DemoProject.Controllers
             var data = _rolesService.GetAllRolesGrid();
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
-        //public JsonResult CheckDuplicateRoleCode(string RoleCode, int Id)
-        //{
-        //    var getRoleDetails = _rolesService.CheckDuplicateRoleCode(RoleCode);
-        //    if (Id > 0)
-        //    {
-        //        getRoleDetails = getRoleDetails.Where(a => a.RoleId != Id).ToList();
-        //    }
-        //    if (getRoleDetails.Count() > 0)
-        //    {
-        //        var message = _messageService.GetMessageByCode(Constants.MessageCode.CODEEXIST);
-        //        return Json(message, JsonRequestBehavior.AllowGet);
-        //    }
-        //    else
-        //    {
-        //        return Json(true, JsonRequestBehavior.AllowGet);
-        //    }
-        //}
+        public JsonResult CheckDuplicateRoleCode(string RoleCode, int Id)
+        {
+            var getRoleDetails = _rolesService.CheckDuplicateRoleCode(RoleCode);
+            if (Id > 0)
+            {
+                getRoleDetails = getRoleDetails.Where(a => a.RoleId != Id).ToList();
+            }
+            if (getRoleDetails.Count() > 0)
+            {
+                var message = _messageService.GetMessageByCode(Constants.MessageCode.CODEEXIST);
+                return Json(message, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        public ActionResult Delete(int id)
+        {
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), AccessPermission.IsDelete))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
+
+            var role = _rolesService.GetRolesById(id);
+            if (role == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var model = new RolesModel
+            {
+                Id = role.RoleId,
+                Name = role.RoleName,
+                RoleCode = role.RoleCode,
+                IsActive = role.IsActive
+            };
+
+            return View(model); 
+        }
+
+        [HttpPost]
+        public ActionResult ConfirmDelete(int id)
+        {
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), AccessPermission.IsDelete))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
+            if(!_rolesService.IsAnyActiveUserForThisRole(id))
+            {
+                var result = _rolesService.DeleteRole(id);
+                if (result)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Role not found or deletion failed.";
+                    return RedirectToAction("Index");
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "This role cannot be deleted because it is assigned to active users.";
+                return RedirectToAction("Delete", new { id = id });
+            }
+            
+        }
+
+
     }
 }

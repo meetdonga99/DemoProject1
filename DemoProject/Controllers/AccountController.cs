@@ -9,10 +9,10 @@ using WebMatrix.WebData;
 using System.Web.Security;
 using System.Threading;
 using System.Configuration;
-using static DemoProject.Model.SessionHelper;
 using System.Runtime.Remoting.Messaging;
 using DemoProject.Filters;
 using DemoProject.Service;
+using DemoProject.Helper;
 
 
 namespace DemoProject.Controllers
@@ -25,6 +25,7 @@ namespace DemoProject.Controllers
         private readonly RoleService _roleService;
         private readonly FormsService _formsService;
         private readonly UserProfileService _userProfileService;
+        private readonly MessageService _messageService;
 
         public AccountController()
         {
@@ -32,6 +33,7 @@ namespace DemoProject.Controllers
             _roleService = new RoleService();
             _formsService = new FormsService();
             _userProfileService = new UserProfileService();
+            _messageService = new MessageService();
         }
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
@@ -74,7 +76,7 @@ namespace DemoProject.Controllers
                 //        SessionHelper.DefaultTimeZone = tzi.StandardName;
                 //    }
                 //}
-                //Session["Menu"] = _formRoleService.GetMenu(userId);
+                Session["Menu"] = _formRoleService.GetMenu(userId);
 
                 //if (returnUrl == null)
                 //    return RedirectToAction("Index", "Home");
@@ -89,17 +91,17 @@ namespace DemoProject.Controllers
             }
         }
 
-        //private ActionResult RedirectToLocal(string returnUrl)
-        //{
-        //    if (Url.IsLocalUrl(returnUrl))
-        //    {
-        //        return Redirect(returnUrl);
-        //    }
-        //    else
-        //    {
-        //        return RedirectToAction("Index", "Home");
-        //    }
-        //}
+        private ActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
 
 
         [HttpPost]
@@ -190,152 +192,152 @@ namespace DemoProject.Controllers
         //    }
 
         //}
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public ActionResult ManageChangePassword(string uid, string uname, string token, string eid)
-        //{
-        //    LocalPasswordModel_CP model = new LocalPasswordModel_CP();
-        //    model.Forgotuid = uid;
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult ManageChangePassword(string uid, string uname, string token, string eid)
+        {
+            LocalPasswordModel_CP model = new LocalPasswordModel_CP();
+            model.Forgotuid = uid;
 
-        //    if (uid != null)
-        //    {
-        //        string username = Helper.CommonUtility.Decrypt(model.Forgotuid);
-        //        model.UserName = username;
-        //        model.ReturnToken = token;
+            if (uid != null)
+            {
+                string username = Helper.CommonUtility.Decrypt(model.Forgotuid);
+                model.UserName = username;
+                model.ReturnToken = token;
 
-        //        var checktokenExists = _userProfileService.Getwebpages_MembershipByUserId(WebSecurity.GetUserId(model.UserName));
-        //        if (checktokenExists != null)
-        //        {
-        //            if (!(checktokenExists.PasswordVerificationTokenExpirationDate != null && checktokenExists.PasswordVerificationToken == token && checktokenExists.PasswordVerificationTokenExpirationDate >= DateTime.UtcNow))
-        //            {
-        //                TempData["Error"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDRESETLINKEXPIRED);
-        //                return RedirectToAction("ForgotPassword");
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        model.UserName = Helper.CommonUtility.Decrypt(uname);
-        //    }
-        //    return View(model);
-        //}
-        //[HttpPost]
-        //[AllowAnonymous]
-        //public ActionResult ManageChangePassword(LocalPasswordModel_CP model)
-        //{
-        //    bool hasLocalAccount = false;
-        //    if (model.Forgotuid != null)
-        //    {
-        //        hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(model.UserName));
-        //    }
-        //    else
-        //    {
-        //        hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-        //    }
-        //    ViewBag.HasLocalPassword = hasLocalAccount;
-        //    ViewBag.ReturnUrl = Url.Action("ManageChangePassword");
-        //    if (hasLocalAccount)
-        //    {
-        //        if (ModelState.IsValid)
-        //        {
+                var checktokenExists = _userProfileService.Getwebpages_MembershipByUserId(WebSecurity.GetUserId(model.UserName));
+                if (checktokenExists != null)
+                {
+                    if (!(checktokenExists.PasswordVerificationTokenExpirationDate != null && checktokenExists.PasswordVerificationToken == token && checktokenExists.PasswordVerificationTokenExpirationDate >= DateTime.UtcNow))
+                    {
+                        TempData["Error"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDRESETLINKEXPIRED);
+                        return RedirectToAction("ForgotPassword");
+                    }
+                }
+            }
+            else
+            {
+                model.UserName = Helper.CommonUtility.Decrypt(uname);
+            }
+            return View(model);
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult ManageChangePassword(LocalPasswordModel_CP model)
+        {
+            bool hasLocalAccount = false;
+            if (model.Forgotuid != null)
+            {
+               // hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(model.UserName));
+            }
+            else
+            {
+               // hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+            }
+            ViewBag.HasLocalPassword = hasLocalAccount;
+            ViewBag.ReturnUrl = Url.Action("ManageChangePassword");
+            if (hasLocalAccount)
+            {
+                if (ModelState.IsValid)
+                {
 
-        //            bool changePasswordSucceeded = false;
-        //            try
-        //            {
-        //                if (model.Forgotuid != null)
-        //                {
-        //                    changePasswordSucceeded = WebSecurity.ResetPassword(model.ReturnToken, model.NewPassword);
-        //                }
-        //            }
-        //            catch (Exception)
-        //            {
-        //                changePasswordSucceeded = false;
-        //            }
+                    bool changePasswordSucceeded = false;
+                    try
+                    {
+                        if (model.Forgotuid != null)
+                        {
+                            changePasswordSucceeded = WebSecurity.ResetPassword(model.ReturnToken, model.NewPassword);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        changePasswordSucceeded = false;
+                    }
 
-        //            if (changePasswordSucceeded)
-        //            {
-        //                TempData["Success"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDCHANGESUCCESS);
-        //                SessionHelper.UserId = 0;
-        //                return RedirectToAction("LogIn");
-        //            }
-        //            else
-        //            {
-        //                ViewBag.Error = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDRESETLINKEXPIRED);
-        //                return View(model);
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        ModelState state = ModelState["OldPassword"];
-        //        if (state != null)
-        //        {
-        //            state.Errors.Clear();
-        //        }
+                    if (changePasswordSucceeded)
+                    {
+                        TempData["Success"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDCHANGESUCCESS);
+                        SessionHelper.UserId = 0;
+                        return RedirectToAction("LogIn");
+                    }
+                    else
+                    {
+                        ViewBag.Error = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDRESETLINKEXPIRED);
+                        return View(model);
+                    }
+                }
+            }
+            else
+            {
+                ModelState state = ModelState["OldPassword"];
+                if (state != null)
+                {
+                    state.Errors.Clear();
+                }
 
-        //        if (ModelState.IsValid)
-        //        {
-        //            try
-        //            {
-        //                WebSecurity.CreateAccount(User.Identity.Name, model.NewPassword);
-        //                TempData["Success"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDCHANGESUCCESS);
-        //                SessionHelper.UserId = 0;
-        //                return RedirectToAction("LogIn");
-        //            }
-        //            catch (Exception)
-        //            {
-        //                TempData["ErrorMsg"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDERRORMESSAGE);
-        //            }
-        //        }
-        //    }
-        //    return View(model);
-        //}
-        //public ActionResult Manage()
-        //{
-        //    ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-        //    ViewBag.ReturnUrl = Url.Action("Manage");
-        //    return View();
-        //}
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        WebSecurity.CreateAccount(User.Identity.Name, model.NewPassword);
+                        TempData["Success"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDCHANGESUCCESS);
+                        SessionHelper.UserId = 0;
+                        return RedirectToAction("LogIn");
+                    }
+                    catch (Exception)
+                    {
+                        TempData["ErrorMsg"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDERRORMESSAGE);
+                    }
+                }
+            }
+            return View(model);
+        }
+        public ActionResult Manage()
+        {
+          //  ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+            ViewBag.ReturnUrl = Url.Action("Manage");
+            return View();
+        }
 
-        //[HttpPost]
-        //public ActionResult Manage(LocalPasswordModel model)
-        //{
-        //    bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
-        //    ViewBag.HasLocalPassword = hasLocalAccount;
-        //    ViewBag.ReturnUrl = Url.Action("Manage");
+        [HttpPost]
+        public ActionResult Manage(LocalPasswordModel model)
+        {
+          //  bool hasLocalAccount = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+          //  ViewBag.HasLocalPassword = hasLocalAccount;
+            ViewBag.ReturnUrl = Url.Action("Manage");
 
 
-        //    if (ModelState.IsValid)
-        //    {
-        //        bool changePasswordSucceeded;
+            if (ModelState.IsValid)
+            {
+                bool changePasswordSucceeded;
 
-        //        if (model.OldPassword == model.NewPassword)
-        //        {
-        //            TempData["SamePassword"] = _messageService.GetMessageByCode(Constants.MessageCode.SAMEPASSWORDMESSAGE);
-        //            return RedirectToAction("Manage");
-        //        }
-        //        else
-        //        {
-        //            try
-        //            {
-        //                changePasswordSucceeded = WebSecurity.ChangePassword(User.Identity.Name, model.OldPassword, model.NewPassword);
-        //            }
-        //            catch (Exception)
-        //            {
-        //                changePasswordSucceeded = false;
-        //            }
-        //            if (changePasswordSucceeded)
-        //            {
-        //                TempData["Success"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDCHANGESUCCESS);
-        //                return RedirectToAction("Manage");
-        //            }
-        //            else
-        //            {
-        //                TempData["Error"] = _messageService.GetMessageByCode(Constants.MessageCode.OLDPASSWORDINCORRECTMESSAGE);
-        //            }
-        //        }
-        //    }
-        //    return View(model);
-        //}
+                if (model.OldPassword == model.NewPassword)
+                {
+                    TempData["SamePassword"] = _messageService.GetMessageByCode(Constants.MessageCode.SAMEPASSWORDMESSAGE);
+                    return RedirectToAction("Manage");
+                }
+                else
+                {
+                    try
+                    {
+                        changePasswordSucceeded = WebSecurity.ChangePassword(User.Identity.Name, model.OldPassword, model.NewPassword);
+                    }
+                    catch (Exception)
+                    {
+                        changePasswordSucceeded = false;
+                    }
+                    if (changePasswordSucceeded)
+                    {
+                        TempData["Success"] = _messageService.GetMessageByCode(Constants.MessageCode.PASSWORDCHANGESUCCESS);
+                        return RedirectToAction("Manage");
+                    }
+                    else
+                    {
+                        TempData["Error"] = _messageService.GetMessageByCode(Constants.MessageCode.OLDPASSWORDINCORRECTMESSAGE);
+                    }
+                }
+            }
+            return View(model);
+        }
     }
 }

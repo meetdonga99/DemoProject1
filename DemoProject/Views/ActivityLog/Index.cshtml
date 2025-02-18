@@ -1,11 +1,10 @@
-﻿﻿@using Kendo.Mvc.UI
+﻿@using Kendo.Mvc.UI
 @using DemoProject.Model
-@using DemoProject.Models
 @using DemoProject.Controllers
 @using DemoProject.Helper
 @using DemoProject.Service
 @{
-    string formCode = AuthorizeFormAccess.FormAccessCode.ERRORLOG.ToString();
+    string formCode = AuthorizeFormAccess.FormAccessCode.ACTIVITYLOG.ToString();
     var formName = FormUtility.GetFormName(formCode);
     string parentFormname = FormUtility.GetParentFormName(formCode);
     ViewBag.Title = formName;
@@ -13,12 +12,8 @@
     bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
     bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
     bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
-
 }
 @Html.Hidden("hdnFormAccessCode", formCode)
-@*@Html.Hidden("hdnFormAccessCode", DemoProject.Model.AuthorizeFormAccess.FormAccessCode.ROLES.ToString())
-    @Html.Hidden("hdnGridAccessCode",DemoProject.Model.AuthorizeGridAccess.GridAccessCode.GRID_ROLES.ToString())
-    @Html.Hidden("hdnKendoGridId", "gridRoles")*@
 <div class="coman_content">
     <!--This is Title div -->
     <div class="subheader">
@@ -35,19 +30,20 @@
     </div>
     <!--END Title div-->
 
+
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
-        @(Html.Kendo().Grid<DemoProject.Model.ErrorLogGridModel>()
-          .Name("gridErrorLogs")
+        @(Html.Kendo().Grid<ActivityLogGridModel>()
+          .Name("gridActivityLog")
           .AutoBind(false)
           .Columns(columns =>
           {
-              columns.Bound(c => c.RecordDate).Title("Date").Format("{0:" + CommonUtility.GetDateFormat(true) + "}").Width(100).Filterable(false);
-              columns.Bound(c => c.MethodName).Title("Controller Name").Width(100).ClientTemplate("#=DisplayControllName(MethodName)#");
-              columns.Bound(c => c.MethodName).Title("Method Name").Width(100).ClientTemplate("#=DisplayMethodName(MethodName)#");
-              columns.Bound(c => c.PageName).Title("Page Name").Width(100);
-              columns.Bound(c => c.LineNumber).Title("Line Number").Width(50);
-              columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a href='javascript://' onclick=\"fnShowDetails(#= Id #)\"><i class='fa fa-eye'></i></a>" : "")).Filterable(false).Title("Action").Width(70).Sortable(false);
+              columns.Bound(c => c.LogDate).Title("Date").Format("{0:" + CommonUtility.GetDateFormat(false) + "}").Width(100).Filterable(false);
+              columns.Bound(c => c.PageUrl).Title("Page Url").Width(200);
+              columns.Bound(c => c.IPAddress).Title("IP Address").Width(100);
+              columns.Bound(c => c.ControllerName).Title("Controller Name").Width(70);
+              columns.Bound(c => c.ActionName).Title("Method Name").Width(70);
+              columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a href='javascript://' onclick=\"ShowActivityDetail(#= Id #)\"><i class='fa fa-eye'></i></a>" : "")).Filterable(false).Title("Action").Sortable(false).Width(20);
           })
           .Events(evt => evt
               .DataBinding("fnKendoGridCommonDataBinding")
@@ -68,48 +64,31 @@
          )
           .DataSource(dataSource => dataSource
               .Ajax()
-              .Sort(sort => sort.Add("RecordDate").Descending())
-              .Read(read => read.Action("GetGridData", "ErrorLog")).PageSize(10)
-          //.Events(e => e.RequestEnd("function (e) {fnSaveGridState.apply(this);}"))
+               .Sort(sort => sort.Add("LogDate").Descending())
+              .Read(read => read.Action("GetGridData", "ActivityLog")).PageSize(10)
           ))
     </div>
-
 </div>
+
 <script>
     $(document).ready(function () {
-        //fnSetupKendoGrid();
-        $('#gridErrorLogs').data('kendoGrid').dataSource.read();
-        $('#gridErrorLogs').data('kendoGrid').refresh();
+        $('#gridActivityLog').data('kendoGrid').dataSource.read();
+        $('#gridActivityLog').data('kendoGrid').refresh();
     });
-    function fnShowDetails(Id) {
-        var popupTitle = 'Error Details';
-        var popupURL = "@Url.Action("ErrorDetails", "ErrorLog")";
-
+    function ShowActivityDetail(Id) {
         $.confirm({
             animation: 'bottom',
-            title: popupTitle,
+            title: 'Activity Log Details',
             backgroundDismiss: true,
-            closeIcon: true,
             useBootstrap: false,
+            closeIcon: true,
             columnClass: 'popup_l',
             content: function () {
                 var self = this;
-                return fnCallAjaxHttpGetEvent(popupURL, { Id: Id }, true, true, function (data) {
+                return fnCallAjaxHttpGetEvent("@Url.Action("ActivityLogDetails", "ActivityLog")", { Id: Id}, true, true, function (data) {
                     self.setContent(data);
                 });
             }
         });
-    }
-    function DisplayControllName(ControllName) {
-        var str = ControllName;
-        var result = "";
-        result = str.split("/")[0];
-        return result;
-    }
-    function DisplayMethodName(MethodName) {
-        var str = MethodName;
-        var result = "";
-        result = str.split("/")[1];
-        return result;
     }
 </script>

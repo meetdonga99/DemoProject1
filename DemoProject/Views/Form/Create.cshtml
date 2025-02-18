@@ -14,7 +14,7 @@
 }
 @Html.Hidden("hdnFormAccessCode", formCode)
 
-@*@Html.Hidden("hdnFormAccessCode", AiRecruitment.Model.AuthorizeFormAccess.FormAccessCode.FORM.ToString())*@
+@*@Html.Hidden("hdnFormAccessCode", DemoProject.Model.AuthorizeFormAccess.FormAccessCode.FORM.ToString())*@
 @using (Html.BeginForm("Create", "Form", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.HiddenFor(m => m.Id)
