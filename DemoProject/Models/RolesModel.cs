@@ -19,7 +19,7 @@ namespace DemoProject.Models
 
         [Required]
         [Display(Name = "Role Code")]
-        //[Remote("CheckDuplicateRoleCode", "Roles", HttpMethod = "Post", AdditionalFields = "Id")]
+        [Remote("CheckDuplicateRoleCode", "Roles", HttpMethod = "Post", AdditionalFields = "Id")]
         public string RoleCode
         {
             get

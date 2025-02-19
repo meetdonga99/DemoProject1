@@ -20,7 +20,7 @@ namespace DemoProject.Models
 
         [Required]
         [Display(Name = "User Name")]
-        //[Remote("CheckDuplicateUserName", "UserProfile", HttpMethod = "Post", AdditionalFields = "UserId")]
+        [Remote("CheckDuplicateUserName", "UserProfile", HttpMethod = "Post", AdditionalFields = "UserId")]
         public string UserName { get; set; }
 
         [Required]
@@ -29,7 +29,7 @@ namespace DemoProject.Models
 
         [Required]
         [EmailAddress(ErrorMessage = "Invalid Email Address.")]
-        //[Remote("CheckDuplicateUserEmail", "UserProfile", HttpMethod = "Post", AdditionalFields = "UserId")]
+        [Remote("CheckDuplicateUserEmail", "UserProfile", HttpMethod = "Post", AdditionalFields = "UserId")]
         public string Email { get; set; }
         public bool IsActive { get; set; }
         public string Role { get; set; }

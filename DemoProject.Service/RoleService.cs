@@ -59,9 +59,9 @@ namespace DemoProject.Service
             return _roleProvider.IsAnyUserForThisRole(roleId);
         }
 
-        public bool IsAnyActiveUserForThisRole(int roleId)
-        {
-            return _roleProvider.IsAnyActiveUserForThisRole(roleId);
-        }
+        //public bool IsAnyActiveUserForThisRole(int roleId)
+        //{
+        //    return _roleProvider.IsAnyActiveUserForThisRole(roleId);
+        //}
     }
 }

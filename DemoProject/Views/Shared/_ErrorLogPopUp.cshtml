@@ -1,0 +1,69 @@
+﻿﻿@model DemoProject.Model.ErrorLog
+<div class="form_element">
+    <div class="page-loader k-loading-image" style="display:none;"></div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">Date :</label>
+            <div class="input_box">
+                <label>@Model.CreatedOn </label>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">Page Name :</label>
+            <div class="input_box">
+                <label>@Model.PageName </label>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">Method Name :</label>
+            <div class="input_box">
+                <label>@Model.MethodName </label>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">Line Number :</label>
+            <div class="input_box">
+                <label>@Model.LineNumber</label>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">Description :</label>
+            <div class="input_box">
+                <textarea readonly style="width:82%;height:auto">@Model.Description</textarea>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">IP Address :</label>
+            <div class="input_box">
+                <label>@Model.IpAddress </label>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">User Agent :</label>
+            <div class="input_box">
+                <label>@Model.UserAgent </label>
+            </div>
+        </div>
+    </div>
+    <div class="form_input_box">
+        <div class="form-group">
+            <label for="">Browser Name Version :</label>
+            <div class="input_box">
+                <label>@Model.BrowserNameVersion </label>
+            </div>
+        </div>
+    </div>
+</div>
+

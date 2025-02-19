@@ -107,7 +107,7 @@ input:focus{
 }
 .frg_psw {
     justify-content: flex-start;
-    margin-left: 20px;
+    margin-left: 100px;
 }
 .frg_psw *{
     color: #7f7f7f;

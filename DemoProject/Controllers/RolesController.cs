@@ -181,7 +181,7 @@ namespace DemoProject.Controllers
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
-            if(!_rolesService.IsAnyActiveUserForThisRole(id))
+            if(!_rolesService.IsAnyUserForThisRole(id))
             {
                 var result = _rolesService.DeleteRole(id);
                 if (result)
@@ -196,7 +196,7 @@ namespace DemoProject.Controllers
             }
             else
             {
-                TempData["ErrorMessage"] = "This role cannot be deleted because it is assigned to active users.";
+                TempData["ErrorMessage"] = "This role cannot be deleted because it is assigned to some users.";
                 return RedirectToAction("Delete", new { id = id });
             }
             

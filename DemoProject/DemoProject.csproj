@@ -2983,6 +2983,8 @@
     <Content Include="Views\Message\Index.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\_MessageEditor.cshtml" />
     <Content Include="Views\Roles\Delete.cshtml" />
+    <Content Include="Views\Shared\_ErrorLogPopUp.cshtml" />
+    <Content Include="Views\Shared\_ActivityLogPopUp.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

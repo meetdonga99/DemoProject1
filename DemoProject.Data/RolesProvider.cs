@@ -113,18 +113,18 @@ namespace DemoProject.Data
             }
         }
 
-        public bool IsAnyActiveUserForThisRole(int roleId)
-        {
-            if (IsAnyUserForThisRole(roleId))
-            {
-                var userInRoleIds = _db.webpages_UsersInRoles.Where(u => u.RoleId == roleId).Select(u => u.UserId).ToList();
-                var activeUserExists = _db.UserProfile.Any(user => userInRoleIds.Contains(user.UserId) && user.IsActive);
-                return activeUserExists;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        //public bool IsAnyActiveUserForThisRole(int roleId)
+        //{
+        //    if (IsAnyUserForThisRole(roleId))
+        //    {
+        //        var userInRoleIds = _db.webpages_UsersInRoles.Where(u => u.RoleId == roleId).Select(u => u.UserId).ToList();
+        //        var activeUserExists = _db.UserProfile.Any(user => userInRoleIds.Contains(user.UserId) && user.IsActive);
+        //        return activeUserExists;
+        //    }
+        //    else
+        //    {
+        //        return false;
+        //    }
+        //}
     }
 }
