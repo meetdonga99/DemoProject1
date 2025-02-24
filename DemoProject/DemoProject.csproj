@@ -2226,6 +2226,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\ActivityLogController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\CommonLookupController.cs" />
     <Compile Include="Controllers\ErrorLogController.cs" />
     <Compile Include="Controllers\FormController.cs" />
     <Compile Include="Controllers\FormRoleMappingController.cs" />
@@ -2242,6 +2243,7 @@
     </Compile>
     <Compile Include="Helper\CommonUtility.cs" />
     <Compile Include="Helper\FormUtility.cs" />
+    <Compile Include="Models\CommonLookupModel.cs" />
     <Compile Include="Models\FormModel.cs" />
     <Compile Include="Models\RolesModel.cs" />
     <Compile Include="Models\UserProfileModel.cs" />
@@ -2985,6 +2987,8 @@
     <Content Include="Views\Roles\Delete.cshtml" />
     <Content Include="Views\Shared\_ErrorLogPopUp.cshtml" />
     <Content Include="Views\Shared\_ActivityLogPopUp.cshtml" />
+    <Content Include="Views\CommonLookup\Index.cshtml" />
+    <Content Include="Views\CommonLookup\Create.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
