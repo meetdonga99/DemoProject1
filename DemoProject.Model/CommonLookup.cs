@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+//using System.Web.Mvc;
 
 namespace DemoProject.Model
 {
@@ -10,7 +11,7 @@ namespace DemoProject.Model
     {
         public int Id { get; set; }
         public string Type { get; set; }
-        //[Remote("CheckduplicateCode", "CommonLookup",HttpMethod ="POST",AdditionalFields ="Id")]
+        //[Remote("CheckduplicateCode", "CommonLookup", HttpMethod ="POST",AdditionalFields ="Id")]
         public string Code { get; set; }
         public string Name { get; set; }
         public int? DisplayOrder { get; set; }

@@ -2233,6 +2233,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\RolesController.cs" />
+    <Compile Include="Controllers\SubjectController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="Filters\ActivityLogFilter.cs" />
     <Compile Include="Filters\AuthenticationFilter.cs" />
@@ -2246,6 +2247,7 @@
     <Compile Include="Models\CommonLookupModel.cs" />
     <Compile Include="Models\FormModel.cs" />
     <Compile Include="Models\RolesModel.cs" />
+    <Compile Include="Models\SubjectModel.cs" />
     <Compile Include="Models\UserProfileModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -2989,6 +2991,8 @@
     <Content Include="Views\Shared\_ActivityLogPopUp.cshtml" />
     <Content Include="Views\CommonLookup\Index.cshtml" />
     <Content Include="Views\CommonLookup\Create.cshtml" />
+    <Content Include="Views\Subject\Index.cshtml" />
+    <Content Include="Views\Subject\Create.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

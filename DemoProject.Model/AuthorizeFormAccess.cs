@@ -12,7 +12,7 @@ namespace DemoProject.Model
         {
             CANDIDATE = 1,
             //CVVALIDATE = 2,
-            //SENDCV = 3,
+            SUBJECT = 3,
             //CUSTOMER = 4,
             //PROJECT = 5,
             //CXREP = 6,

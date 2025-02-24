@@ -13,7 +13,7 @@ namespace DemoProject.Models
         [Required(ErrorMessage = "Type is required.")]
         public string Type { get; set; }
         [Required(ErrorMessage = "Code is required.")]
-        //[Remote("CheckDuplicateCode", "CommonLookup", HttpMethod = "POST", AdditionalFields = "Id,Type")]
+        [Remote("CheckDuplicateCode", "CommonLookup", HttpMethod = "POST", AdditionalFields = "Id,Type")]
         public string Code { get; set; }
         [Required(ErrorMessage = "Name is required.")]
         public string Name { get; set; }
