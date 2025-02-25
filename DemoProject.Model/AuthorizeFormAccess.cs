@@ -13,7 +13,7 @@ namespace DemoProject.Model
             CANDIDATE = 1,
             //CVVALIDATE = 2,
             SUBJECT = 3,
-            //CUSTOMER = 4,
+            QUESTIONTYPE = 4,
             //PROJECT = 5,
             //CXREP = 6,
 

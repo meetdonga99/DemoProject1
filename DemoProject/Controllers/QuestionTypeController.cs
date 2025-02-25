@@ -14,20 +14,20 @@ using DemoProject.Controllers;
 namespace DemoProject.Controllers
 {
     [Authorize]
-    public class SubjectController : BaseController
+    public class QuestionTypeController : BaseController
     {
         // GET: Roles
 
-        private readonly SubjectService _subjectService;
+        private readonly QuestionTypeService _questionTypeService;
         private readonly MessageService _messageService;
-        public SubjectController()
+        public QuestionTypeController()
         {
-            _subjectService = new SubjectService();
+            _questionTypeService = new QuestionTypeService();
             _messageService = new MessageService();
         }
         public ActionResult Index()
         {
-            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.SUBJECT.ToString(), AccessPermission.IsView))
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTIONTYPE.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
@@ -47,22 +47,22 @@ namespace DemoProject.Controllers
                 actionPermission = AccessPermission.IsEdit;
             }
 
-            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.SUBJECT.ToString(), actionPermission))
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTIONTYPE.ToString(), actionPermission))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
 
             int userId = SessionHelper.UserId;
-            SubjectModel model = new SubjectModel();
+            QuestionTypeModel model = new QuestionTypeModel();
             if (id.HasValue)
             {
-                var subjectDetail = _subjectService.GetSubjectById(id.Value);
-                if (subjectDetail != null)
+                var questionTypeDetail = _questionTypeService.GetQuestionTypeById(id.Value);
+                if (questionTypeDetail != null)
                 {
                     model.Id = id.Value;
-                    model.Name = subjectDetail.Name;
-                    model.Code = subjectDetail.Code;
-                    model.IsActive = subjectDetail.IsActive;
+                    model.TypeName = questionTypeDetail.TypeName;
+                    model.TypeCode = questionTypeDetail.TypeCode;
+                    model.IsActive = questionTypeDetail.IsActive;
                     model.CreatedBy = userId;
                     model.CreatedOn = DateTime.UtcNow;
                 }
@@ -71,7 +71,7 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create(SubjectModel model)
+        public ActionResult Create(QuestionTypeModel model)
         {
             string actionPermission = "";
             if (model.Id == 0)
@@ -83,14 +83,14 @@ namespace DemoProject.Controllers
                 actionPermission = AccessPermission.IsEdit;
             }
 
-            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.SUBJECT.ToString(), actionPermission))
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTIONTYPE.ToString(), actionPermission))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             int userId = SessionHelper.UserId;
             if (ModelState.IsValid)
             {
-                SaveUpdateSubjects(model);
+                SaveUpdateQuestionTypes(model);
                 return RedirectToAction("Index");
             }
             else
@@ -99,27 +99,27 @@ namespace DemoProject.Controllers
             }
         }
 
-        public SubjectModel SaveUpdateSubjects(SubjectModel model)
+        public QuestionTypeModel SaveUpdateQuestionTypes(QuestionTypeModel model)
         {
-            Subject obj = new Subject();
+            QuestionType obj = new QuestionType();
             if (model.Id > 0)
             {
-                obj = _subjectService.GetSubjectById(model.Id);
+                obj = _questionTypeService.GetQuestionTypeById(model.Id);
             }
             int userId = SessionHelper.UserId;
             obj.Id = model.Id;
-            obj.Name = model.Name;
+            obj.TypeName = model.TypeName;
             obj.IsActive = model.IsActive;
             obj.UpdatedBy = userId;
             obj.UpdatedOn = DateTime.UtcNow;
             if (obj.Id == 0)
             {
-                obj.Code = model.Code;
-                model.Id = _subjectService.CreateSubject(obj);
+                obj.TypeCode = model.TypeCode;
+                model.Id = _questionTypeService.CreateQuestionType(obj);
             }
             else
             {
-                _subjectService.UpdateSubject(obj);
+                _questionTypeService.UpdateQuestionType(obj);
             }
             return model;
         }
@@ -127,21 +127,21 @@ namespace DemoProject.Controllers
         [HttpPost]
         public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
         {
-            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.SUBJECT.ToString(), AccessPermission.IsView))
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTIONTYPE.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
-            var data = _subjectService.GetAllSubjectsGrid();
+            var data = _questionTypeService.GetAllQuestionTypesGrid();
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
-        public JsonResult CheckDuplicateSubjectCode(string Code, int Id)
+        public JsonResult CheckDuplicateQuestionTypeCode(string TypeCode, int Id)
         {
-            var getSubjectDetails = _subjectService.CheckDuplicateSubjectCode(Code);
+            var getQuestionTypeDetails = _questionTypeService.CheckDuplicateQuestionTypeCode(TypeCode);
             if (Id > 0)
             {
-                getSubjectDetails = getSubjectDetails.Where(a => a.Id != Id).ToList();
+                getQuestionTypeDetails = getQuestionTypeDetails.Where(a => a.Id != Id).ToList();
             }
-            if (getSubjectDetails.Count() > 0)
+            if (getQuestionTypeDetails.Count() > 0)
             {
                 var message = _messageService.GetMessageByCode(Constants.MessageCode.CODEEXIST);
                 return Json(message, JsonRequestBehavior.AllowGet);

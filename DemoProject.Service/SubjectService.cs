@@ -40,13 +40,13 @@ namespace DemoProject.Service
             return _subjectProvider.GetSubjectById(id);
         }
 
-        public Subject GetSubjectByName(string roleName)
+        public Subject GetSubjectByName(string subjectName)
         {
-            return _subjectProvider.GetSubjectByName(roleName);
+            return _subjectProvider.GetSubjectByName(subjectName);
         }
-        public List<Subject> CheckDuplicateSubjectCode(string RoleCode)
+        public List<Subject> CheckDuplicateSubjectCode(string SubjectCode)
         {
-            return _subjectProvider.CheckDuplicateSubjectCode(RoleCode);
+            return _subjectProvider.CheckDuplicateSubjectCode(SubjectCode);
         }
     }
 }
