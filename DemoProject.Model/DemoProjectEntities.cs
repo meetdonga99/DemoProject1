@@ -33,6 +33,7 @@ namespace DemoProject.Model
         public DbSet<Subject> Subject { get; set; }
         public DbSet<QuestionType> QuestionType { get; set; }
         public DbSet<Question> Question { get; set; }
+        public DbSet<Option> Option { get; set; }
 
 
 

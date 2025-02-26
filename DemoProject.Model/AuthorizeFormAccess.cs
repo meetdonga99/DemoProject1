@@ -14,6 +14,7 @@ namespace DemoProject.Model
             //CVVALIDATE = 2,
             SUBJECT = 3,
             QUESTIONTYPE = 4,
+            QUESTION = 5,
             //PROJECT = 5,
             //CXREP = 6,
 

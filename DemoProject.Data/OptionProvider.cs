@@ -1,0 +1,50 @@
+﻿using DemoProject.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DemoProject.Data
+{
+    public class OptionProvider : BaseProvider
+    {
+        public OptionProvider()
+        {
+
+        }
+
+        public int CreateOption(Option option)
+        {
+            try
+            {
+                _db.Option.Add(option);
+                _db.SaveChanges();
+                return option.Id;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public int UpdateOption(Option option)
+        {
+            try
+            {
+                _db.Entry(option).State = System.Data.Entity.EntityState.Modified;
+                _db.SaveChanges();
+                return option.Id;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public Option GetOptionById(int id)
+        {
+            return _db.Option.Find(id);
+        }
+    }
+}

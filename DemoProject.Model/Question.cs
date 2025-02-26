@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DemoProject.Model
 {
@@ -21,6 +22,12 @@ namespace DemoProject.Model
         public bool IsDeleted { get; set; }
         public int DeletedBy { get; set; }
         public DateTime? DeletedOn { get; set; }
+
+        [ForeignKey("SubjectId")]
+        public virtual Subject Subjects { get; set; }
+
+        [ForeignKey("QuestionTypeId")]
+        public virtual QuestionType QuestionTypes { get; set; }
     }
     
     public class QuestionGridModel
@@ -32,5 +39,7 @@ namespace DemoProject.Model
         public int DefaultMarks { get; set; }
         public string DifficultyLevel { get; set; }
         public bool IsActive { get; set; }
+        public string BadgeCode { get; set; }
+
     }
 }

@@ -126,6 +126,28 @@
           <Property Name="ModifiedBy" Type="Int32" />
           <Property Name="ModifiedOn" Type="DateTime" />
         </EntityType>
+        <EntityType Name="Question" customannotation:ClrType="DemoProject.Model.Question, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="SubjectId" Type="Int32" Nullable="false" />
+          <Property Name="QuestionTypeId" Type="Int32" Nullable="false" />
+          <Property Name="QuestionText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="DefaultMarks" Type="Int32" Nullable="false" />
+          <Property Name="DifficultyLevel" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Image" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="CreatedBy" Type="Int32" Nullable="false" />
+          <Property Name="CreatedOn" Type="DateTime" />
+          <Property Name="UpdatedBy" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedOn" Type="DateTime" />
+          <Property Name="IsDeleted" Type="Boolean" Nullable="false" />
+          <Property Name="DeletedBy" Type="Int32" Nullable="false" />
+          <Property Name="DeletedOn" Type="DateTime" />
+          <NavigationProperty Name="QuestionTypes" Relationship="Self.Question_QuestionTypes" FromRole="Question_QuestionTypes_Source" ToRole="Question_QuestionTypes_Target" />
+          <NavigationProperty Name="Subjects" Relationship="Self.Question_Subjects" FromRole="Question_Subjects_Source" ToRole="Question_Subjects_Target" />
+        </EntityType>
         <EntityType Name="QuestionType" customannotation:ClrType="DemoProject.Model.QuestionType, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -206,6 +228,34 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="Question_QuestionTypes">
+          <End Role="Question_QuestionTypes_Source" Type="Self.Question" Multiplicity="*" />
+          <End Role="Question_QuestionTypes_Target" Type="Self.QuestionType" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <ReferentialConstraint>
+            <Principal Role="Question_QuestionTypes_Target">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Question_QuestionTypes_Source">
+              <PropertyRef Name="QuestionTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Question_Subjects">
+          <End Role="Question_Subjects_Source" Type="Self.Question" Multiplicity="*" />
+          <End Role="Question_Subjects_Target" Type="Self.Subject" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <ReferentialConstraint>
+            <Principal Role="Question_Subjects_Target">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Question_Subjects_Source">
+              <PropertyRef Name="SubjectId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="DemoProjectEntities" customannotation:UseClrTypes="true">
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" />
@@ -214,6 +264,7 @@
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" />
           <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" />
+          <EntitySet Name="Question" EntityType="Self.Question" />
           <EntitySet Name="QuestionType" EntityType="Self.QuestionType" />
           <EntitySet Name="Subject" EntityType="Self.Subject" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" />
@@ -223,6 +274,14 @@
           <AssociationSet Name="ActivityLog_UserProfile" Association="Self.ActivityLog_UserProfile">
             <End Role="ActivityLog_UserProfile_Source" EntitySet="ActivityLog" />
             <End Role="ActivityLog_UserProfile_Target" EntitySet="UserProfile" />
+          </AssociationSet>
+          <AssociationSet Name="Question_QuestionTypes" Association="Self.Question_QuestionTypes">
+            <End Role="Question_QuestionTypes_Source" EntitySet="Question" />
+            <End Role="Question_QuestionTypes_Target" EntitySet="QuestionType" />
+          </AssociationSet>
+          <AssociationSet Name="Question_Subjects" Association="Self.Question_Subjects">
+            <End Role="Question_Subjects_Source" EntitySet="Question" />
+            <End Role="Question_Subjects_Target" EntitySet="Subject" />
           </AssociationSet>
         </EntityContainer>
       </Schema>
@@ -356,6 +415,27 @@
                 <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
                 <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
                 <ScalarProperty Name="ModifiedOn" ColumnName="ModifiedOn" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Question">
+            <EntityTypeMapping TypeName="DemoProject.Model.Question">
+              <MappingFragment StoreEntitySet="Question">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="SubjectId" ColumnName="SubjectId" />
+                <ScalarProperty Name="QuestionTypeId" ColumnName="QuestionTypeId" />
+                <ScalarProperty Name="QuestionText" ColumnName="QuestionText" />
+                <ScalarProperty Name="DefaultMarks" ColumnName="DefaultMarks" />
+                <ScalarProperty Name="DifficultyLevel" ColumnName="DifficultyLevel" />
+                <ScalarProperty Name="Image" ColumnName="Image" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+                <ScalarProperty Name="IsDeleted" ColumnName="IsDeleted" />
+                <ScalarProperty Name="DeletedBy" ColumnName="DeletedBy" />
+                <ScalarProperty Name="DeletedOn" ColumnName="DeletedOn" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -560,6 +640,26 @@
           <Property Name="ModifiedBy" Type="int" Nullable="true" />
           <Property Name="ModifiedOn" Type="datetime" Nullable="true" />
         </EntityType>
+        <EntityType Name="Question">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="SubjectId" Type="int" customannotation:Index="{ Name: IX_SubjectId, Order: 0 }" Nullable="false" />
+          <Property Name="QuestionTypeId" Type="int" customannotation:Index="{ Name: IX_QuestionTypeId, Order: 0 }" Nullable="false" />
+          <Property Name="QuestionText" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="DefaultMarks" Type="int" Nullable="false" />
+          <Property Name="DifficultyLevel" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Image" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="CreatedBy" Type="int" Nullable="false" />
+          <Property Name="CreatedOn" Type="datetime" Nullable="true" />
+          <Property Name="UpdatedBy" Type="int" Nullable="false" />
+          <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
+          <Property Name="IsDeleted" Type="bit" Nullable="false" />
+          <Property Name="DeletedBy" Type="int" Nullable="false" />
+          <Property Name="DeletedOn" Type="datetime" Nullable="true" />
+        </EntityType>
         <EntityType Name="QuestionType">
           <Key>
             <PropertyRef Name="Id" />
@@ -640,6 +740,34 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="Question_QuestionTypes">
+          <End Role="QuestionType" Type="Self.QuestionType" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Question" Type="Self.Question" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="QuestionType">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Question">
+              <PropertyRef Name="QuestionTypeId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="Question_Subjects">
+          <End Role="Subject" Type="Self.Subject" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Question" Type="Self.Question" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Subject">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Question">
+              <PropertyRef Name="SubjectId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="CodeFirstDatabase">
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" Schema="dbo" Table="ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" Schema="dbo" Table="UserProfile" />
@@ -648,6 +776,7 @@
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" Schema="dbo" Table="FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" Schema="dbo" Table="Forms" />
           <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" Schema="dbo" Table="Message_Mst" />
+          <EntitySet Name="Question" EntityType="Self.Question" Schema="dbo" Table="Question" />
           <EntitySet Name="QuestionType" EntityType="Self.QuestionType" Schema="dbo" Table="QuestionType" />
           <EntitySet Name="Subject" EntityType="Self.Subject" Schema="dbo" Table="Subject" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" Schema="dbo" Table="webpages_Membership" />
@@ -657,6 +786,14 @@
           <AssociationSet Name="ActivityLog_UserProfile" Association="Self.ActivityLog_UserProfile">
             <End Role="UserProfile" EntitySet="UserProfile" />
             <End Role="ActivityLog" EntitySet="ActivityLog" />
+          </AssociationSet>
+          <AssociationSet Name="Question_QuestionTypes" Association="Self.Question_QuestionTypes">
+            <End Role="QuestionType" EntitySet="QuestionType" />
+            <End Role="Question" EntitySet="Question" />
+          </AssociationSet>
+          <AssociationSet Name="Question_Subjects" Association="Self.Question_Subjects">
+            <End Role="Subject" EntitySet="Subject" />
+            <End Role="Question" EntitySet="Question" />
           </AssociationSet>
         </EntityContainer>
       </Schema>

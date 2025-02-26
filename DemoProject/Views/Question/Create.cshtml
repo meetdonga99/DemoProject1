@@ -1,0 +1,156 @@
+﻿@using Kendo.Mvc.UI
+@model DemoProject.Models.QuestionModel
+@using DemoProject.Model
+@{
+    string formCode = AuthorizeFormAccess.FormAccessCode.QUESTION.ToString();
+    if (Model.Id > 0)
+    {
+        ViewBag.Title = "Edit Question";
+    }
+    else
+    {
+        ViewBag.Title = "Add Question";
+    }
+}
+@Html.Hidden("hdnFormAccessCode", formCode)
+@using (Html.BeginForm("Create", "Question", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="coman_content">
+        <!--This is Title div -->
+        <div class="subheader">
+            <div class="left_title">
+                @if (Model.Id > 0)
+                {
+                    <h2>Edit Question</h2>
+                }
+                else
+                {
+                    <h2>Add Question</h2>
+                }
+                <div class="left breadcrumb_list">
+                    <ul>
+                        <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                        <li><a href="@Url.Action("Index", "Question")">Question</a></li>
+                        @if (Model.Id > 0)
+                        {
+                            <li>Edit Question</li>
+                        }
+                        else
+                        {
+                            <li>Add Question</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--END Title div-->
+
+        <div class="content_box">
+            <div class="common_white_box">
+                <div class="form_element">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label>Subject <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.DropDownListFor(model => model.SubjectId, Model._SubjectList, new { @class = "form-control" })
+                                        <span id="valirole" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label>Question Type <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.DropDownListFor(model => model.QuestionTypeId, Model._QuestionTypeList, new { @class = "form-control" })
+                                        <span id="valirole" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Question <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextAreaFor(model => model.QuestionText, new { @class = "form-control", id = "QuestionText" })
+                                        <script>
+                                            CKEDITOR.replace('QuestionText', {
+                                                width: '100%', // Set to 100% of the container or specify in px (e.g., '800px')
+                                            });
+                                        </script>
+                                        <span id="valirole" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label>Default Marks <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.DefaultMarks, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.DefaultMarks)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label>Difficulty Level</label>
+                                    <div class="input_box">
+                                        @(Html.Kendo().DropDownListFor(m=>m.DifficultyLevel)
+                                        .DataTextField("Text")
+                                        .DataValueField("Value")
+                                        .DataSource(source => source.Read(read => read.Action("GetDiffiCultyLevelData", "Question")))
+                                        )
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label>Image</label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Image, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Image)
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label for="">Is Active</label>
+                                    <div class="input_box">
+                                        <div class="on_off_btn sms_not">
+                                            @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
+                                            <i></i>
+                                            <span class="span_yes">Yes</span>
+                                            <span class="span_no">No</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                </div>
+                                @*@if (AccessPermission.Add || AccessPermission.Edit)
+            {*@
+                                <div class="button_div">
+                                    <div class="form-group">
+                                        <label for="">&nbsp;</label>
+                                        <div class="input_box">
+                                            <button type="submit" class="button button_primary">Save</button>
+                                            <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*}*@
+                            </div>
+                        </div>
+        </div>
+    </div>
+}

@@ -2248,6 +2248,7 @@
     <Compile Include="Helper\FormUtility.cs" />
     <Compile Include="Models\CommonLookupModel.cs" />
     <Compile Include="Models\FormModel.cs" />
+    <Compile Include="Models\OptionModel.cs" />
     <Compile Include="Models\QuestionModel.cs" />
     <Compile Include="Models\QuestionTypeModel.cs" />
     <Compile Include="Models\RolesModel.cs" />
@@ -2999,6 +3000,8 @@
     <Content Include="Views\Subject\Create.cshtml" />
     <Content Include="Views\QuestionType\Index.cshtml" />
     <Content Include="Views\QuestionType\Create.cshtml" />
+    <Content Include="Views\Question\Create.cshtml" />
+    <Content Include="Views\Question\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -3008,7 +3011,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\Question\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DemoProject.Data\DemoProject.Data.csproj">

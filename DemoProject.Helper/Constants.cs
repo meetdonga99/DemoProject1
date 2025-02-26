@@ -115,5 +115,12 @@ namespace DemoProject.Helper
         {
             public const string OTPEXPIRYMINUTES = "OTPEXPIRYMINUTES";
         }
+
+        public static class DifficultyLevel
+        {
+            public const string EASY = "EASY";
+            public const string MEDIUM = "MEDIUM";
+            public const string HARD = "HARD";
+        }
     }
 }

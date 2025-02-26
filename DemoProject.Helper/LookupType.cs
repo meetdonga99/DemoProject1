@@ -16,5 +16,6 @@ namespace DemoProject.Helper
         public static string CandidateStatusCode = "CandidateStatusCode";
         public static string RequirementStatusCode = "RequirementStatusCode";
         public static string HiringStatusCode = "HiringStatusCode";
+        public static string DifficultyLevel = "DifficultyLevel";
     }
 }

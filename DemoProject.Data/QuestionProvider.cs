@@ -23,18 +23,19 @@ namespace DemoProject.Data
         public IQueryable<QuestionGridModel> GetAllQuestionsGrid()
         {
             return (from question in _db.Question
-                    join subject in _db.Subject on question.SubjectId equals subject.Id
-                    join questionType in _db.QuestionType on question.QuestionTypeId equals questionType.Id
+                        //join subject in _db.Subject on question.SubjectId equals subject.Id
+                        //join questionType in _db.QuestionType on question.QuestionTypeId equals questionType.Id
                     where question.IsDeleted == false
                     select new QuestionGridModel()
                     {
-                        Id = subject.Id,
-                        SubjectName = subject.Name,
-                        QuestionType = questionType.TypeName,
+                        Id = question.Id,
+                        SubjectName = question.Subjects.Name,
+                        QuestionType = question.QuestionTypes.TypeName,
                         QuestionText = question.QuestionText,
                         DefaultMarks = question.DefaultMarks,
                         DifficultyLevel = question.DifficultyLevel,
-                        IsActive = question.IsActive
+                        IsActive = question.IsActive,
+                        BadgeCode = (from c in _db.CommonLookup where c.Name == question.DifficultyLevel select c.BadgeCode).FirstOrDefault(),
                     }).AsQueryable();
         }
         public int CreateQuestion(Question question)
