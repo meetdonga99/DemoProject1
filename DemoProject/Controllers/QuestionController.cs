@@ -12,6 +12,7 @@ using System.Web.Security;
 using WebMatrix.WebData;
 using Kendo.Mvc.Extensions;
 using DemoProject.Helper;
+using System.Xml.Linq;
 
 namespace DemoProject.Controllers
 {
@@ -22,6 +23,7 @@ namespace DemoProject.Controllers
         private readonly SubjectService _subjectService;
         private readonly QuestionTypeService _questionTypeService;
         private readonly CommonLookupService _lookupService;
+        private readonly OptionService _optionService;
 
 
         public QuestionController()
@@ -30,6 +32,7 @@ namespace DemoProject.Controllers
             _questionTypeService = new QuestionTypeService();
             _subjectService = new SubjectService();
             _lookupService = new CommonLookupService();
+            _optionService = new OptionService();
         }
 
         // GET: Question
@@ -62,7 +65,7 @@ namespace DemoProject.Controllers
             if (id > 0)
             {
                 var getQuestion = _questionService.GetQuestionById(id.Value);
-                if(getQuestion != null)
+                if (getQuestion != null)
                 {
                     model.Id = id.Value;
                     model.SubjectId = getQuestion.Subjects.Id;
@@ -72,6 +75,7 @@ namespace DemoProject.Controllers
                     model.DifficultyLevel = getQuestion.DifficultyLevel;
                     model.Image = getQuestion.Image;
                     model.IsActive = getQuestion.IsActive;
+                    model.options = _optionService.GetOptionsByQuestionId(id.Value).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId,OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList();
                 }
             } 
             BindSubject(ref model);
@@ -97,8 +101,15 @@ namespace DemoProject.Controllers
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
-
-            if(ModelState.IsValid)
+            //if (!ModelState.IsValid)
+            //{
+            //    var errors = ModelState.Values.SelectMany(v => v.Errors);
+            //    foreach (var error in errors)
+            //    {
+            //        System.Diagnostics.Debug.WriteLine(error.ErrorMessage);
+            //    }
+            //}
+            if (ModelState.IsValid)
             {
                 SaveUpdateQuestion(model);
                 return RedirectToAction("Index");
@@ -172,27 +183,50 @@ namespace DemoProject.Controllers
                 obj.CreatedBy = SessionHelper.UserId;
                 obj.CreatedOn = DateTime.UtcNow;
                 model.Id = _questionService.CreateQuestion(obj);
-            }
+              }
             else
             {
                 obj.UpdatedBy = SessionHelper.UserId;
                 obj.UpdatedOn = DateTime.UtcNow;
                 _questionService.UpdateQuestion(obj);
             }
+
+            if (model.options != null && model.options.Any())
+            {
+                var existingOptions = _optionService.GetOptionsByQuestionId(obj.Id).ToList();
+                foreach (var option in model.options)
+                {
+                    if (option.Id == 0)
+                    {
+                        // Add new option
+                        Option newOption = new Option
+                        {
+                            QuestionId = obj.Id,
+                            OptionText = option.OptionText,
+                            IsCorrect = option.IsCorrect,
+                            CreatedBy = userId,
+                            CreatedOn = DateTime.Now,
+                        };
+                        _optionService.CreateOption(newOption);
+                    }
+                    else
+                    {
+                        // Update existing option
+                        Option existingOption = existingOptions.FirstOrDefault(o => o.Id == option.Id);
+                        if (existingOption != null)
+                        {
+                            existingOption.OptionText = option.OptionText;
+                            existingOption.IsCorrect = option.IsCorrect;
+                            existingOption.UpdatedBy = userId;
+                            existingOption.UpdatedOn = DateTime.Now;
+                            _optionService.UpdateOption(existingOption);
+                        }
+                    }
+                }
+            }
+
             return model;
         }
-
-
-        //[HttpPost]
-        //public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
-        //{
-        //    if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), AccessPermission.IsView))
-        //    {
-        //        return RedirectToAction("AccessDenied", "Base");
-        //    }
-        //    var data = _formsService.GetAllFormsGrid();
-        //    return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
-        //}
 
         [HttpPost]
         public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)

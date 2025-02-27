@@ -31,5 +31,10 @@ namespace DemoProject.Service
         {
             return _optionProvider.GetOptionById(id);
         }
+
+        public List<Option> GetOptionsByQuestionId(int id)
+        {
+            return _optionProvider.GetOptionsByQuestionId(id);
+        }
     }
 }

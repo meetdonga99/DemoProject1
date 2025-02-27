@@ -46,5 +46,11 @@ namespace DemoProject.Data
         {
             return _db.Option.Find(id);
         }
+
+        public List<Option> GetOptionsByQuestionId(int id)
+        {
+            var data = (from a in _db.Option where a.QuestionId == id select a).ToList();
+            return data;
+        }
     }
 }

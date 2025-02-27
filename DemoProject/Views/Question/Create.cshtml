@@ -3,128 +3,155 @@
 @using DemoProject.Model
 @{
     string formCode = AuthorizeFormAccess.FormAccessCode.QUESTION.ToString();
-    if (Model.Id > 0)
-    {
-        ViewBag.Title = "Edit Question";
-    }
-    else
-    {
-        ViewBag.Title = "Add Question";
-    }
+    ViewBag.Title = Model.Id > 0 ? "Edit Question" : "Add Question";
 }
+
 @Html.Hidden("hdnFormAccessCode", formCode)
+
+
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 20px;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 20px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(14px);
+        }
+</style>
+
 @using (Html.BeginForm("Create", "Question", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
 {
     @Html.HiddenFor(m => m.Id)
 
     <div class="coman_content">
-        <!--This is Title div -->
+        <!-- Title Section -->
         <div class="subheader">
             <div class="left_title">
-                @if (Model.Id > 0)
-                {
-                    <h2>Edit Question</h2>
-                }
-                else
-                {
-                    <h2>Add Question</h2>
-                }
+                <h2>@(Model.Id > 0 ? "Edit Question" : "Add Question")</h2>
                 <div class="left breadcrumb_list">
                     <ul>
                         <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
                         <li><a href="@Url.Action("Index", "Question")">Question</a></li>
-                        @if (Model.Id > 0)
-                        {
-                            <li>Edit Question</li>
-                        }
-                        else
-                        {
-                            <li>Add Question</li>
-                        }
+                        <li>@(Model.Id > 0 ? "Edit Question" : "Add Question")</li>
                     </ul>
                 </div>
             </div>
         </div>
-        <!--END Title div-->
 
+        <!-- Content Box -->
         <div class="content_box">
             <div class="common_white_box">
                 <div class="form_element">
                     <div class="row">
                         <div class="col-md-8">
+                            <!-- Subject Dropdown -->
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
-                                    <label>Subject <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <label>Subject <sup class="span_req"><i class="fa fa-star"></i></sup></label>
                                     <div class="input_box">
                                         @Html.DropDownListFor(model => model.SubjectId, Model._SubjectList, new { @class = "form-control" })
-                                        <span id="valirole" class="field-validation-error"></span>
+                                        @Html.ValidationMessageFor(model => model.SubjectId)
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Question Type Dropdown -->
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
-                                    <label>Question Type <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <label>Question Type <sup class="span_req"><i class="fa fa-star"></i></sup></label>
                                     <div class="input_box">
                                         @Html.DropDownListFor(model => model.QuestionTypeId, Model._QuestionTypeList, new { @class = "form-control" })
-                                        <span id="valirole" class="field-validation-error"></span>
+                                        @Html.ValidationMessageFor(model => model.QuestionTypeId)
                                     </div>
                                 </div>
                             </div>
 
-
+                            <!-- Question Text -->
                             <div class="form_input_box">
                                 <div class="form-group">
-                                    <label>Question <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <label>Question <sup class="span_req"><i class="fa fa-star"></i></sup></label>
                                     <div class="input_box">
                                         @Html.TextAreaFor(model => model.QuestionText, new { @class = "form-control", id = "QuestionText" })
-                                        <script>
-                                            CKEDITOR.replace('QuestionText', {
-                                                width: '100%', // Set to 100% of the container or specify in px (e.g., '800px')
-                                            });
-                                        </script>
-                                        <span id="valirole" class="field-validation-error"></span>
+                                        @Html.ValidationMessageFor(model => model.QuestionText)
                                     </div>
                                 </div>
                             </div>
 
-
+                            <!-- Default Marks -->
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
-                                    <label>Default Marks <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <label>Default Marks <sup class="span_req"><i class="fa fa-star"></i></sup></label>
                                     <div class="input_box">
                                         @Html.TextBoxFor(model => model.DefaultMarks, new { @class = "form-control" })
                                         @Html.ValidationMessageFor(model => model.DefaultMarks)
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Difficulty Level Dropdown -->
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Difficulty Level</label>
                                     <div class="input_box">
-                                        @(Html.Kendo().DropDownListFor(m=>m.DifficultyLevel)
+                                        @(Html.Kendo().DropDownListFor(m => m.DifficultyLevel)
                                         .DataTextField("Text")
                                         .DataValueField("Value")
-                                        .DataSource(source => source.Read(read => read.Action("GetDiffiCultyLevelData", "Question")))
-                                        )
+                                        .DataSource(source => source.Read(read => read.Action("GetDiffiCultyLevelData", "Question"))))
+                                        @Html.ValidationMessageFor(model => model.DifficultyLevel)
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Image Upload -->
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Image</label>
                                     <div class="input_box">
                                         @Html.TextBoxFor(model => model.Image, new { @class = "form-control" })
-                                        @Html.ValidationMessageFor(model => model.Image)
                                     </div>
                                 </div>
                             </div>
 
-
+                            <!-- Is Active Toggle -->
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
-                                    <label for="">Is Active</label>
+                                    <label>Is Active</label>
                                     <div class="input_box">
                                         <div class="on_off_btn sms_not">
                                             @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
@@ -135,22 +162,107 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                                </div>
-                                @*@if (AccessPermission.Add || AccessPermission.Edit)
-            {*@
-                                <div class="button_div">
-                                    <div class="form-group">
-                                        <label for="">&nbsp;</label>
-                                        <div class="input_box">
-                                            <button type="submit" class="button button_primary">Save</button>
-                                            <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
-                                        </div>
+
+
+                            <!-- Options Section -->
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Options</label>
+                                    <div id="optionsContainer">
+                                        @if (Model.options != null && Model.options.Any())
+                                        {
+                                            for (int i = 0; i < Model.options.Count; i++)
+                                            {
+                                                <div class="row g-2 answer-item">
+                                                    <div class="col-md-8">
+                                                        @Html.TextBoxFor(m => m.options[i].OptionText, new { @class = "form-control", placeholder = "Enter answer" })
+                                                    </div>
+                                                    <div class="col-md-3 d-flex align-items-center">
+                                                        <div class="toggle-container small-toggle">
+                                                            <input type="checkbox" id="IsCorrectToggle_@i" class="toggle-input answer-toggle" @(Model.options[i].IsCorrect ? "checked" : "")>
+                                                            <label for="IsCorrectToggle_@i" class="toggle-label">
+                                                                <span class="toggle-on">ON</span>
+                                                                <span class="toggle-off">OFF</span>
+                                                            </label>
+                                                            <span class="status-text">Correct</span>
+                                                            @Html.HiddenFor(m => m.options[i].IsCorrect, new { @id = $"IsCorrect_{i}" })
+                                                            @Html.HiddenFor(m => m.options[i].Id)
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-1 d-flex align-items-center">
+                                                        <button type="button" class="btn btn-danger remove-answer"><i class="fas fa-trash"></i></button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
                                     </div>
+                                    <button type="button" id="addOption" class="btn btn-primary mt-3">Add Option</button>
                                 </div>
-                                @*}*@
+                            </div>
+
+
+                            <!-- Save & Cancel Buttons -->
+                            <div class="button_div">
+                                <button type="submit" class="button button_primary">Save</button>
+                                <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 }
+
+<!-- JavaScript -->
+<script>
+
+    $(document).ready(function () {
+    function updateOptionIndices() {
+        $("#optionsContainer .answer-item").each(function (index) {
+            $(this).find("input[type='text']").attr("name", `options[${index}].OptionText`);
+            $(this).find(".toggle-input").attr("id", `IsCorrectToggle_${index}`);
+            $(this).find("label.toggle-label").attr("for", `IsCorrectToggle_${index}`);
+            $(this).find("input[type='hidden']").attr("name", `options[${index}].IsCorrect`).attr("id", `IsCorrect_${index}`);
+        });
+    }
+
+    $("#addOption").click(function () {
+        let index = $("#optionsContainer .answer-item").length;
+        let optionHtml = `
+            <div class="row g-2 answer-item">
+                <div class="col-md-8">
+                    <input type="text" name="options[${index}].OptionText" class="form-control" placeholder="Enter answer" />
+                </div>
+                <div class="col-md-3 d-flex align-items-center">
+                    <div class="toggle-container small-toggle">
+                        <input type="checkbox" id="IsCorrectToggle_${index}" class="toggle-input answer-toggle">
+                        <label for="IsCorrectToggle_${index}" class="toggle-label">
+                            <span class="toggle-on">ON</span>
+                            <span class="toggle-off">OFF</span>
+                        </label>
+                        <span class="status-text">Correct</span>
+                        <input type="hidden" name="options[${index}].IsCorrect" id="IsCorrect_${index}" value="false" />
+                    </div>
+                </div>
+                <div class="col-md-1 d-flex align-items-center">
+                    <button type="button" class="btn btn-danger remove-answer"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        
+        $("#optionsContainer").append(optionHtml);
+        updateOptionIndices();
+    });
+
+    $(document).on("click", ".remove-answer", function () {
+        $(this).closest(".answer-item").remove();
+        updateOptionIndices();
+    });
+
+    $(document).on("change", ".answer-toggle", function () {
+        let hiddenField = $(this).closest(".toggle-container").find("input[type='hidden']");
+        hiddenField.val(this.checked ? "true" : "false");
+    });
+});
+
+</script>

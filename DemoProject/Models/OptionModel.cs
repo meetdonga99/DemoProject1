@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace DemoProject.Models
 {
 	public class OptionModel
 	{
         public int Id { get; set; }
-        [Required]
         public int QuestionId { get; set; }
         [Required]
+        [AllowHtml]
         [Display(Name = "Option Text")]
         public string OptionText { get; set; }
-        [Required]
         public bool IsCorrect { get; set; }
         public int CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }

@@ -126,6 +126,20 @@
           <Property Name="ModifiedBy" Type="Int32" />
           <Property Name="ModifiedOn" Type="DateTime" />
         </EntityType>
+        <EntityType Name="Option" customannotation:ClrType="DemoProject.Model.Option, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="QuestionId" Type="Int32" Nullable="false" />
+          <Property Name="OptionText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="IsCorrect" Type="Boolean" Nullable="false" />
+          <Property Name="CreatedBy" Type="Int32" Nullable="false" />
+          <Property Name="CreatedOn" Type="DateTime" />
+          <Property Name="UpdatedBy" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedOn" Type="DateTime" />
+          <NavigationProperty Name="Questions" Relationship="Self.Option_Questions" FromRole="Option_Questions_Source" ToRole="Option_Questions_Target" />
+        </EntityType>
         <EntityType Name="Question" customannotation:ClrType="DemoProject.Model.Question, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -256,6 +270,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="Option_Questions">
+          <End Role="Option_Questions_Source" Type="Self.Option" Multiplicity="*" />
+          <End Role="Option_Questions_Target" Type="Self.Question" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <ReferentialConstraint>
+            <Principal Role="Option_Questions_Target">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Option_Questions_Source">
+              <PropertyRef Name="QuestionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="DemoProjectEntities" customannotation:UseClrTypes="true">
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" />
@@ -264,6 +292,7 @@
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" />
           <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" />
+          <EntitySet Name="Option" EntityType="Self.Option" />
           <EntitySet Name="Question" EntityType="Self.Question" />
           <EntitySet Name="QuestionType" EntityType="Self.QuestionType" />
           <EntitySet Name="Subject" EntityType="Self.Subject" />
@@ -282,6 +311,10 @@
           <AssociationSet Name="Question_Subjects" Association="Self.Question_Subjects">
             <End Role="Question_Subjects_Source" EntitySet="Question" />
             <End Role="Question_Subjects_Target" EntitySet="Subject" />
+          </AssociationSet>
+          <AssociationSet Name="Option_Questions" Association="Self.Option_Questions">
+            <End Role="Option_Questions_Source" EntitySet="Option" />
+            <End Role="Option_Questions_Target" EntitySet="Question" />
           </AssociationSet>
         </EntityContainer>
       </Schema>
@@ -415,6 +448,20 @@
                 <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
                 <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
                 <ScalarProperty Name="ModifiedOn" ColumnName="ModifiedOn" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Option">
+            <EntityTypeMapping TypeName="DemoProject.Model.Option">
+              <MappingFragment StoreEntitySet="Option">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="QuestionId" ColumnName="QuestionId" />
+                <ScalarProperty Name="OptionText" ColumnName="OptionText" />
+                <ScalarProperty Name="IsCorrect" ColumnName="IsCorrect" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
+                <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -640,6 +687,19 @@
           <Property Name="ModifiedBy" Type="int" Nullable="true" />
           <Property Name="ModifiedOn" Type="datetime" Nullable="true" />
         </EntityType>
+        <EntityType Name="Option">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="QuestionId" Type="int" customannotation:Index="{ Name: IX_QuestionId, Order: 0 }" Nullable="false" />
+          <Property Name="OptionText" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="IsCorrect" Type="bit" Nullable="false" />
+          <Property Name="CreatedBy" Type="int" Nullable="false" />
+          <Property Name="CreatedOn" Type="datetime" Nullable="true" />
+          <Property Name="UpdatedBy" Type="int" Nullable="false" />
+          <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
+        </EntityType>
         <EntityType Name="Question">
           <Key>
             <PropertyRef Name="Id" />
@@ -768,6 +828,20 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="Option_Questions">
+          <End Role="Question" Type="Self.Question" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="Option" Type="Self.Option" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Question">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="Option">
+              <PropertyRef Name="QuestionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="CodeFirstDatabase">
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" Schema="dbo" Table="ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" Schema="dbo" Table="UserProfile" />
@@ -776,6 +850,7 @@
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" Schema="dbo" Table="FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" Schema="dbo" Table="Forms" />
           <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" Schema="dbo" Table="Message_Mst" />
+          <EntitySet Name="Option" EntityType="Self.Option" Schema="dbo" Table="Option" />
           <EntitySet Name="Question" EntityType="Self.Question" Schema="dbo" Table="Question" />
           <EntitySet Name="QuestionType" EntityType="Self.QuestionType" Schema="dbo" Table="QuestionType" />
           <EntitySet Name="Subject" EntityType="Self.Subject" Schema="dbo" Table="Subject" />
@@ -794,6 +869,10 @@
           <AssociationSet Name="Question_Subjects" Association="Self.Question_Subjects">
             <End Role="Subject" EntitySet="Subject" />
             <End Role="Question" EntitySet="Question" />
+          </AssociationSet>
+          <AssociationSet Name="Option_Questions" Association="Self.Option_Questions">
+            <End Role="Question" EntitySet="Question" />
+            <End Role="Option" EntitySet="Option" />
           </AssociationSet>
         </EntityContainer>
       </Schema>

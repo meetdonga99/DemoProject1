@@ -34,6 +34,7 @@ namespace DemoProject.Models
         public string Image { get; set; }
         [Required]
         public bool IsActive { get; set; }
+        [AllowHtml]
         public List<OptionModel> options { get; set; }
 
     }
