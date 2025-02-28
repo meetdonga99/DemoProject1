@@ -3011,6 +3011,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\QuestionImages\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DemoProject.Data\DemoProject.Data.csproj">

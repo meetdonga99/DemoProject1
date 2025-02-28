@@ -27,6 +27,11 @@ namespace DemoProject.Service
             return _optionProvider.UpdateOption(option);
         }
 
+        public bool DeleteOption(int id)
+        {
+            return _optionProvider.DeleteOption(id);
+        }
+
         public Option GetOptionById(int id)
         {
             return _optionProvider.GetOptionById(id);

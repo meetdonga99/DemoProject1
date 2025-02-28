@@ -13,6 +13,7 @@ using WebMatrix.WebData;
 using Kendo.Mvc.Extensions;
 using DemoProject.Helper;
 using System.Xml.Linq;
+using System.IO;
 
 namespace DemoProject.Controllers
 {
@@ -85,7 +86,7 @@ namespace DemoProject.Controllers
 
 
         [HttpPost]
-        public ActionResult Create(QuestionModel model)
+        public ActionResult Create(QuestionModel model, HttpPostedFileBase file)
         {
             string actionPermission = "";
             if (model.Id == 0)
@@ -101,17 +102,9 @@ namespace DemoProject.Controllers
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
-            //if (!ModelState.IsValid)
-            //{
-            //    var errors = ModelState.Values.SelectMany(v => v.Errors);
-            //    foreach (var error in errors)
-            //    {
-            //        System.Diagnostics.Debug.WriteLine(error.ErrorMessage);
-            //    }
-            //}
             if (ModelState.IsValid)
             {
-                SaveUpdateQuestion(model);
+                SaveUpdateQuestion(model, file);
                 return RedirectToAction("Index");
             }
             else
@@ -162,7 +155,7 @@ namespace DemoProject.Controllers
             return Json(_DifficultyLevel, JsonRequestBehavior.AllowGet);
         }
 
-        public QuestionModel SaveUpdateQuestion(QuestionModel model)
+        public QuestionModel SaveUpdateQuestion(QuestionModel model, HttpPostedFileBase file)
         {
             int userId = SessionHelper.UserId;
             Question obj = new Question();
@@ -176,7 +169,17 @@ namespace DemoProject.Controllers
             obj.QuestionText = model.QuestionText;
             obj.DefaultMarks = model.DefaultMarks;
             obj.DifficultyLevel = model.DifficultyLevel;
-            obj.Image = model.Image;
+            if (file != null && file.ContentLength > 0)
+            {
+                string fileName = Path.GetFileName(file.FileName);
+                string filePath = Server.MapPath("~//Content//QuestionImages//") + fileName;
+                file.SaveAs(filePath); // Save file to server
+                obj.Image = fileName; // Set relative path
+            }
+            //else if (model.Id > 0)
+            //{
+            //    //obj.Image = model.Image; // Keep existing image if no new file is uploaded
+            //}
             obj.IsActive = model.IsActive;
             if (obj.Id == 0)
             {
@@ -194,6 +197,10 @@ namespace DemoProject.Controllers
             if (model.options != null && model.options.Any())
             {
                 var existingOptions = _optionService.GetOptionsByQuestionId(obj.Id).ToList();
+
+                // Store IDs of incoming options for comparison
+                var incomingOptionIds = model.options.Select(o => o.Id).ToHashSet();
+
                 foreach (var option in model.options)
                 {
                     if (option.Id == 0)
@@ -223,6 +230,13 @@ namespace DemoProject.Controllers
                         }
                     }
                 }
+
+                // DELETE options that are in existingOptions but not in model.options
+                var optionsToDelete = existingOptions.Where(o => !incomingOptionIds.Contains(o.Id)).ToList();
+                foreach (var option in optionsToDelete)
+                {
+                    _optionService.DeleteOption(option.Id); // Delete the option
+                }
             }
 
             return model;
@@ -237,6 +251,26 @@ namespace DemoProject.Controllers
             }
             var data = _questionService.GetAllQuestionsGrid();
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+        }
+
+
+        public ActionResult Delete(int id)
+        {
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTION.ToString(), AccessPermission.IsDelete))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
+            
+                var result = _questionService.DeleteQuestion(id);
+                if (result)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Question not found or deletion failed.";
+                    return RedirectToAction("Index");
+                }
         }
     }
 }

@@ -34,6 +34,7 @@ namespace DemoProject.Data
                         QuestionText = question.QuestionText,
                         DefaultMarks = question.DefaultMarks,
                         DifficultyLevel = question.DifficultyLevel,
+                        Image = question.Image,
                         IsActive = question.IsActive,
                         BadgeCode = (from c in _db.CommonLookup where c.Name == question.DifficultyLevel select c.BadgeCode).FirstOrDefault(),
                     }).AsQueryable();
@@ -76,11 +77,15 @@ namespace DemoProject.Data
             try
             {
                 var question = _db.Question.Find(questionId);
-                if (question == null || question.IsDeleted)
+                if (question == null)
                 {
                     return false;
                 }
-                question.IsDeleted = true;
+
+                var questionOptions = (from a in _db.Option where a.QuestionId == questionId select a).ToList();
+                _db.Option.RemoveRange(questionOptions);
+
+                _db.Question.Remove(question);
                 _db.SaveChanges();
 
                 return true;
@@ -90,5 +95,6 @@ namespace DemoProject.Data
                 throw e;
             }
         }
+
     }
 }

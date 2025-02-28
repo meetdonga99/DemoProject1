@@ -42,6 +42,27 @@ namespace DemoProject.Data
             }
         }
 
+        public bool DeleteOption(int id)
+        {
+            try
+            {
+                var option = _db.Option.Find(id);
+                if (option == null)
+                {
+                    return false;
+                }
+
+                _db.Option.Remove(option);
+                _db.SaveChanges();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public Option GetOptionById(int id)
         {
             return _db.Option.Find(id);

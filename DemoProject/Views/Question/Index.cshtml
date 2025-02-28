@@ -15,8 +15,55 @@
     bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
 }
 @Html.Hidden("hdnFormAccessCode", formCode)
+
+
+<style>
+    .grid-image {
+        width: 70px; /* Adjust size as needed */
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .image-modal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+    }
+
+    .image-modal-content {
+        position: relative;
+        max-width: 80%;
+        max-height: 80%;
+    }
+
+    .preview-image {
+        width: 100%;
+        height: auto;
+        max-height: 90vh;
+        border-radius: 10px;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 30px;
+        color: white;
+        cursor: pointer;
+    }
+
+</style>
+
 <div class="coman_content">
-    <!--This is Title div -->
+    <!-- Title Section -->
     <div class="subheader">
         <div class="left_title">
             <h2 class="mr-3">Questions</h2>
@@ -35,8 +82,7 @@
             </div>
         }
     </div>
-    <!--END Title div-->
-
+    <!-- End Title Section -->
 
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
@@ -45,14 +91,46 @@
         .Name("gridQuestion")
         .Columns(columns =>
         {
+            columns.Bound(c => c.Image).Width("10%").Title("Image")
+    .ClientTemplate("# if(Image) { # " +
+        "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
+        "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
+        "</a> # } else { # <span>No Image</span> # } #")
+    .HtmlAttributes(new { style = "text-align:center;" });
+
             columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
             columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");
             columns.Bound(c => c.QuestionText).Width("42%").Title("Question");
             columns.Bound(c => c.DefaultMarks).Width("7%").Title("Default Marks");
-            columns.Bound(c => c.DifficultyLevel).Width("7%").Title("Difficulty Level").ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=DifficultyLevel#</span>#} else {# #=DifficultyLevel# #}#");
-            columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
-            columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Question") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Edit").Width("5%").Sortable(false);
+            columns.Bound(c => c.DifficultyLevel).Width("7%").Title("Difficulty Level")
+                .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=DifficultyLevel#</span>#} else {# #=DifficultyLevel# #}#");
 
+            columns.Bound(c => c.IsActive).Width("5%")
+                .HeaderHtmlAttributes(new { @class = "center_text" })
+                .HtmlAttributes(new { @class = "kendogrid_Action center-text" })
+                .ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #")
+                .Title("Active")
+                .Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
+
+            columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
+                .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
+                .ClientTemplate("<div class='k_action_table'>" +
+                    (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Question") + "/#=Id#'><i class='fa fa-edit'></i></a>" : "") +
+                "</div>")
+                .Filterable(false)
+                .Title("Edit")
+                .Width("5%")
+                .Sortable(false);
+
+            columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
+                .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
+                .ClientTemplate("<div class='k_action_table'>" +
+                    (AllowedDelete ? "<a href='javascript:void(0)' data-id='#=Id#' class='delete-icon'><i class='fa fa-trash'></i></a>" : "") +
+                "</div>")
+                .Filterable(false)
+                .Title("Action")
+                .Width("5%")
+                .Sortable(false);
         })
         .NoRecords("No record found")
         .Events(evt => evt
@@ -78,25 +156,77 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <b>Are you sure you want to delete this question?</b>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function () {
-        $('#gridQuestion').data('kendoGrid').dataSource.read();
-        $('#gridQuestion').data('kendoGrid').refresh();
-    });
-</script>
+        var grid = $('#gridQuestion').data('kendoGrid');
+        var deleteId = null;
 
-@*<script>
-        function fnConfirmDeleteRecord(id, name) {
-            if (confirm('Are you sure you want to delete ' + name + '?')) {
-                fnCallAjaxHttpPostEvent('@Url.Action("Delete", "UserProfile")', { id: id }, true, true, fnOnDeleteRecordSuccess);
+        // Open delete confirmation modal
+        $(document).on("click", ".delete-icon", function () {
+            deleteId = $(this).data("id");
+            $("#confirmDeleteModal").modal("show");
+        });
+
+        // Confirm delete action
+        $("#confirmDeleteBtn").click(function () {
+            if (deleteId) {
+                $.ajax({
+                    url: '@Url.Action("Delete", "Question")/' + deleteId,
+                    type: "POST",
+                    success: function () {
+                        $("#confirmDeleteModal").modal("hide");
+                        grid.dataSource.read(); // Refresh grid
+                        grid.refresh();
+                    },
+                    error: function () {
+                        alert("Error occurred while deleting.");
+                    }
+                });
             }
-        }
-        function fnOnDeleteRecordSuccess(data) {
-            if (data.error)
-                fnShowKendoErrorMessage(data.error);
-            else if (data.redirect) {
-                var grid = $('#gridEmailTemplate').data('kendoGrid');
-                grid.dataSource.read();
-            }
-        }
-    </script>*@
+        });
+
+        // Refresh grid on page load
+        grid.dataSource.read();
+        grid.refresh();
+    });
+
+    function showImagePreview(imageName) {
+        var imageUrl = "/Content/QuestionImages/" + imageName;
+        var modalHtml = `
+            <div id="imageModal" class="image-modal">
+             <!-- Close button moved outside the image -->
+            <div class="close-modal-container">
+                <span class="close-modal" onclick="closeImagePreview()">&times;</span>
+            </div>
+                <div class="image-modal-content">
+                    <img src="` + imageUrl + `" class="preview-image" />
+                </div>
+            </div>`;
+
+        // Remove existing modal if any
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+    }
+
+    function closeImagePreview() {
+        document.getElementById("imageModal").remove();
+    }
+</script>

@@ -8,8 +8,6 @@
 
 @Html.Hidden("hdnFormAccessCode", formCode)
 
-
-
 <style>
     .switch {
         position: relative;
@@ -32,6 +30,7 @@
         background-color: #ccc;
         transition: 0.4s;
         border-radius: 20px;
+        width: 35px;
     }
 
         .slider:before {
@@ -53,6 +52,15 @@
         input:checked + .slider:before {
             transform: translateX(14px);
         }
+
+    .answer-item {
+        margin-bottom: 10px;
+    }
+
+    #addOption {
+        margin-top: 10px;
+        display: block;
+    }
 </style>
 
 @using (Html.BeginForm("Create", "Question", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
@@ -138,15 +146,26 @@
                                 </div>
                             </div>
 
-                            <!-- Image Upload -->
+
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Image</label>
                                     <div class="input_box">
-                                        @Html.TextBoxFor(model => model.Image, new { @class = "form-control" })
+                                        <input type="file" id="file" name="file" class="form-control" />
+
+                                        @if (!string.IsNullOrEmpty(Model.Image))
+                                        {
+                                            <div class="mt-2 d-flex align-items-center">
+                                                <img src="@Url.Content("~/Content/QuestionImages/" + Model.Image)" alt="Previously added image" class="img-thumbnail" style="max-width: 100px; max-height: 100px; margin-right: 10px;" />
+                                                <div class="text-danger">Previously added image - <span class="text-success">You can change it by selecting a new one</span></div>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
                             </div>
+
+
+
 
                             <!-- Is Active Toggle -->
                             <div class="form_input_box col-md-6">
@@ -165,47 +184,54 @@
 
 
                             <!-- Options Section -->
-                            <div class="form_input_box">
-                                <div class="form-group">
-                                    <label>Options</label>
+
+                            <div class="form-group">
+                                <label>Options</label>
+                                <div id="optionsWrapper" class="d-flex flex-column">
                                     <div id="optionsContainer">
                                         @if (Model.options != null && Model.options.Any())
                                         {
                                             for (int i = 0; i < Model.options.Count; i++)
                                             {
-                                                <div class="row g-2 answer-item">
+                                                <div class="row answer-item mb-2">
                                                     <div class="col-md-8">
-                                                        @Html.TextBoxFor(m => m.options[i].OptionText, new { @class = "form-control", placeholder = "Enter answer" })
+                                                        @Html.TextAreaFor(m => m.options[i].OptionText, new { @class = "form-control", placeholder = "Enter answer" })
+                                                        @Html.ValidationMessageFor(m => m.options[i].OptionText, "", new { @class = "text-danger" })
                                                     </div>
                                                     <div class="col-md-3 d-flex align-items-center">
-                                                        <div class="toggle-container small-toggle">
-                                                            <input type="checkbox" id="IsCorrectToggle_@i" class="toggle-input answer-toggle" @(Model.options[i].IsCorrect ? "checked" : "")>
-                                                            <label for="IsCorrectToggle_@i" class="toggle-label">
-                                                                <span class="toggle-on">ON</span>
-                                                                <span class="toggle-off">OFF</span>
-                                                            </label>
-                                                            <span class="status-text">Correct</span>
-                                                            @Html.HiddenFor(m => m.options[i].IsCorrect, new { @id = $"IsCorrect_{i}" })
-                                                            @Html.HiddenFor(m => m.options[i].Id)
-                                                        </div>
+                                                        <label class="switch">
+                                                            <input type="checkbox" id="IsCorrectToggle_@i" class="answer-toggle" @(Model.options[i].IsCorrect ? "checked" : "")>
+                                                            <span class="slider"></span>
+                                                        </label>
+                                                        <span class="status-text ml-4">Correct</span>
+                                                        @Html.HiddenFor(m => m.options[i].IsCorrect, new { @id = $"IsCorrect_{i}" })
+                                                        @Html.HiddenFor(m => m.options[i].Id)
                                                     </div>
-                                                    <div class="col-md-1 d-flex align-items-center">
-                                                        <button type="button" class="btn btn-danger remove-answer"><i class="fas fa-trash"></i></button>
+                                                    <div class="col-md-1 mt-3">
+                                                        <button type="button" class="btn btn-danger remove-answer">Remove</button>
                                                     </div>
                                                 </div>
                                             }
                                         }
                                     </div>
-                                    <button type="button" id="addOption" class="btn btn-primary mt-3">Add Option</button>
+
+                                    <!-- Button correctly placed below all options -->
+                                    <div class="text-right mb-2">
+                                        <button type="button" id="addOption" class="btn btn-primary">Add Option</button>
+                                    </div>
                                 </div>
                             </div>
 
-
-                            <!-- Save & Cancel Buttons -->
                             <div class="button_div">
-                                <button type="submit" class="button button_primary">Save</button>
-                                <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
+                                <div class="form-group">
+                                    <label for="">&nbsp;</label>
+                                    <div class="input_box">
+                                        <button type="submit" class="button button_primary">Save</button>
+                                        <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
+                                    </div>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -214,55 +240,86 @@
     </div>
 }
 
-<!-- JavaScript -->
 <script>
-
     $(document).ready(function () {
-    function updateOptionIndices() {
-        $("#optionsContainer .answer-item").each(function (index) {
-            $(this).find("input[type='text']").attr("name", `options[${index}].OptionText`);
-            $(this).find(".toggle-input").attr("id", `IsCorrectToggle_${index}`);
-            $(this).find("label.toggle-label").attr("for", `IsCorrectToggle_${index}`);
-            $(this).find("input[type='hidden']").attr("name", `options[${index}].IsCorrect`).attr("id", `IsCorrect_${index}`);
-        });
-    }
+        function updateOptionIndices() {
+            $("#optionsContainer .answer-item").each(function (index) {
+                $(this).find("textarea")
+                    .attr("name", `options[${index}].OptionText`)
+                    .attr("id", `OptionText_${index}`)
+                    .addClass("validate-required"); // Adding validation class
 
-    $("#addOption").click(function () {
-        let index = $("#optionsContainer .answer-item").length;
-        let optionHtml = `
-            <div class="row g-2 answer-item">
-                <div class="col-md-8">
-                    <input type="text" name="options[${index}].OptionText" class="form-control" placeholder="Enter answer" />
-                </div>
-                <div class="col-md-3 d-flex align-items-center">
-                    <div class="toggle-container small-toggle">
-                        <input type="checkbox" id="IsCorrectToggle_${index}" class="toggle-input answer-toggle">
-                        <label for="IsCorrectToggle_${index}" class="toggle-label">
-                            <span class="toggle-on">ON</span>
-                            <span class="toggle-off">OFF</span>
-                        </label>
-                        <span class="status-text">Correct</span>
-                        <input type="hidden" name="options[${index}].IsCorrect" id="IsCorrect_${index}" value="false" />
+                $(this).find(".answer-toggle").attr("id", `IsCorrectToggle_${index}`);
+                $(this).find("label.switch").attr("for", `IsCorrectToggle_${index}`);
+                $(this).find("input[type='hidden'][name$='.IsCorrect']")
+                    .attr("name", `options[${index}].IsCorrect`)
+                    .attr("id", `IsCorrect_${index}`);
+                $(this).find("input[type='hidden'][name$='.Id']")
+                    .attr("name", `options[${index}].Id`);
+            });
+        }
+
+        $("#addOption").click(function () {
+            let index = $("#optionsContainer .answer-item").length;
+            let optionHtml =
+                `<div class="row answer-item">
+                    <div class="col-md-8">
+                        <textarea name="options[${index}].OptionText" id="OptionText_${index}" class="form-control validate-required" placeholder="Enter answer"></textarea>
+                        <span class="text-danger error-message" style="display:none;">This field is required.</span>
                     </div>
-                </div>
-                <div class="col-md-1 d-flex align-items-center">
-                    <button type="button" class="btn btn-danger remove-answer"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>`;
-        
-        $("#optionsContainer").append(optionHtml);
-        updateOptionIndices();
-    });
+                    <div class="col-md-3 d-flex align-items-center">
+                        <label class="switch">
+                            <input type="checkbox" id="IsCorrectToggle_${index}" class="answer-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="status-text ml-4">Correct</span>
+                        <input type="hidden" name="options[${index}].IsCorrect" id="IsCorrect_${index}" value="false" />
+                        <input type="hidden" name="options[${index}].Id" value="0" />
+                    </div>
+                    <div class="col-md-1 mt-3">
+                        <button type="button" class="btn btn-danger remove-answer">Remove</button>
+                    </div>
+                </div>`;
 
-    $(document).on("click", ".remove-answer", function () {
-        $(this).closest(".answer-item").remove();
-        updateOptionIndices();
-    });
+            $("#optionsContainer").append(optionHtml);
+            updateOptionIndices();
+        });
 
-    $(document).on("change", ".answer-toggle", function () {
-        let hiddenField = $(this).closest(".toggle-container").find("input[type='hidden']");
-        hiddenField.val(this.checked ? "true" : "false");
-    });
-});
+        $(document).on("click", ".remove-answer", function () {
+            $(this).closest(".answer-item").remove();
+            updateOptionIndices();
+        });
 
+        $(document).on("change", ".answer-toggle", function () {
+            let hiddenField = $(this).closest(".answer-item").find("input[type='hidden'][name$='.IsCorrect']");
+            hiddenField.val(this.checked ? "true" : "false");
+        });
+
+        // Validate before form submit
+        $("form").submit(function (event) {
+            let isValid = true;
+
+            $(".validate-required").each(function () {
+                let textareaValue = $(this).val().trim();
+                let errorMessage = $(this).siblings(".error-message");
+
+                if (textareaValue === "") {
+                    errorMessage.show();
+                    isValid = false;
+                } else {
+                    errorMessage.hide();
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault(); // Prevent form submission if validation fails
+            }
+        });
+
+        // Hide error message on input change
+        $(document).on("input", ".validate-required", function () {
+            $(this).siblings(".error-message").hide();
+        });
+
+    });
 </script>
