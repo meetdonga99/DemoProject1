@@ -34,6 +34,8 @@ namespace DemoProject.Model
         public DbSet<QuestionType> QuestionType { get; set; }
         public DbSet<Question> Question { get; set; }
         public DbSet<Option> Option { get; set; }
+        public DbSet<PaperSet> PaperSet { get; set; }
+        public DbSet<PaperSetQuestionMapping> PaperSetQuestionMapping { get; set; }
 
 
 

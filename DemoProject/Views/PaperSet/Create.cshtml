@@ -1,0 +1,592 @@
+﻿@using Kendo.Mvc.UI
+@model DemoProject.Models.PaperSetModel
+@using DemoProject.Model
+@using DemoProject.Controllers
+@using DemoProject.Helper
+@using DemoProject.Service
+@{
+    string formCode = AuthorizeFormAccess.FormAccessCode.PAPERSET.ToString();
+    ViewBag.Title = Model.Id > 0 ? "Edit Paper Set" : "Add Paper Set";
+    var formName = FormUtility.GetFormName(formCode);
+    string parentFormname = FormUtility.GetParentFormName(formCode);
+    ViewBag.Title = formName;
+    BaseController _base = new BaseController();
+    bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
+    bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
+    bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
+}
+<style>
+    .grid-image {
+        width: 70px; /* Adjust size as needed */
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .image-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .image-modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        background: white;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    .preview-image {
+        width: 100%; /* Makes the image take full width */
+        height: auto; /* Keeps aspect ratio */
+        max-width: 1000px; /* Set a max size */
+        max-height: 600px; /* Set a max height */
+        display: block;
+        object-fit: contain; /* Ensures full image is visible */
+        border-radius: 5px;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 30px;
+        font-weight: bold;
+        color: black;
+        cursor: pointer;
+    }
+
+    .modal-fullscreen {
+        max-width: 75%;
+        margin: 150px;
+    }
+</style>
+
+@Html.Hidden("hdnFormAccessCode", formCode)
+
+
+@using (Html.BeginForm("Create", "PaperSet", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.QuestionMappings, new { id = "QuestionMappings" })
+    @Html.HiddenFor(m => m.CurrentMarks)
+<div class="coman_content">
+    <!-- Title Section -->
+    <div class="subheader">
+        <div class="left_title">
+            <h2>@(Model.Id > 0 ? "Edit Paper Set" : "Add Paper Set")</h2>
+            <div class="left breadcrumb_list">
+                <ul>
+                    <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                    <li><a href="@Url.Action("Index", "PaperSet")">Paper Sets</a></li>
+                    <li>@(Model.Id > 0 ? "Edit Paper Set" : "Add Paper Set")</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Box -->
+    <div class="content_box">
+
+        <div class="input_box mb-2" style="display: flex; justify-content: flex-end; gap: 10px; ">
+            <button type="button" id="btnSave" class="button button_primary">Save</button>
+            <a href="@Url.Action("Index", "PaperSet")" class="button button_cancel">Cancel</a>
+        </div>
+
+        <div class="input_box mt-4 mr-1" style="display: flex; justify-content: flex-end; gap: 10px; ">
+            <h3>Current Marks: @Model.CurrentMarks</h3>
+        </div>
+
+        <div class="common_white_box">
+            <div class="form_element">
+                <div class="row">
+                    <div class="col-md-12 d-flex align-items-end">
+                        <!-- Ensures all items align in one line -->
+
+                        <div class="form_input_box col-md-3">
+                            <div class="form-group">
+                                <label>PaperSet Name <sup class="span_req"><i class="fa fa-star"></i></sup></label>
+                                <div class="input_box">
+                                    @Html.TextBoxFor(model => model.PaperSetName, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.PaperSetName)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form_input_box col-md-3">
+                            <div class="form-group">
+                                <label>Total Marks <sup class="span_req"><i class="fa fa-star"></i></sup></label>
+                                <div class="input_box">
+                                    @Html.TextBoxFor(model => model.TotalMarks, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.TotalMarks)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form_input_box col-md-3">
+                            <div class="form-group">
+                                <label>Duration In Minutes <sup class="span_req"><i class="fa fa-star"></i></sup></label>
+                                <div class="input_box">
+                                    @Html.TextBoxFor(model => model.DurationInMinutes, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.DurationInMinutes)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form_input_box col-md-3">
+                            <div class="form-group">
+                                <label>Status <sup class="span_req"><i class="fa fa-star"></i></sup></label>
+                                <div class="input_box">
+                                    @(Html.Kendo().DropDownListFor(m => m.Status)
+                                    .DataTextField("Text")
+                                    .DataValueField("Value")
+                                    .DataSource(source => source.Read(read => read.Action("GetPaperSetStatusData", "PaperSet"))))
+                                    @Html.ValidationMessageFor(model => model.Status)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 d-flex align-items-end">
+                        <div class="form_input_box col-md-3">
+                            <div class="form-group">
+                                <label>Is Active</label>
+                                <div class="input_box">
+                                    <div class="on_off_btn sms_not">
+                                        @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
+                                        <i></i>
+                                        <span class="span_yes">Yes</span>
+                                        <span class="span_no">No</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+                </div> 
+        </div> 
+
+    </div>
+    <div class="mt-5 mb-3">
+        <h3 style="display: flex; justify-content: center;">Selected Questions</h3>
+    </div>
+    <div class="common_white_box listingpage">
+        <div class="page-loader k-loading-image"></div>
+
+        @(Html.Kendo().Grid<DemoProject.Models.QuestionViewModel>()
+    .AutoBind(true)
+    .Name("gridOfSelectedQuestions")
+    .HtmlAttributes(new { @class = "questionGrid" })
+    .Columns(columns =>
+    {
+        columns.Bound(c => c.QuestionId)
+    .Hidden(true)
+    .Title("ID");
+
+        columns.Bound(c => c.IsSelected).Width("3%").Title("Is Selected")
+    .ClientTemplate("<input type='checkbox' class='isSelectedCheckbox' #= IsSelected ? 'checked' : '' # />")
+    .EditorTemplateName("Boolean");
+
+        columns.Bound(c => c.Image).Width("10%").Title("Image")
+.ClientTemplate("# if(Image) { # " +
+    "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
+    "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
+    "</a> # } else { # <span>No Image</span> # } #")
+.HtmlAttributes(new { style = "text-align:center;" });
+
+        columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
+        columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");
+        columns.Bound(c => c.QuestionText)
+            .Width("42%")
+            .ClientTemplate("#= (QuestionText && QuestionText.length > 70) ? QuestionText.substring(0, 70).concat('...') : QuestionText #")
+            .Title("Question");
+
+        columns.Bound(c => c.DefaultMarks)
+    .Width("3%")
+    .Title("Default Marks")
+    .ClientTemplate("<input type='number' class='k-input defaultMarksInput' data-id='#= QuestionId #' value='#= DefaultMarks #' />");
+
+        //columns.Bound(c => c.DifficultyLevel).Width("7%").Title("Difficulty Level");
+        columns.Bound(c => c.QuestionId)
+    .Title("View")
+    .Width("5%")
+    .ClientTemplate("<a href='javascript:void(0);' onclick='viewQuestion(#=QuestionId#, true)' title='View'><i class='fa fa-eye'></i></a>")
+    .Filterable(false)
+    .Sortable(false);
+
+    })
+    .NoRecords("No record found")
+    .Events(evt => evt
+        .DataBinding("fnKendoGridCommonDataBinding")
+        .DataBound("fnKendoGridDataBoundEvent")
+    )
+    .Sortable()
+    .Filterable(filter => filter
+        .Mode(GridFilterMode.Row)
+        .Extra(false)
+        .Operators(o => o.ForString(f => f.Clear().Contains("Contains").DoesNotContain("Does Not Contain").StartsWith("Starts With").EndsWith("Ends With").IsEqualTo("Equal To").IsNotEqualTo("Not Equal To")))
+        .Operators(o => o.ForNumber(g => g.Clear().IsEqualTo("EqualTo").IsNotEqualTo("Not Equal To").IsGreaterThan("Greater Than").IsGreaterThanOrEqualTo("Greater Than Or Equal To").IsLessThan("Less Than").IsLessThanOrEqualTo("Less Than Or Equal To")))
+    )
+    .Pageable(pageable => pageable
+        .Refresh(true)
+        .PageSizes(new[] { 10, 20, 50, 100, 200 })
+        .ButtonCount(5)
+    )
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("GetSelectedQuestionsGridData", "PaperSet", new { paperSetId = Model.Id }))
+        .PageSize(10)
+        .Events(events => events.Error("error_handler"))
+    ))
+    </div>
+
+    <div class="mt-5 mb-3"><h3 style="display: flex; justify-content: center;">More Other Questions</h3></div>
+    <div class="common_white_box listingpage">
+        <div class="page-loader k-loading-image"></div>
+
+        @(Html.Kendo().Grid<DemoProject.Models.QuestionViewModel>()
+    .AutoBind(true)
+    .Name("gridOfUnselectedQuestions")
+    .HtmlAttributes(new { @class = "questionGrid" })
+    .Columns(columns =>
+    {
+        columns.Bound(c => c.QuestionId)
+    .Hidden(true)
+    .Title("ID");
+
+        columns.Bound(c => c.IsSelected).Width("3%").Title("Is Selected")
+    .ClientTemplate("<input type='checkbox' class='isSelectedCheckbox' #= IsSelected ? 'checked' : '' # />")
+    .EditorTemplateName("Boolean");
+
+        columns.Bound(c => c.Image).Width("10%").Title("Image")
+.ClientTemplate("# if(Image) { # " +
+    "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
+    "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
+    "</a> # } else { # <span>No Image</span> # } #")
+.HtmlAttributes(new { style = "text-align:center;" });
+
+        columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
+        columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");
+        columns.Bound(c => c.QuestionText)
+            .Width("42%")
+            .ClientTemplate("#= (QuestionText && QuestionText.length > 70) ? QuestionText.substring(0, 70).concat('...') : QuestionText #")
+            .Title("Question");
+
+        columns.Bound(c => c.DefaultMarks)
+    .Width("3%")
+    .Title("Default Marks")
+    .ClientTemplate("<input type='number' class='k-input defaultMarksInput' data-id='#= QuestionId #' value='#= DefaultMarks #' />");
+
+        //columns.Bound(c => c.DifficultyLevel).Width("7%").Title("Difficulty Level");
+        columns.Bound(c => c.QuestionId)
+.Title("View")
+.Width("5%")
+.ClientTemplate("<a href='javascript:void(0);' onclick='viewQuestion(#=QuestionId#, true)' title='View'><i class='fa fa-eye'></i></a>")
+.Filterable(false)
+.Sortable(false);
+    })
+    .NoRecords("No record found")
+    .Events(evt => evt
+        .DataBinding("fnKendoGridCommonDataBinding")
+        .DataBound("fnKendoGridDataBoundEvent")
+    )
+    .Sortable()
+    .Filterable(filter => filter
+        .Mode(GridFilterMode.Row)
+        .Extra(false)
+        .Operators(o => o.ForString(f => f.Clear().Contains("Contains").DoesNotContain("Does Not Contain").StartsWith("Starts With").EndsWith("Ends With").IsEqualTo("Equal To").IsNotEqualTo("Not Equal To")))
+        .Operators(o => o.ForNumber(g => g.Clear().IsEqualTo("EqualTo").IsNotEqualTo("Not Equal To").IsGreaterThan("Greater Than").IsGreaterThanOrEqualTo("Greater Than Or Equal To").IsLessThan("Less Than").IsLessThanOrEqualTo("Less Than Or Equal To")))
+    )
+    .Pageable(pageable => pageable
+        .Refresh(true)
+        .PageSizes(new[] { 10, 20, 50, 100, 200 })
+        .ButtonCount(5)
+    )
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("GetUnselectedQuestionsGridData", "PaperSet", new { paperSetId = Model.Id }))
+        .PageSize(10)
+        .Events(events => events.Error("error_handler"))
+    ))
+    </div>
+
+</div>
+}
+
+
+
+<div class="modal fade" id="viewQuestionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-fullscreen" role="document">
+        <!-- Fullscreen modal -->
+        <div class="modal-content">
+            <div class="modal-body">
+                <!-- Question details will be loaded here dynamically via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewQuestion(id, isShowExtraFields) {
+    $.ajax({
+        url: '@Url.Action("ViewQuestion", "Question")',
+        type: 'GET',
+        data: { id: id, isShowExtraFields: isShowExtraFields },
+        success: function (response) {
+            // Assuming response contains HTML content for modal
+            $("#viewQuestionModal .modal-body").html(response);
+            $("#viewQuestionModal").modal("show");
+        },
+        error: function () {
+            alert("Error loading question details.");
+        }
+    });
+}
+
+</script>
+
+
+
+<script>
+    function showImagePreview(imageName) {
+        var imageUrl = "/Content/QuestionImages/" + imageName;
+        var modalHtml = `
+    <div id="imageModal" class="image-modal">
+        <div class="image-modal-content">
+            <span class="close-modal" onclick="closeImagePreview()">&times;</span>
+            <img src="` + imageUrl + `" class="preview-image" />
+        </div>
+    </div>`;
+
+        // Remove existing modal if any
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+    }
+
+    function closeImagePreview() {
+        document.getElementById("imageModal").remove();
+    }
+
+    // Initialize data tracking
+    var gridDataTracker = {
+        selectedItems: {}
+    };
+
+    var currentMarks = 0;
+
+    function updateCurrentMarks() {
+        // Calculate current marks from selected questions
+        currentMarks = 0;
+
+        // Loop through all selected questions
+        for (var questionId in gridDataTracker.selectedItems) {
+            if (gridDataTracker.selectedItems.hasOwnProperty(questionId)) {
+                var question = gridDataTracker.selectedItems[questionId];
+                currentMarks += parseFloat(question.DefaultMarks) || 0;
+            }
+        }
+
+        // Round to 2 decimal places
+        currentMarks = Math.round(currentMarks * 100) / 100;
+
+        // Update the Current Marks display
+        $("#CurrentMarks").val(currentMarks);
+        $("h3:contains('Current Marks')").text("Current Marks: " + currentMarks);
+
+        // Check if current marks exceed total marks
+        var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
+
+        // Remove previous error message if exists
+        $("#current-marks-error").remove();
+
+        if (currentMarks > totalMarks) {
+            // Display error message - repositioned to be on the same line
+            // Insert before the Current Marks heading, aligned left
+            $(".input_box.mt-4.mr-1").before(
+                '<div id="current-marks-error" class="input_box mt-4" style="color: red; display: flex; justify-content: flex-start;">' +
+                'Error: Current marks (' + currentMarks + ') exceed total marks (' + totalMarks + ')' +
+                '</div>'
+            );
+        }
+        validateStatusAndMarks();
+    }
+
+    function validateStatusAndMarks() {
+        var status = $("#Status").data("kendoDropDownList").value();
+        var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
+
+        // Remove previous status error message if exists
+        $("#status-marks-error").remove();
+
+        // If status is COMPLETED, check if current marks equal total marks
+        if (status === "COMPLETED" && Math.abs(currentMarks - totalMarks) > 0.001) { // Using small epsilon for float comparison
+            // Display error message below the Status field
+            $(".input_box.mt-4.mr-1").before(
+                '<div id="status-marks-error" class="input_box mt-4" style="color: red; display: flex; justify-content: flex-start;">' +
+                'Error: For COMPLETED status, current marks must equal total marks' +
+                '</div>'
+            );
+        }
+    }
+
+
+
+    // Handle checkbox changes for selection
+    $(document).on("change", ".isSelectedCheckbox", function () {
+        var grid = $(this).closest(".k-grid").data("kendoGrid");
+        var row = $(this).closest("tr");
+        var dataItem = grid.dataItem(row);
+
+        dataItem.set("IsSelected", this.checked);
+
+        // Track in our local object
+        var questionId = dataItem.QuestionId;
+        if (this.checked) {
+            gridDataTracker.selectedItems[questionId] = {
+                QuestionId: questionId,
+                DefaultMarks: dataItem.DefaultMarks
+            };
+        } else {
+            delete gridDataTracker.selectedItems[questionId];
+        }
+        updateCurrentMarks();
+    });
+
+    // Handle marks input changes
+    $(document).on("input", ".defaultMarksInput", function () {
+        var grid = $(this).closest(".k-grid").data("kendoGrid");
+        var row = $(this).closest("tr");
+        var dataItem = grid.dataItem(row);
+        var newValue = parseFloat($(this).val()) || 0;
+
+        // Update grid data item
+        dataItem.set("DefaultMarks", newValue);
+
+        // Also update our tracker if this item is selected
+        var questionId = dataItem.QuestionId;
+        if (dataItem.IsSelected && gridDataTracker.selectedItems[questionId]) {
+            gridDataTracker.selectedItems[questionId].DefaultMarks = newValue;
+
+            updateCurrentMarks();
+        }
+    });
+
+    function error_handler(e) {
+        console.error("Grid error:", e.errors);
+    }
+
+    $(document).ready(function () {
+        currentMarks = parseFloat($("#CurrentMarks").val()) || 0;
+        $(".k-grid").each(function () { // Loop through each grid
+            var grid = $(this).data("kendoGrid");
+            if (grid) {
+                grid.bind("dataBound", function () {
+                    var data = this.dataSource.data();
+                    data.forEach(function (item) {
+                        if (item.IsSelected) {
+                            gridDataTracker.selectedItems[item.QuestionId] = {
+                                QuestionId: item.QuestionId,
+                                DefaultMarks: item.DefaultMarks
+                            };
+                        }
+                    });
+                    updateCurrentMarks();
+                });
+            }
+        });
+        $("#TotalMarks").on("input", function () {
+            updateCurrentMarks();
+        });
+        $("#Status").data("kendoDropDownList").bind("change", function () {
+            validateStatusAndMarks();
+        });
+    });
+
+        // Handle save button click
+       $("#btnSave").click(function(e) {
+           e.preventDefault();
+           var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
+           if (currentMarks > totalMarks) {
+               showToast("Current marks (" + currentMarks + ") exceed total marks (" + totalMarks + "). Please adjust your question selection or marks.", "error");
+               return;
+           }
+
+           var status = $("#Status").data("kendoDropDownList").value();
+           if (status === "COMPLETED" && Math.abs(currentMarks - totalMarks) > 0.001) {
+               showToast("For COMPLETED status, current marks must equal total marks. Please adjust your question selection or marks, or choose a different status.", "warning");
+               return;
+           }
+
+    // Get form data
+    var formData = $("#frm").serializeArray();
+
+    // Update selected questions
+    updateQuestionMappings();
+
+    // Add the question mappings to the data
+    formData.push({
+        name: "QuestionMappings",
+        value: $("#QuestionMappings").val()
+    });
+
+    // Send via AJAX
+    $.ajax({
+        url: "@Url.Action("Create", "PaperSet")",
+        type: "POST",
+        data: formData,
+        success: function(response) {
+            // Handle success
+            window.location.href = "@Url.Action("Index", "PaperSet")";
+        },
+        error: function(error) {
+            console.error("Error submitting form:", error);
+        }
+    });
+});
+
+    var paperSetId = @Model.Id;
+
+function updateQuestionMappings() {
+    var selectedQuestions = [];
+
+    // First remove any existing dynamically created fields
+    $(".dynamic-question-mapping").remove();
+
+    // Loop through all Kendo grids
+    $(".k-grid").each(function () {
+        var grid = $(this).data("kendoGrid");
+        if (!grid) return; // Skip if no grid found
+
+        var data = grid.dataSource.data();
+
+        // Iterate through the data source to find the selected questions
+        data.forEach(function (item) {
+            if (item.IsSelected) {
+                // Add the selected item to the selectedQuestions array
+                selectedQuestions.push({
+                    QuestionId: item.QuestionId,
+                    PaperSetId: paperSetId, // Ensure this property exists in the model
+                    CustomMarks: item.DefaultMarks // Assuming CustomMarks are stored in DefaultMarks
+                });
+            }
+        });
+    });
+
+    // Store the selected questions as a JSON string in the hidden field
+    $("#QuestionMappings").val(JSON.stringify(selectedQuestions));
+
+    console.log("selectedQuestions", selectedQuestions); // Log for debugging
+}
+
+
+</script>

@@ -122,5 +122,10 @@ namespace DemoProject.Helper
             public const string MEDIUM = "MEDIUM";
             public const string HARD = "HARD";
         }
+        public static class PaperSetStatus
+        {
+            public const string DRAFT = "DRAFT";
+            public const string COMPLETED = "COMPLETED";
+        }
     }
 }

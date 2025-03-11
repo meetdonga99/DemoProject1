@@ -3,9 +3,9 @@
 @using DemoProject.Controllers
 @using DemoProject.Helper
 @using DemoProject.Service
-@model IEnumerable<DemoProject.Model.QuestionGridModel>
+@model IEnumerable<DemoProject.Model.PaperSetGridModel>
 @{
-    string formCode = AuthorizeFormAccess.FormAccessCode.QUESTION.ToString();
+    string formCode = AuthorizeFormAccess.FormAccessCode.PAPERSET.ToString();
     var formName = FormUtility.GetFormName(formCode);
     string parentFormname = FormUtility.GetParentFormName(formCode);
     ViewBag.Title = formName;
@@ -16,48 +16,7 @@
 }
 @Html.Hidden("hdnFormAccessCode", formCode)
 
-
 <style>
-    .grid-image {
-        width: 70px; /* Adjust size as needed */
-        height: 50px;
-        object-fit: cover;
-        border-radius: 5px;
-    }
-
-    .image-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    }
-
-    .image-modal-content {
-        position: relative;
-        max-width: 90%;
-        max-height: 90%;
-        background: white;
-        padding: 10px;
-        border-radius: 10px;
-        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
-    }
-
-    .preview-image {
-        width: 100%; /* Makes the image take full width */
-        height: auto; /* Keeps aspect ratio */
-        max-width: 1000px; /* Set a max size */
-        max-height: 600px; /* Set a max height */
-        display: block;
-        object-fit: contain; /* Ensures full image is visible */
-        border-radius: 5px;
-    }
-
     .close-modal {
         position: absolute;
         top: 10px;
@@ -72,14 +31,13 @@
         max-width: 75%;
         margin: 150px;
     }
-
 </style>
 
 <div class="coman_content">
     <!-- Title Section -->
     <div class="subheader">
         <div class="left_title">
-            <h2 class="mr-3">Questions</h2>
+            <h2 class="mr-3">Paper Sets</h2>
             <div class="left breadcrumb_list">
                 <ul>
                     <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
@@ -91,7 +49,7 @@
         @if (AllowedAdd)
         {
             <div class="subheader_right">
-                <a class="button button_primary button_rounded" href="@Url.Action("Create", "Question")">Add New Question</a>
+                <a class="button button_primary button_rounded" href="@Url.Action("Create", "PaperSet")">Add New PaperSet</a>
             </div>
         }
     </div>
@@ -99,31 +57,18 @@
 
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
-        @(Html.Kendo().Grid<DemoProject.Model.QuestionGridModel>()
+        @(Html.Kendo().Grid<DemoProject.Model.PaperSetGridModel>()
         .AutoBind(true)
-        .Name("gridQuestion")
+        .Name("gridPaperSet")
         .Columns(columns =>
         {
-            columns.Bound(c => c.Image).Width("10%").Title("Image")
-    .ClientTemplate("# if(Image) { # " +
-        "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
-        "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
-        "</a> # } else { # <span>No Image</span> # } #")
-    .HtmlAttributes(new { style = "text-align:center;" });
 
-            columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
-            columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");
-            columns.Bound(c => c.QuestionText)
-                .Width("42%")
-                .ClientTemplate("#= (QuestionText && QuestionText.length > 70) ? QuestionText.substring(0, 70).concat('...') : QuestionText #")
-                .Title("Question");
-
-
-
-            columns.Bound(c => c.DefaultMarks).Width("7%").Title("Default Marks");
-            columns.Bound(c => c.DifficultyLevel).Width("7%").Title("Difficulty Level")
-                .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=DifficultyLevel#</span>#} else {# #=DifficultyLevel# #}#");
-
+            columns.Bound(c => c.PaperSetName).Width("10%").Title("Paper Set Name");
+            columns.Bound(c => c.TotalMarks).Width("7%").Title("Total Marks");
+            columns.Bound(c => c.DurationInMinutes).Width("7%").Title("Duration In Minutes");
+            columns.Bound(c => c.Status).Width("7%").Title("Status")
+                            .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=Status#</span>#} else {# #=Status# #}#");
+           
             columns.Bound(c => c.IsActive).Width("5%")
                 .HeaderHtmlAttributes(new { @class = "center_text" })
                 .HtmlAttributes(new { @class = "kendogrid_Action center-text" })
@@ -132,33 +77,33 @@
                 .Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
 
             columns.Bound(c => c.Id)
-    .Title("View")
-    .Width("5%")
-    .ClientTemplate("<a href='javascript:void(0);' onclick='viewQuestion(#=Id#)' title='View'><i class='fa fa-eye'></i></a>")
-    .Filterable(false)
-    .Sortable(false);
+.Title("View")
+.Width("2%")
+.ClientTemplate("<a href='javascript:void(0);' onclick='viewPaperSet(#=Id#)' title='View'><i class='fa fa-eye'></i></a>")
+.Filterable(false)
+.Sortable(false);
 
 
 
             columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
                 .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
                 .ClientTemplate("<div class='k_action_table'>" +
-                    (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Question") + "/#=Id#'><i class='fa fa-edit'></i></a>" : "") +
+                    (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "PaperSet") + "/#=Id#'><i class='fa fa-edit'></i></a>" : "") +
                 "</div>")
                 .Filterable(false)
                 .Title("Edit")
                 .Width("5%")
                 .Sortable(false);
 
-            columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
-                .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
-                .ClientTemplate("<div class='k_action_table'>" +
-                    (AllowedDelete ? "<a href='javascript:void(0)' data-id='#=Id#' class='delete-icon'><i class='fa fa-trash'></i></a>" : "") +
-                "</div>")
-                .Filterable(false)
-                .Title("Action")
-                .Width("5%")
-                .Sortable(false);
+            //columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
+            //    .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
+            //    .ClientTemplate("<div class='k_action_table'>" +
+            //        (AllowedDelete ? "<a href='javascript:void(0)' data-id='#=Id#' class='delete-icon'><i class='fa fa-trash'></i></a>" : "") +
+            //    "</div>")
+            //    .Filterable(false)
+            //    .Title("Action")
+            //    .Width("5%")
+            //    .Sortable(false);
         })
         .NoRecords("No record found")
         .Events(evt => evt
@@ -179,13 +124,13 @@
         )
         .DataSource(dataSource => dataSource
             .Ajax()
-            .Read(read => read.Action("GetGridData", "Question")).PageSize(10)
+            .Read(read => read.Action("GetGridData", "PaperSet")).PageSize(10)
         ))
     </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog">
+@*<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -201,24 +146,9 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
-<!-- View Question Modal -->
-<div class="modal fade" id="viewQuestionModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-fullscreen" role="document">
-        <!-- Fullscreen modal -->
-        <div class="modal-content">
-            <div class="modal-body">
-                <!-- Question details will be loaded here dynamically via AJAX -->
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-
-<script>
+@*<script>
     $(document).ready(function () {
         var grid = $('#gridQuestion').data('kendoGrid');
         var deleteId = null;
@@ -251,41 +181,33 @@
         grid.dataSource.read();
         grid.refresh();
     });
+</script>*@
 
-    function showImagePreview(imageName) {
-        var imageUrl = "/Content/QuestionImages/" + imageName;
-        var modalHtml = `
-        <div id="imageModal" class="image-modal">
-            <div class="image-modal-content">
-                <span class="close-modal" onclick="closeImagePreview()">&times;</span>
-                <img src="` + imageUrl + `" class="preview-image" />
+
+<div class="modal fade" id="viewPaperSetModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-fullscreen" role="document">
+        <!-- Fullscreen modal -->
+        <div class="modal-content">
+            <div class="modal-body">
+                <!-- Question details will be loaded here dynamically via AJAX -->
             </div>
-        </div>`;
-
-        // Remove existing modal if any
-        document.body.insertAdjacentHTML("beforeend", modalHtml);
-    }
-
-
-
-    function closeImagePreview() {
-        document.getElementById("imageModal").remove();
-    }
-</script>
+        </div>
+    </div>
+</div>
 
 <script>
-    function viewQuestion(id) {
+    function viewPaperSet(id) {
     $.ajax({
-        url: '@Url.Action("ViewQuestion", "Question")',
+        url: '@Url.Action("ViewPaperSet", "PaperSet")',
         type: 'GET',
         data: { id: id },
         success: function (response) {
             // Assuming response contains HTML content for modal
-            $("#viewQuestionModal .modal-body").html(response);
-            $("#viewQuestionModal").modal("show");
+            $("#viewPaperSetModal .modal-body").html(response);
+            $("#viewPaperSetModal").modal("show");
         },
         error: function () {
-            alert("Error loading question details.");
+            alert("Error loading paper set details.");
         }
     });
 }

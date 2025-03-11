@@ -1,0 +1,35 @@
+﻿@model DemoProject.Models.ViewPaperSetModel
+
+<div class="modal-content">
+    <div class="modal-header">
+        <h4 class="modal-title">PaperSet Details</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="modal-body">
+        <p><strong>Name:</strong> @Model.PaperSetName</p>
+        <p><strong>Total Marks:</strong> @Model.TotalMarks</p>
+        <p><strong>Duration:</strong> @Model.DurationInMinutes minutes</p>
+
+
+        <!-- Loop through questions and render the first partial view -->
+        @if (Model.Questions != null && Model.Questions.Any())
+        {
+            foreach (var question in Model.Questions)
+            {
+                @Html.Action("ViewQuestion", "Question", new { id = question.Id, onlyShowBody = true })
+
+            }
+        }
+        else
+        {
+            <p>No questions available.</p>
+        }
+    </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+    </div>

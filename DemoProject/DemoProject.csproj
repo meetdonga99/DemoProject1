@@ -2232,6 +2232,7 @@
     <Compile Include="Controllers\FormRoleMappingController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
+    <Compile Include="Controllers\PaperSetController.cs" />
     <Compile Include="Controllers\QuestionController.cs" />
     <Compile Include="Controllers\QuestionTypeController.cs" />
     <Compile Include="Controllers\RolesController.cs" />
@@ -2241,6 +2242,8 @@
     <Compile Include="Filters\AuthenticationFilter.cs" />
     <Compile Include="Filters\ExceptionHandlingFilter.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
+    <Compile Include="Filters\MinOptionsRequiredAttribute.cs" />
+    <Compile Include="Filters\MinValueRequiredAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -2249,6 +2252,7 @@
     <Compile Include="Models\CommonLookupModel.cs" />
     <Compile Include="Models\FormModel.cs" />
     <Compile Include="Models\OptionModel.cs" />
+    <Compile Include="Models\PaperSetModel.cs" />
     <Compile Include="Models\QuestionModel.cs" />
     <Compile Include="Models\QuestionTypeModel.cs" />
     <Compile Include="Models\RolesModel.cs" />
@@ -3002,6 +3006,11 @@
     <Content Include="Views\QuestionType\Create.cshtml" />
     <Content Include="Views\Question\Create.cshtml" />
     <Content Include="Views\Question\Index.cshtml" />
+    <Content Include="Views\Question\_ViewQuestion.cshtml" />
+    <Content Include="Views\PaperSet\Index.cshtml" />
+    <Content Include="Views\PaperSet\Create.cshtml" />
+    <Content Include="Views\PaperSet\_ViewPaperSet.cshtml" />
+    <Content Include="Views\Question\_ViewQuestionBody.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

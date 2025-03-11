@@ -11,8 +11,7 @@ namespace DemoProject.Models
 	{
         public int Id { get; set; }
         public int QuestionId { get; set; }
-        [Required]
-        [AllowHtml]
+        [Required(ErrorMessage = "Option text is required.")]
         [Display(Name = "Option Text")]
         public string OptionText { get; set; }
         public bool IsCorrect { get; set; }

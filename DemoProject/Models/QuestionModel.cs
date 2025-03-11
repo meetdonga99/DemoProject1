@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DemoProject.Filters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace DemoProject.Models
         public string Image { get; set; }
         [Required]
         public bool IsActive { get; set; }
-        [AllowHtml]
+        [MinOptionsRequired(1)]
         public List<OptionModel> options { get; set; }
 
     }

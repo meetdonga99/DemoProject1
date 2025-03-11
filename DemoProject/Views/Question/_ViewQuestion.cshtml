@@ -1,0 +1,124 @@
+﻿@using DemoProject.Service
+@model DemoProject.Models.QuestionModel
+
+@*@ViewBag.IsIsShowExtraFields*@
+
+<style>
+    /* Improved styling for radio buttons and checkboxes */
+    .modal-content input[type="radio"],
+    .modal-content input[type="checkbox"] {
+        transform: scale(1.5); /* Increase size */
+        margin-right: 8px; /* Add spacing */
+        cursor: pointer;
+    }
+
+    label {
+        font-size: 16px; /* Increase font size */
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 50px;
+        padding: 5px;
+        font-size: 14px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: none;
+        background-color: #f9f9f9;
+    }
+
+    /* Improve layout */
+    .option-list {
+        list-style: none;
+        padding: 0;
+    }
+
+        .option-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+</style>
+
+<div class="modal-content">
+    <div class="modal-header">
+        <h4 class="modal-title">Question Details</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="modal-body">
+        <!-- Question Text -->
+        <p><strong>Question:</strong> @Model.QuestionText</p>
+
+        <!-- Show Difficulty Level if IsIsShowExtraFields is true -->
+        @if (TempData["IsIsShowExtraFields"] != null && (bool)TempData["IsIsShowExtraFields"])
+        {
+            <p><strong>Difficulty Level:</strong> @Model.DifficultyLevel</p>
+        }
+
+        <!-- Image (if available) -->
+        @if (!string.IsNullOrEmpty(Model.Image))
+        {
+            <div style="text-align: center; margin: 10px 0;">
+                <img src="@Url.Content("~/Content/QuestionImages/" + Model.Image)"
+                     alt="Question Image"
+                     style="max-width: 100%; height: auto; border-radius: 8px;" />
+            </div>
+        }
+
+        <!-- Options -->
+        @if (Model.QuestionTypeId == 1 || Model.QuestionTypeId == 2)
+        {
+            <p class="mt-3"><strong>Options:</strong></p>
+        }
+        else
+        {
+            <p class="mt-3"><strong>Probable Answers:</strong></p>
+        }
+
+        @if (Model.options != null && Model.options.Any())
+        {
+            <ul class="option-list">
+                @{ var optionCount = 1; }
+                @foreach (var option in Model.options)
+                {
+                    <li>
+                        @if (Model.QuestionTypeId == 1) // Single correct answer (Radio)
+                        {
+                            <input type="radio" disabled @(option.IsCorrect ? "checked" : "") />
+                            <label>@option.OptionText</label>
+                        }
+                        else if (Model.QuestionTypeId == 2) // Multiple correct answers (Checkbox)
+                        {
+                            <input type="checkbox" disabled @(option.IsCorrect ? "checked" : "") />
+                            <label>@option.OptionText</label>
+                        }
+                        else // Text answers
+                        {
+                            <strong>Answer @optionCount: </strong>
+                            <div>
+                                <textarea disabled style="width:300px">@option.OptionText</textarea>
+                                <strong style="color: green; margin-left: 10px;">
+                                    @(option.IsCorrect ? "Correct" : "")
+                                </strong>
+                            </div>
+                        }
+                    </li>
+                    optionCount += 1;
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No options available.</p>
+        }
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+</div>

@@ -1,0 +1,59 @@
+﻿@model DemoProject.Models.QuestionModel
+
+<!-- Modal Body Content Only -->
+<div class="modal-body">
+    <p><strong>Question:</strong> @Model.QuestionText</p>
+
+    @if (TempData["IsIsShowExtraFields"] != null && (bool)TempData["IsIsShowExtraFields"])
+    {
+        <p><strong>Difficulty Level:</strong> @Model.DifficultyLevel</p>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Image))
+    {
+        <div style="text-align: center; margin: 10px 0;">
+            <img src="@Url.Content("~/Content/QuestionImages/" + Model.Image)"
+                 alt="Question Image"
+                 style="max-width: 100%; height: auto; border-radius: 8px;" />
+        </div>
+    }
+
+    @if (Model.options != null && Model.options.Any())
+    {
+        <p class="mt-3"><strong>Options:</strong></p>
+        <ul class="option-list">
+            @{ var optionCount = 1; }
+            @foreach (var option in Model.options)
+            {
+                <li>
+                    @if (Model.QuestionTypeId == 1)
+                    {
+                        <input type="radio" disabled @(option.IsCorrect ? "checked" : "") />
+                        <label>@option.OptionText</label>
+                    }
+                    else if (Model.QuestionTypeId == 2)
+                    {
+                        <input type="checkbox" disabled @(option.IsCorrect ? "checked" : "") />
+                        <label>@option.OptionText</label>
+                    }
+                    else
+                    {
+                        <strong>Answer @optionCount: </strong>
+                        <div>
+                            <textarea disabled style="width:300px">@option.OptionText</textarea>
+                            <strong style="color: green; margin-left: 10px;">
+                                @(option.IsCorrect ? "Correct" : "")
+                            </strong>
+                        </div>
+                    }
+                </li>
+                optionCount += 1;
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No options available.</p>
+    }
+</div>
+

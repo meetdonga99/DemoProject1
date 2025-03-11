@@ -1,6 +1,5 @@
 ﻿using DemoProject.Model;
 using DemoProject.Data;
-using DemoProject.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -102,6 +102,29 @@ namespace DemoProject.Controllers
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
+
+            if (model.options.Count < 2 && (model.QuestionTypeId == 1 || model.QuestionTypeId == 2))
+            {
+                ModelState.AddModelError("options", "At least 2 options are required.");
+            }
+
+            int correctAnswers = model.options.Count(o => o.IsCorrect);
+
+            if (model.QuestionTypeId == 1) // Radio (Single Choice)
+            {
+                if (correctAnswers != 1)
+                {
+                    ModelState.AddModelError("options", "For Radio questions, exactly 1 option must be correct.");
+                }
+            }
+            else if (model.QuestionTypeId == 2) // Checkbox (Multiple Choice)
+            {
+                if (correctAnswers < 1)
+                {
+                    ModelState.AddModelError("options", "For Checkbox questions, at least 1 correct option is required.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 SaveUpdateQuestion(model, file);
@@ -169,6 +192,7 @@ namespace DemoProject.Controllers
             obj.QuestionText = model.QuestionText;
             obj.DefaultMarks = model.DefaultMarks;
             obj.DifficultyLevel = model.DifficultyLevel;
+            obj.Image = model.Image;
             if (file != null && file.ContentLength > 0)
             {
                 string fileName = Path.GetFileName(file.FileName);
@@ -272,5 +296,33 @@ namespace DemoProject.Controllers
                     return RedirectToAction("Index");
                 }
         }
+
+
+        public ActionResult ViewQuestion(int id, bool? IsShowExtraFields, bool onlyShowBody = false)
+        {
+            var getQuestion = _questionService.GetQuestionById(id);
+            
+            
+                QuestionModel model = new QuestionModel();
+                model.Id = id;
+                model.SubjectId = getQuestion.Subjects.Id;
+                model.QuestionTypeId = getQuestion.QuestionTypes.Id;
+                model.QuestionText = getQuestion.QuestionText;
+                model.DefaultMarks = getQuestion.DefaultMarks;
+                model.DifficultyLevel = getQuestion.DifficultyLevel;
+                model.Image = getQuestion.Image;
+                model.IsActive = getQuestion.IsActive;
+                model.options = _optionService.GetOptionsByQuestionId(id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList();
+
+            TempData["IsIsShowExtraFields"] = IsShowExtraFields;
+
+            if (onlyShowBody)
+            {
+                return PartialView("_ViewQuestionBody", model);
+            }
+
+            return PartialView("_ViewQuestion", model);
+        }
+
     }
 }
