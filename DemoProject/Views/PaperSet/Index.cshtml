@@ -124,7 +124,8 @@
         )
         .DataSource(dataSource => dataSource
             .Ajax()
-            .Read(read => read.Action("GetGridData", "PaperSet")).PageSize(10)
+            .Read(read => read.Action("GetGridData", "PaperSet"))
+            .PageSize(10)
         ))
     </div>
 </div>

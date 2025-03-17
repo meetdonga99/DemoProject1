@@ -9,6 +9,10 @@ namespace DemoProject.Models
 {
 	public class PaperSetModel
 	{
+        public PaperSetModel()
+        {
+            QuestionMappings = new List<QuestionMappingItem>();
+        }
         public int Id { get; set; }
         [Required]
         public string PaperSetName { get; set; }

@@ -246,6 +246,7 @@
     .DataSource(dataSource => dataSource
         .Ajax()
         .Read(read => read.Action("GetSelectedQuestionsGridData", "PaperSet", new { paperSetId = Model.Id }))
+        .ServerOperation(false)
         .PageSize(10)
         .Events(events => events.Error("error_handler"))
     ))
@@ -316,6 +317,7 @@
     .DataSource(dataSource => dataSource
         .Ajax()
         .Read(read => read.Action("GetUnselectedQuestionsGridData", "PaperSet", new { paperSetId = Model.Id }))
+        .ServerOperation(false)
         .PageSize(10)
         .Events(events => events.Error("error_handler"))
     ))
@@ -354,20 +356,17 @@
     });
 }
 
-</script>
-
-
-
-<script>
     function showImagePreview(imageName) {
         var imageUrl = "/Content/QuestionImages/" + imageName;
         var modalHtml = `
     <div id="imageModal" class="image-modal">
         <div class="image-modal-content">
             <span class="close-modal" onclick="closeImagePreview()">&times;</span>
-            <img src="` + imageUrl + `" class="preview-image" />
+            <img src="${imageUrl}" class="preview-image" />
         </div>
-    </div>`;
+    </div>
+`;
+
 
         // Remove existing modal if any
         document.body.insertAdjacentHTML("beforeend", modalHtml);
@@ -377,117 +376,105 @@
         document.getElementById("imageModal").remove();
     }
 
+</script>
+
+<script>
     // Initialize data tracking
-    var gridDataTracker = {
-        selectedItems: {}
-    };
+var gridDataTracker = {
+    selectedItems: {}
+};
 
-    var currentMarks = 0;
+var currentMarks = 0;
 
-    function updateCurrentMarks() {
-        // Calculate current marks from selected questions
-        currentMarks = 0;
+// Function to update Current Marks
+function updateCurrentMarks() {
+    currentMarks = 0;
 
-        // Loop through all selected questions
-        for (var questionId in gridDataTracker.selectedItems) {
-            if (gridDataTracker.selectedItems.hasOwnProperty(questionId)) {
-                var question = gridDataTracker.selectedItems[questionId];
-                currentMarks += parseFloat(question.DefaultMarks) || 0;
-            }
-        }
-
-        // Round to 2 decimal places
-        currentMarks = Math.round(currentMarks * 100) / 100;
-
-        // Update the Current Marks display
-        $("#CurrentMarks").val(currentMarks);
-        $("h3:contains('Current Marks')").text("Current Marks: " + currentMarks);
-
-        // Check if current marks exceed total marks
-        var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
-
-        // Remove previous error message if exists
-        $("#current-marks-error").remove();
-
-        if (currentMarks > totalMarks) {
-            // Display error message - repositioned to be on the same line
-            // Insert before the Current Marks heading, aligned left
-            $(".input_box.mt-4.mr-1").before(
-                '<div id="current-marks-error" class="input_box mt-4" style="color: red; display: flex; justify-content: flex-start;">' +
-                'Error: Current marks (' + currentMarks + ') exceed total marks (' + totalMarks + ')' +
-                '</div>'
-            );
-        }
-        validateStatusAndMarks();
-    }
-
-    function validateStatusAndMarks() {
-        var status = $("#Status").data("kendoDropDownList").value();
-        var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
-
-        // Remove previous status error message if exists
-        $("#status-marks-error").remove();
-
-        // If status is COMPLETED, check if current marks equal total marks
-        if (status === "COMPLETED" && Math.abs(currentMarks - totalMarks) > 0.001) { // Using small epsilon for float comparison
-            // Display error message below the Status field
-            $(".input_box.mt-4.mr-1").before(
-                '<div id="status-marks-error" class="input_box mt-4" style="color: red; display: flex; justify-content: flex-start;">' +
-                'Error: For COMPLETED status, current marks must equal total marks' +
-                '</div>'
-            );
+    for (var questionId in gridDataTracker.selectedItems) {
+        if (gridDataTracker.selectedItems.hasOwnProperty(questionId)) {
+            var question = gridDataTracker.selectedItems[questionId];
+            currentMarks += parseFloat(question.DefaultMarks) || 0;
         }
     }
 
+    // Round to 2 decimal places
+    currentMarks = Math.round(currentMarks * 100) / 100;
 
+    // Update the Current Marks display
+    $("#CurrentMarks").val(currentMarks);
+    $("h3:contains('Current Marks')").text("Current Marks: " + currentMarks);
 
-    // Handle checkbox changes for selection
-    $(document).on("change", ".isSelectedCheckbox", function () {
-        var grid = $(this).closest(".k-grid").data("kendoGrid");
-        var row = $(this).closest("tr");
-        var dataItem = grid.dataItem(row);
+    var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
+    $("#current-marks-error").remove();
 
-        dataItem.set("IsSelected", this.checked);
+    if (currentMarks > totalMarks) {
+        $(".input_box.mt-4.mr-1").before(
+            '<div id="current-marks-error" class="input_box mt-4" style="color: red; display: flex; justify-content: flex-start;">' +
+            'Error: Current marks (' + currentMarks + ') exceed total marks (' + totalMarks + ')' +
+            '</div>'
+        );
+    }
+    validateStatusAndMarks();
+}
 
-        // Track in our local object
-        var questionId = dataItem.QuestionId;
-        if (this.checked) {
-            gridDataTracker.selectedItems[questionId] = {
-                QuestionId: questionId,
-                DefaultMarks: dataItem.DefaultMarks
-            };
-        } else {
-            delete gridDataTracker.selectedItems[questionId];
-        }
+// Function to validate status and marks
+function validateStatusAndMarks() {
+    var status = $("#Status").data("kendoDropDownList").value();
+    var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
+
+    $("#status-marks-error").remove();
+
+    if (status === "COMPLETED" && Math.abs(currentMarks - totalMarks) > 0.001) {
+        $(".input_box.mt-4.mr-1").before(
+            '<div id="status-marks-error" class="input_box mt-4" style="color: red; display: flex; justify-content: flex-start;">' +
+            'Error: For COMPLETED status, current marks must equal total marks' +
+            '</div>'
+        );
+    }
+}
+
+// Handle checkbox selection for questions
+$(document).on("change", ".isSelectedCheckbox", function () {
+    var grid = $(this).closest(".k-grid").data("kendoGrid");
+    var row = $(this).closest("tr");
+    var dataItem = grid.dataItem(row);
+
+    dataItem.set("IsSelected", this.checked);
+
+    var questionId = dataItem.QuestionId;
+    if (this.checked) {
+        gridDataTracker.selectedItems[questionId] = {
+            QuestionId: questionId,
+            DefaultMarks: dataItem.DefaultMarks
+        };
+    } else {
+        delete gridDataTracker.selectedItems[questionId];
+    }
+    updateCurrentMarks();
+});
+
+// Handle marks input changes
+$(document).on("input", ".defaultMarksInput", function () {
+    var grid = $(this).closest(".k-grid").data("kendoGrid");
+    var row = $(this).closest("tr");
+    var dataItem = grid.dataItem(row);
+    var newValue = parseFloat($(this).val()) || 0;
+
+    dataItem.set("DefaultMarks", newValue);
+
+    var questionId = dataItem.QuestionId;
+    if (dataItem.IsSelected) {
+        gridDataTracker.selectedItems[questionId].DefaultMarks = newValue;
         updateCurrentMarks();
-    });
-
-    // Handle marks input changes
-    $(document).on("input", ".defaultMarksInput", function () {
-        var grid = $(this).closest(".k-grid").data("kendoGrid");
-        var row = $(this).closest("tr");
-        var dataItem = grid.dataItem(row);
-        var newValue = parseFloat($(this).val()) || 0;
-
-        // Update grid data item
-        dataItem.set("DefaultMarks", newValue);
-
-        // Also update our tracker if this item is selected
-        var questionId = dataItem.QuestionId;
-        if (dataItem.IsSelected && gridDataTracker.selectedItems[questionId]) {
-            gridDataTracker.selectedItems[questionId].DefaultMarks = newValue;
-
-            updateCurrentMarks();
-        }
-    });
-
-    function error_handler(e) {
-        console.error("Grid error:", e.errors);
     }
+});
 
     $(document).ready(function () {
+        // Initialize current marks
         currentMarks = parseFloat($("#CurrentMarks").val()) || 0;
-        $(".k-grid").each(function () { // Loop through each grid
+
+        // Attach dataBound event to all Kendo grids
+        $(".k-grid").each(function () {
             var grid = $(this).data("kendoGrid");
             if (grid) {
                 grid.bind("dataBound", function () {
@@ -504,28 +491,33 @@
                 });
             }
         });
+
+        // Handle changes in Total Marks input
         $("#TotalMarks").on("input", function () {
             updateCurrentMarks();
         });
+
+        // Handle changes in Status dropdown
         $("#Status").data("kendoDropDownList").bind("change", function () {
             validateStatusAndMarks();
         });
     });
 
-        // Handle save button click
-       $("#btnSave").click(function(e) {
-           e.preventDefault();
-           var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
-           if (currentMarks > totalMarks) {
-               showToast("Current marks (" + currentMarks + ") exceed total marks (" + totalMarks + "). Please adjust your question selection or marks.", "error");
-               return;
-           }
+// Handle save button click
+$("#btnSave").click(function (e) {
+    e.preventDefault();
+    var totalMarks = parseFloat($("#TotalMarks").val()) || 0;
 
-           var status = $("#Status").data("kendoDropDownList").value();
-           if (status === "COMPLETED" && Math.abs(currentMarks - totalMarks) > 0.001) {
-               showToast("For COMPLETED status, current marks must equal total marks. Please adjust your question selection or marks, or choose a different status.", "warning");
-               return;
-           }
+    if (currentMarks > totalMarks) {
+        showToast("Current marks (" + currentMarks + ") exceed total marks (" + totalMarks + "). Please adjust your question selection or marks.", "error");
+        return;
+    }
+
+    var status = $("#Status").data("kendoDropDownList").value();
+    if (status === "COMPLETED" && Math.abs(currentMarks - totalMarks) > 0.001) {
+        showToast("For COMPLETED status, current marks must equal total marks. Please adjust your question selection or marks, or choose a different status.", "warning");
+        return;
+    }
 
     // Get form data
     var formData = $("#frm").serializeArray();
@@ -544,49 +536,43 @@
         url: "@Url.Action("Create", "PaperSet")",
         type: "POST",
         data: formData,
-        success: function(response) {
-            // Handle success
+        success: function (response) {
             window.location.href = "@Url.Action("Index", "PaperSet")";
         },
-        error: function(error) {
+        error: function (error) {
             console.error("Error submitting form:", error);
         }
     });
 });
 
-    var paperSetId = @Model.Id;
+var paperSetId = @Model.Id;
 
+// Update selected questions
 function updateQuestionMappings() {
     var selectedQuestions = [];
 
-    // First remove any existing dynamically created fields
     $(".dynamic-question-mapping").remove();
 
-    // Loop through all Kendo grids
     $(".k-grid").each(function () {
         var grid = $(this).data("kendoGrid");
-        if (!grid) return; // Skip if no grid found
+        if (!grid) return;
 
         var data = grid.dataSource.data();
 
-        // Iterate through the data source to find the selected questions
         data.forEach(function (item) {
             if (item.IsSelected) {
-                // Add the selected item to the selectedQuestions array
                 selectedQuestions.push({
                     QuestionId: item.QuestionId,
-                    PaperSetId: paperSetId, // Ensure this property exists in the model
-                    CustomMarks: item.DefaultMarks // Assuming CustomMarks are stored in DefaultMarks
+                    PaperSetId: paperSetId,
+                    CustomMarks: item.DefaultMarks
                 });
             }
         });
     });
 
-    // Store the selected questions as a JSON string in the hidden field
     $("#QuestionMappings").val(JSON.stringify(selectedQuestions));
 
-    console.log("selectedQuestions", selectedQuestions); // Log for debugging
+    console.log("selectedQuestions", selectedQuestions);
 }
-
 
 </script>

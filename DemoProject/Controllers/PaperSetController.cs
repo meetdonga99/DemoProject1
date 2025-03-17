@@ -6,6 +6,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Web;
@@ -87,7 +88,9 @@ namespace DemoProject.Controllers
         public ActionResult Create(PaperSetModel model)
         {
             string questionMappingsJson = Request.Form["QuestionMappings"];
-            questionMappingsJson = questionMappingsJson.TrimStart(',');
+            int startIndex = questionMappingsJson.IndexOf("[",34);
+            
+             questionMappingsJson = questionMappingsJson.Substring(startIndex);
 
             if (!string.IsNullOrEmpty(questionMappingsJson))
             {
@@ -109,17 +112,18 @@ namespace DemoProject.Controllers
                 return RedirectToAction("AccessDenied", "Base");
             }
 
-            SaveUpdatePaperSets(model);
-            return RedirectToAction("Index");
-            //if (ModelState.IsValid)
-            //{
-            //    SaveUpdatePaperSets(model);
-            //    return RedirectToAction("Index");
-            //}
-            //else
-            //{
-            //    return View(model);
-            //}
+            //SaveUpdatePaperSets(model);
+            //return RedirectToAction("Index");
+            ModelState.Remove(nameof(model.QuestionMappings));
+            if (ModelState.IsValid)
+            {
+                SaveUpdatePaperSets(model);
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return View(model);
+            }
         }
 
 
