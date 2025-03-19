@@ -59,6 +59,7 @@
     <Compile Include="FormsProvider.cs" />
     <Compile Include="MessageProvider.cs" />
     <Compile Include="OptionProvider.cs" />
+    <Compile Include="PaperSetLinkProvider.cs" />
     <Compile Include="PaperSetProvider.cs" />
     <Compile Include="PaperSetQuestionMappingProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

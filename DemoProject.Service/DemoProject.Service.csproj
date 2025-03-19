@@ -48,6 +48,7 @@
     <Compile Include="FormsService.cs" />
     <Compile Include="MessageService.cs" />
     <Compile Include="OptionService.cs" />
+    <Compile Include="PaperSetLinkService.cs" />
     <Compile Include="PaperSetQuestionMappingService.cs" />
     <Compile Include="PaperSetService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

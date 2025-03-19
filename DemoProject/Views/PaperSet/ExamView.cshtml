@@ -1,0 +1,183 @@
+﻿@using Newtonsoft.Json
+@model DemoProject.Models.ViewPaperSetModel
+@{
+    Layout = null;
+}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded shadow-sm sticky-top flex-wrap">
+        <h4 class="mb-0 fw-bold">@Model.PaperSetName</h4>
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-secondary fs-5 p-2">Total Marks: <strong>@Model.TotalMarks</strong></span>
+            <span class="badge bg-secondary fs-5 p-2">Duration: <strong>@Model.DurationInMinutes</strong> min</span>
+        </div>
+        <div class="fw-bold text-danger fs-4" id="timer">Time Left: @Model.DurationInMinutes:00</div>
+    </div>
+
+
+    <div id="instructions" class="my-4 p-4 bg-white rounded shadow-sm">
+        <h5>Instructions</h5>
+        <p>Read the instructions carefully before starting the test.</p>
+        <button class="btn btn-lg btn-primary" id="startTest">Start Test</button>
+    </div>
+
+    <!-- Question Section -->
+    <div id="questionContainer" class="d-none mt-4">
+        <div class="card p-4 shadow-sm">
+            <h5 id="questionText"></h5>
+            <div id="questionImage" class="my-3"></div>
+            <div id="optionsContainer" class="mt-2"></div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <button class="btn btn-secondary btn-lg" id="prevBtn">Previous</button>
+            <button class="btn btn-primary btn-lg" id="nextBtn">Next</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let questions = @Html.Raw(JsonConvert.SerializeObject(Model.Questions));
+    let currentQuestionIndex = 0;
+    let userAnswers = {}; // Store answers
+
+    document.getElementById('startTest').addEventListener('click', function() {
+        document.getElementById('instructions').classList.add('d-none');
+        document.getElementById('questionContainer').classList.remove('d-none');
+        startTimer(@Model.DurationInMinutes * 60);
+        loadQuestion();
+    });
+
+    function startTimer(duration) {
+        let timerDisplay = document.getElementById('timer');
+        let timer = setInterval(function() {
+            let minutes = Math.floor(duration / 60);
+            let seconds = duration % 60;
+            timerDisplay.textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            if (--duration < 0) {
+                clearInterval(timer);
+                alert('Time is up!');
+            }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        let question = questions[currentQuestionIndex];
+
+        if (!question || !Array.isArray(question.options)) {
+            console.error("Invalid question data", question);
+            return;
+        }
+
+        document.getElementById('questionText').textContent = `${currentQuestionIndex + 1}. ${question.QuestionText}`;
+
+        let questionImageDiv = document.getElementById('questionImage');
+        questionImageDiv.innerHTML = question.Image ? `<img src="/Content/QuestionImages/${question.Image}" class="img-fluid rounded shadow-sm" alt="Question Image">` : '';
+
+        let optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.innerHTML = '';
+
+        if (question.QuestionTypeId === 1) { // Radio Buttons
+            question.options.forEach(option => {
+                let checked = userAnswers[currentQuestionIndex] == option.Id ? "checked" : "";
+                optionsContainer.innerHTML += `<div class='form-check'>
+                <input class='form-check-input' type='radio' name='option' value='${option.Id}' id='option${option.Id}' ${checked}>
+                <label class='form-check-label' for='option${option.Id}'>${option.OptionText}</label>
+            </div>`;
+            });
+
+        } else if (question.QuestionTypeId === 2) { // Checkboxes - FIXED!
+            let selectedAnswers = userAnswers[currentQuestionIndex] || []; // Get saved answers
+            question.options.forEach(option => {
+                let checked = selectedAnswers.includes(option.Id.toString()) ? "checked" : ""; // Ensure proper comparison
+                optionsContainer.innerHTML += `<div class='form-check'>
+                <input class='form-check-input' type='checkbox' value='${option.Id}' id='option${option.Id}' ${checked}>
+                <label class='form-check-label' for='option${option.Id}'>${option.OptionText}</label>
+            </div>`;
+            });
+
+        } else { // Text Area
+            let textValue = userAnswers[currentQuestionIndex] || "";
+            optionsContainer.innerHTML = `<textarea class='form-control' id="textAnswer">${textValue}</textarea>`;
+        }
+
+        attachAnswerListeners();
+    }
+
+    function attachAnswerListeners() {
+        let question = questions[currentQuestionIndex];
+
+        if (question.QuestionTypeId === 1) { // Radio Buttons
+            document.querySelectorAll("input[name='option']").forEach(input => {
+                input.addEventListener("change", function () {
+                    userAnswers[currentQuestionIndex] = this.value;
+                });
+            });
+
+        } else if (question.QuestionTypeId === 2) { // Checkboxes - FIXED!
+            document.querySelectorAll(".form-check-input").forEach(input => {
+                input.addEventListener("change", function () {
+                    if (!userAnswers[currentQuestionIndex]) userAnswers[currentQuestionIndex] = [];
+
+                    if (this.checked) {
+                        // Avoid duplicates
+                        if (!userAnswers[currentQuestionIndex].includes(this.value)) {
+                            userAnswers[currentQuestionIndex].push(this.value);
+                        }
+                    } else {
+                        // Remove unchecked value
+                        userAnswers[currentQuestionIndex] = userAnswers[currentQuestionIndex].filter(id => id !== this.value);
+                    }
+                });
+            });
+
+        } else { // Text Area
+            document.getElementById("textAnswer").addEventListener("input", function () {
+                userAnswers[currentQuestionIndex] = this.value;
+            });
+        }
+    }
+
+    function saveCurrentAnswer() {
+        let question = questions[currentQuestionIndex];
+
+        if (question.QuestionTypeId === 1) { // Radio Button
+            let selected = document.querySelector("input[name='option']:checked");
+            userAnswers[currentQuestionIndex] = selected ? selected.value : null;
+
+        } else if (question.QuestionTypeId === 2) { // Checkboxes - FIXED!
+            let selectedOptions = [];
+            document.querySelectorAll(".form-check-input:checked").forEach(input => {
+                selectedOptions.push(input.value);
+            });
+
+            userAnswers[currentQuestionIndex] = selectedOptions.length ? selectedOptions : [];
+
+        } else { // Text Area
+            let textAnswer = document.getElementById("textAnswer");
+            userAnswers[currentQuestionIndex] = textAnswer ? textAnswer.value : null;
+        }
+    }
+
+    // Ensure answers are saved before navigating questions
+    document.getElementById('nextBtn').addEventListener('click', function () {
+        saveCurrentAnswer();
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', function () {
+        saveCurrentAnswer();
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
+        }
+    });
+
+</script>

@@ -17,13 +17,23 @@ namespace DemoProject.Filters
             if (controller != null && !(controller is AccountController)
                && SessionHelper.UserId == 0)
             {
-                filterContext.Result =
+                var controllerHasAllowAnonymous = controller.GetType()
+            .GetCustomAttributes(typeof(AllowAnonymousAttribute), true)
+            .Any();
+
+                var actionHasAllowAnonymous = filterContext.ActionDescriptor
+                    .GetCustomAttributes(typeof(AllowAnonymousAttribute), true)
+                    .Any();
+                if (!controllerHasAllowAnonymous && !actionHasAllowAnonymous)
+                {
+                    filterContext.Result =
                        new RedirectToRouteResult(
                            new RouteValueDictionary {
                            { "controller", "Account" },
                            { "action", "Login" },
                             { "returnUrl", filterContext.HttpContext.Request.RawUrl }
                        });
+                }
             }
             base.OnActionExecuting(filterContext);
         }

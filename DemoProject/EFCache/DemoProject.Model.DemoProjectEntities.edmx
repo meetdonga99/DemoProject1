@@ -206,6 +206,20 @@
           <Property Name="DeletedOn" Type="DateTime" />
           <Property Name="DeletedBy" Type="Int32" Nullable="false" />
         </EntityType>
+        <EntityType Name="PaperSetLink" customannotation:ClrType="DemoProject.Model.PaperSetLink, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="PaperSetId" Type="Int32" Nullable="false" />
+          <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="ExpiryDate" Type="DateTime" />
+          <Property Name="CreatedAt" Type="DateTime" />
+          <Property Name="CreatedBy" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedAt" Type="DateTime" />
+          <Property Name="UpdatedBy" Type="Int32" Nullable="false" />
+        </EntityType>
         <EntityType Name="PaperSetQuestionMapping" customannotation:ClrType="DemoProject.Model.PaperSetQuestionMapping, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -354,6 +368,7 @@
           <EntitySet Name="QuestionType" EntityType="Self.QuestionType" />
           <EntitySet Name="Subject" EntityType="Self.Subject" />
           <EntitySet Name="PaperSet" EntityType="Self.PaperSet" />
+          <EntitySet Name="PaperSetLink" EntityType="Self.PaperSetLink" />
           <EntitySet Name="PaperSetQuestionMapping" EntityType="Self.PaperSetQuestionMapping" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" />
@@ -597,6 +612,21 @@
                 <ScalarProperty Name="IsDeleted" ColumnName="IsDeleted" />
                 <ScalarProperty Name="DeletedOn" ColumnName="DeletedOn" />
                 <ScalarProperty Name="DeletedBy" ColumnName="DeletedBy" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PaperSetLink">
+            <EntityTypeMapping TypeName="DemoProject.Model.PaperSetLink">
+              <MappingFragment StoreEntitySet="PaperSetLink">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="PaperSetId" ColumnName="PaperSetId" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="ExpiryDate" ColumnName="ExpiryDate" />
+                <ScalarProperty Name="CreatedAt" ColumnName="CreatedAt" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="UpdatedAt" ColumnName="UpdatedAt" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -860,6 +890,20 @@
           <Property Name="DeletedOn" Type="datetime" Nullable="true" />
           <Property Name="DeletedBy" Type="int" Nullable="false" />
         </EntityType>
+        <EntityType Name="PaperSetLink">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="PaperSetId" Type="int" Nullable="false" />
+          <Property Name="Token" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="ExpiryDate" Type="datetime" Nullable="true" />
+          <Property Name="CreatedAt" Type="datetime" Nullable="true" />
+          <Property Name="CreatedBy" Type="int" Nullable="false" />
+          <Property Name="UpdatedAt" Type="datetime" Nullable="true" />
+          <Property Name="UpdatedBy" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="PaperSetQuestionMapping">
           <Key>
             <PropertyRef Name="Id" />
@@ -1006,6 +1050,7 @@
           <EntitySet Name="QuestionType" EntityType="Self.QuestionType" Schema="dbo" Table="QuestionType" />
           <EntitySet Name="Subject" EntityType="Self.Subject" Schema="dbo" Table="Subject" />
           <EntitySet Name="PaperSet" EntityType="Self.PaperSet" Schema="dbo" Table="PaperSet" />
+          <EntitySet Name="PaperSetLink" EntityType="Self.PaperSetLink" Schema="dbo" Table="PaperSetLink" />
           <EntitySet Name="PaperSetQuestionMapping" EntityType="Self.PaperSetQuestionMapping" Schema="dbo" Table="PaperSetQuestionMapping" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" Schema="dbo" Table="webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" Schema="dbo" Table="webpages_OAuthMembership" />

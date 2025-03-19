@@ -68,7 +68,7 @@
             columns.Bound(c => c.DurationInMinutes).Width("7%").Title("Duration In Minutes");
             columns.Bound(c => c.Status).Width("7%").Title("Status")
                             .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=Status#</span>#} else {# #=Status# #}#");
-           
+
             columns.Bound(c => c.IsActive).Width("5%")
                 .HeaderHtmlAttributes(new { @class = "center_text" })
                 .HtmlAttributes(new { @class = "kendogrid_Action center-text" })
@@ -94,6 +94,13 @@
                 .Title("Edit")
                 .Width("5%")
                 .Sortable(false);
+
+            columns.Bound(c => c.Id)
+    .Title("Link")
+    .Width("3%")
+    .ClientTemplate("<a href='javascript:void(0);' onclick='generateOrShowLink(#=Id#)' title='Generate Link'><i class='fa fa-link'></i></a>")
+    .Filterable(false)
+    .Sortable(false);
 
             //columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
             //    .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
@@ -132,57 +139,57 @@
 
 <!-- Delete Confirmation Modal -->
 @*<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <b>Are you sure you want to delete this question?</b>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <b>Are you sure you want to delete this question?</b>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+                </div>
             </div>
         </div>
-    </div>
-</div>*@
+    </div>*@
 
 @*<script>
-    $(document).ready(function () {
-        var grid = $('#gridQuestion').data('kendoGrid');
-        var deleteId = null;
+        $(document).ready(function () {
+            var grid = $('#gridQuestion').data('kendoGrid');
+            var deleteId = null;
 
-        // Open delete confirmation modal
-        $(document).on("click", ".delete-icon", function () {
-            deleteId = $(this).data("id");
-            $("#confirmDeleteModal").modal("show");
+            // Open delete confirmation modal
+            $(document).on("click", ".delete-icon", function () {
+                deleteId = $(this).data("id");
+                $("#confirmDeleteModal").modal("show");
+            });
+
+            // Confirm delete action
+            $("#confirmDeleteBtn").click(function () {
+                if (deleteId) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Question")/' + deleteId,
+                        type: "POST",
+                        success: function () {
+                            $("#confirmDeleteModal").modal("hide");
+                            grid.dataSource.read(); // Refresh grid
+                            grid.refresh();
+                        },
+                        error: function () {
+                            alert("Error occurred while deleting.");
+                        }
+                    });
+                }
+            });
+
+            // Refresh grid on page load
+            grid.dataSource.read();
+            grid.refresh();
         });
-
-        // Confirm delete action
-        $("#confirmDeleteBtn").click(function () {
-            if (deleteId) {
-                $.ajax({
-                    url: '@Url.Action("Delete", "Question")/' + deleteId,
-                    type: "POST",
-                    success: function () {
-                        $("#confirmDeleteModal").modal("hide");
-                        grid.dataSource.read(); // Refresh grid
-                        grid.refresh();
-                    },
-                    error: function () {
-                        alert("Error occurred while deleting.");
-                    }
-                });
-            }
-        });
-
-        // Refresh grid on page load
-        grid.dataSource.read();
-        grid.refresh();
-    });
-</script>*@
+    </script>*@
 
 
 <div class="modal fade" id="viewPaperSetModal" tabindex="-1" role="dialog">
@@ -213,4 +220,58 @@
     });
 }
 
+</script>
+
+
+<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Paper Set Link</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="generatedLink" class="form-control" readonly onclick="this.select();">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="copyLink()">Copy Link</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function generateOrShowLink(paperSetId) {
+    $.ajax({
+        url: '@Url.Action("GenerateOrGetLink", "PaperSet")',
+        type: 'POST',
+        data: { paperSetId: paperSetId },
+        success: function(response) {
+            if (response.success) {
+                $("#generatedLink").val(response.link);
+                $("#linkModal").modal("show");
+            } else {
+                alert("Failed to generate link.");
+            }
+        },
+        error: function() {
+            alert("Error occurred while generating the link.");
+        }
+    });
+}
+
+    function copyLink() {
+        var linkText = document.getElementById("generatedLink");
+        linkText.select();
+        linkText.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            document.execCommand("copy"); // Copy text to clipboard
+            //alert("Link copied to clipboard!");
+        } catch (err) {
+            alert("Failed to copy the link. Please copy it manually.");
+        }
+    }
 </script>

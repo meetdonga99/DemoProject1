@@ -3011,6 +3011,8 @@
     <Content Include="Views\PaperSet\Create.cshtml" />
     <Content Include="Views\PaperSet\_ViewPaperSet.cshtml" />
     <Content Include="Views\Question\_ViewQuestionBody.cshtml" />
+    <Content Include="Views\PaperSet\InvalidLink.cshtml" />
+    <Content Include="Views\PaperSet\ExamView.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
