@@ -231,6 +231,27 @@
           <NavigationProperty Name="PaperSet" Relationship="Self.PaperSetQuestionMapping_PaperSet" FromRole="PaperSetQuestionMapping_PaperSet_Source" ToRole="PaperSetQuestionMapping_PaperSet_Target" />
           <NavigationProperty Name="Question" Relationship="Self.PaperSetQuestionMapping_Question" FromRole="PaperSetQuestionMapping_Question_Source" ToRole="PaperSetQuestionMapping_Question_Target" />
         </EntityType>
+        <EntityType Name="UserExamRecord" customannotation:ClrType="DemoProject.Model.UserExamRecord, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="PaperSetId" Type="Int32" Nullable="false" />
+          <Property Name="UserId" Type="Int32" Nullable="false" />
+          <Property Name="StartTime" Type="DateTime" />
+          <Property Name="EndTime" Type="DateTime" />
+          <Property Name="Score" Type="Int32" Nullable="false" />
+          <Property Name="Percentage" Type="Decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="ExamStatus" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Token" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ExpiryDate" Type="DateTime" />
+          <Property Name="CreatedOn" Type="DateTime" />
+          <Property Name="CreatedBy" Type="Int32" Nullable="false" />
+          <Property Name="UpdatedOn" Type="DateTime" />
+          <Property Name="UpdatedBy" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="PaperSet" Relationship="Self.UserExamRecord_PaperSet" FromRole="UserExamRecord_PaperSet_Source" ToRole="UserExamRecord_PaperSet_Target" />
+          <NavigationProperty Name="User" Relationship="Self.UserExamRecord_User" FromRole="UserExamRecord_User_Source" ToRole="UserExamRecord_User_Target" />
+        </EntityType>
         <EntityType Name="webpages_Membership" customannotation:ClrType="DemoProject.Model.webpages_Membership, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="UserId" />
@@ -355,6 +376,34 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="UserExamRecord_PaperSet">
+          <End Role="UserExamRecord_PaperSet_Source" Type="Self.UserExamRecord" Multiplicity="*" />
+          <End Role="UserExamRecord_PaperSet_Target" Type="Self.PaperSet" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <ReferentialConstraint>
+            <Principal Role="UserExamRecord_PaperSet_Target">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="UserExamRecord_PaperSet_Source">
+              <PropertyRef Name="PaperSetId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="UserExamRecord_User">
+          <End Role="UserExamRecord_User_Source" Type="Self.UserExamRecord" Multiplicity="*" />
+          <End Role="UserExamRecord_User_Target" Type="Self.UserProfile" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <ReferentialConstraint>
+            <Principal Role="UserExamRecord_User_Target">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="UserExamRecord_User_Source">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="DemoProjectEntities" customannotation:UseClrTypes="true">
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" />
@@ -370,6 +419,7 @@
           <EntitySet Name="PaperSet" EntityType="Self.PaperSet" />
           <EntitySet Name="PaperSetLink" EntityType="Self.PaperSetLink" />
           <EntitySet Name="PaperSetQuestionMapping" EntityType="Self.PaperSetQuestionMapping" />
+          <EntitySet Name="UserExamRecord" EntityType="Self.UserExamRecord" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" />
           <EntitySet Name="webpages_Roles" EntityType="Self.webpages_Roles" />
@@ -397,6 +447,14 @@
           <AssociationSet Name="PaperSetQuestionMapping_Question" Association="Self.PaperSetQuestionMapping_Question">
             <End Role="PaperSetQuestionMapping_Question_Source" EntitySet="PaperSetQuestionMapping" />
             <End Role="PaperSetQuestionMapping_Question_Target" EntitySet="Question" />
+          </AssociationSet>
+          <AssociationSet Name="UserExamRecord_PaperSet" Association="Self.UserExamRecord_PaperSet">
+            <End Role="UserExamRecord_PaperSet_Source" EntitySet="UserExamRecord" />
+            <End Role="UserExamRecord_PaperSet_Target" EntitySet="PaperSet" />
+          </AssociationSet>
+          <AssociationSet Name="UserExamRecord_User" Association="Self.UserExamRecord_User">
+            <End Role="UserExamRecord_User_Source" EntitySet="UserExamRecord" />
+            <End Role="UserExamRecord_User_Target" EntitySet="UserProfile" />
           </AssociationSet>
         </EntityContainer>
       </Schema>
@@ -637,6 +695,26 @@
                 <ScalarProperty Name="PaperSetId" ColumnName="PaperSetId" />
                 <ScalarProperty Name="QuestionId" ColumnName="QuestionId" />
                 <ScalarProperty Name="CustomMarks" ColumnName="CustomMarks" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserExamRecord">
+            <EntityTypeMapping TypeName="DemoProject.Model.UserExamRecord">
+              <MappingFragment StoreEntitySet="UserExamRecord">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="PaperSetId" ColumnName="PaperSetId" />
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="StartTime" ColumnName="StartTime" />
+                <ScalarProperty Name="EndTime" ColumnName="EndTime" />
+                <ScalarProperty Name="Score" ColumnName="Score" />
+                <ScalarProperty Name="Percentage" ColumnName="Percentage" />
+                <ScalarProperty Name="ExamStatus" ColumnName="ExamStatus" />
+                <ScalarProperty Name="Token" ColumnName="Token" />
+                <ScalarProperty Name="ExpiryDate" ColumnName="ExpiryDate" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -913,6 +991,25 @@
           <Property Name="QuestionId" Type="int" customannotation:Index="{ Name: IX_QuestionId, Order: 0 }" Nullable="false" />
           <Property Name="CustomMarks" Type="int" Nullable="false" />
         </EntityType>
+        <EntityType Name="UserExamRecord">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="PaperSetId" Type="int" customannotation:Index="{ Name: IX_PaperSetId, Order: 0 }" Nullable="false" />
+          <Property Name="UserId" Type="int" customannotation:Index="{ Name: IX_UserId, Order: 0 }" Nullable="false" />
+          <Property Name="StartTime" Type="datetime" Nullable="true" />
+          <Property Name="EndTime" Type="datetime" Nullable="true" />
+          <Property Name="Score" Type="int" Nullable="false" />
+          <Property Name="Percentage" Type="decimal" Precision="18" Scale="2" Nullable="false" />
+          <Property Name="ExamStatus" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Token" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="ExpiryDate" Type="datetime" Nullable="true" />
+          <Property Name="CreatedOn" Type="datetime" Nullable="true" />
+          <Property Name="CreatedBy" Type="int" Nullable="false" />
+          <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
+          <Property Name="UpdatedBy" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="webpages_Membership">
           <Key>
             <PropertyRef Name="UserId" />
@@ -1037,6 +1134,34 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="UserExamRecord_PaperSet">
+          <End Role="PaperSet" Type="Self.PaperSet" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="UserExamRecord" Type="Self.UserExamRecord" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="PaperSet">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="UserExamRecord">
+              <PropertyRef Name="PaperSetId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="UserExamRecord_User">
+          <End Role="UserProfile" Type="Self.UserProfile" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="UserExamRecord" Type="Self.UserExamRecord" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserProfile">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="UserExamRecord">
+              <PropertyRef Name="UserId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="CodeFirstDatabase">
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" Schema="dbo" Table="ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" Schema="dbo" Table="UserProfile" />
@@ -1052,6 +1177,7 @@
           <EntitySet Name="PaperSet" EntityType="Self.PaperSet" Schema="dbo" Table="PaperSet" />
           <EntitySet Name="PaperSetLink" EntityType="Self.PaperSetLink" Schema="dbo" Table="PaperSetLink" />
           <EntitySet Name="PaperSetQuestionMapping" EntityType="Self.PaperSetQuestionMapping" Schema="dbo" Table="PaperSetQuestionMapping" />
+          <EntitySet Name="UserExamRecord" EntityType="Self.UserExamRecord" Schema="dbo" Table="UserExamRecord" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" Schema="dbo" Table="webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" Schema="dbo" Table="webpages_OAuthMembership" />
           <EntitySet Name="webpages_Roles" EntityType="Self.webpages_Roles" Schema="dbo" Table="webpages_Roles" />
@@ -1079,6 +1205,14 @@
           <AssociationSet Name="PaperSetQuestionMapping_Question" Association="Self.PaperSetQuestionMapping_Question">
             <End Role="Question" EntitySet="Question" />
             <End Role="PaperSetQuestionMapping" EntitySet="PaperSetQuestionMapping" />
+          </AssociationSet>
+          <AssociationSet Name="UserExamRecord_PaperSet" Association="Self.UserExamRecord_PaperSet">
+            <End Role="PaperSet" EntitySet="PaperSet" />
+            <End Role="UserExamRecord" EntitySet="UserExamRecord" />
+          </AssociationSet>
+          <AssociationSet Name="UserExamRecord_User" Association="Self.UserExamRecord_User">
+            <End Role="UserProfile" EntitySet="UserProfile" />
+            <End Role="UserExamRecord" EntitySet="UserExamRecord" />
           </AssociationSet>
         </EntityContainer>
       </Schema>

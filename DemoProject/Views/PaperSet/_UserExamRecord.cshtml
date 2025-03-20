@@ -1,0 +1,129 @@
+﻿@model DemoProject.Models.UserExamRecordViewModel
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div>
+    <form id="userExamForm">
+        <input type="hidden" id="paperSetId" name="PaperSetId" value="@Model.PaperSetId" />
+
+        <div class="form-group" id="emailContainer">
+            <label>Email</label>
+            <div class="email-group">
+                <div class="input-group mb-2">
+                    <input type="email" name="UserEmails" class="form-control email-input" required />
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger remove-email" style="display: none;"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="addMoreContainer" class="mt-2">
+            <button type="button" class="btn btn-secondary" onclick="addEmailField()">Add More</button>
+        </div>
+        <button type="button" class="btn btn-primary mt-3" onclick="submitUserExam()">Submit</button>
+
+    </form>
+</div>
+
+<style>
+    #emailContainer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .email-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .input-group-append {
+        margin-left: 10px;
+    }
+
+    .remove-email {
+        display: block;
+    }
+</style>
+
+<script>
+    function addEmailField() {
+        let emailContainer = document.getElementById("emailContainer");
+        let emailGroup = emailContainer.querySelector('.email-group');
+
+        let newEmailGroup = document.createElement("div");
+        newEmailGroup.classList.add("input-group", "mb-2");
+
+        let emailInput = document.createElement("input");
+        emailInput.type = "email";
+        emailInput.name = "UserEmails";
+        emailInput.classList.add("form-control", "email-input");
+        emailInput.required = true;
+
+        let inputGroupAppend = document.createElement("div");
+        inputGroupAppend.classList.add("input-group-append");
+
+        let removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.classList.add("btn", "btn-danger", "remove-email");
+        removeButton.innerHTML = '<i class="fas fa-trash"></i>';
+        removeButton.onclick = function () {
+            emailGroup.removeChild(newEmailGroup);
+            if (emailGroup.children.length === 0) {
+                document.getElementById("addMoreContainer").before(emailGroup);
+            }
+        };
+
+        inputGroupAppend.appendChild(removeButton);
+        newEmailGroup.appendChild(emailInput);
+        newEmailGroup.appendChild(inputGroupAppend);
+        emailGroup.appendChild(newEmailGroup);
+
+        // Move "Add More" button below the last input field
+        emailContainer.appendChild(document.getElementById("addMoreContainer"));
+
+        document.querySelectorAll(".remove-email").forEach(btn => btn.style.display = "block");
+    }
+
+
+    function submitUserExam() {
+        let emails = [];
+        document.querySelectorAll(".email-input").forEach(input => {
+            if (input.value.trim() !== "") {
+                emails.push(input.value.trim());
+            }
+        });
+
+        if (emails.length === 0) {
+            alert("Please enter at least one email.");
+            return;
+        }
+
+        $.ajax({
+            url: '/PaperSet/SubmitUserExam',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ PaperSetId: $("#paperSetId").val(), UserEmails: emails }),
+            success: function (response) {
+                if (response.success) {
+                    let message = "Exam records created:\n";
+                    response.records.forEach(record => {
+                        message += `Email: ${record.email} | Token: ${record.token}\n`;
+                    });
+                    alert(message);
+                    $("#userExamModal").modal("hide");
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function () {
+                alert("Error submitting data.");
+            }
+        });
+    }
+</script>

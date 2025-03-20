@@ -20,6 +20,12 @@ namespace DemoProject.Data
         {
             return _db.UserProfile.Where(a => a.UserId == UserId).FirstOrDefault();
         }
+
+        public UserProfile GetUserByEmail(string email)
+        {
+            return _db.UserProfile.Where(a => a.Email == email).FirstOrDefault();
+        }
+
         public UserProfile GetUserByEmailId(string emailId)
         {
             return _db.UserProfile.Where(a => a.Email == emailId && a.IsActive && !a.IsDeleted).FirstOrDefault();

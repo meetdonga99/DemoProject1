@@ -37,9 +37,7 @@ namespace DemoProject.Model
         public DbSet<PaperSet> PaperSet { get; set; }
         public DbSet<PaperSetQuestionMapping> PaperSetQuestionMapping { get; set; }
         public DbSet<PaperSetLink> PaperSetLink { get; set; }
-
-
-
+        public DbSet<UserExamRecord> UserExamRecord { get; set; }
 
     }
 }

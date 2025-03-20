@@ -9,9 +9,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Web.Security;
 using System.Web;
 using System.Web.ApplicationServices;
 using System.Web.Mvc;
+using WebMatrix.WebData;
 
 namespace DemoProject.Controllers
 {
@@ -26,6 +28,8 @@ namespace DemoProject.Controllers
         private readonly CommonLookupService _lookupService;
         private readonly OptionService _optionService;
         private readonly PaperSetLinkService _paperSetLinkService;
+        private readonly UserProfileService _userProfileService;
+        private readonly UserExamRecordService _userExamRecordService;
 
 
 
@@ -39,6 +43,8 @@ namespace DemoProject.Controllers
             _lookupService = new CommonLookupService();
             _optionService = new OptionService();
             _paperSetLinkService = new PaperSetLinkService();
+            _userProfileService = new UserProfileService();
+            _userExamRecordService = new UserExamRecordService();
         }
         public ActionResult Index()
         {
@@ -314,45 +320,133 @@ namespace DemoProject.Controllers
             return PartialView("_ViewPaperSet", model);
         }
 
-
-        public ActionResult GenerateOrGetLink(int paperSetId)
+        public ActionResult GetUserExamRecord(int paperSetId)
         {
-            var userId = SessionHelper.UserId;
-            var existingLink = _paperSetLinkService.GetPaperSetLinkByPaperSetId(paperSetId);
-            var currentTime = DateTime.UtcNow;
-            if (existingLink == null || (existingLink.ExpiryDate.HasValue && existingLink.ExpiryDate <= currentTime))
-            {
-                var newToken = Guid.NewGuid().ToString();
-
-                if (existingLink == null)
-                {
-                    existingLink = new PaperSetLink
-                    {
-                        PaperSetId = paperSetId,
-                        Token = newToken,
-                        IsActive = true,
-                        ExpiryDate = currentTime.AddDays(30),
-                        CreatedAt = currentTime,
-                        CreatedBy = userId
-                    };
-
-                    _paperSetLinkService.CreatePaperSetLink(existingLink);
-                }
-                else
-                {
-                    existingLink.Token = newToken;
-                    existingLink.ExpiryDate = currentTime.AddDays(30);
-                    existingLink.IsActive = true;
-                    existingLink.UpdatedAt = currentTime;
-                    existingLink.UpdatedBy = userId;
-
-                    _paperSetLinkService.UpdatePaperSetLink(existingLink);
-                }
-
-            }
-            var linkUrl = Url.Action("ViewByToken", "PaperSet", new { token = existingLink.Token }, Request.Url.Scheme);
-            return Json(new { success = true, link = linkUrl }, JsonRequestBehavior.AllowGet);
+            var model = new UserExamRecordViewModel { PaperSetId = paperSetId };
+            return PartialView("_UserExamRecord", model);
         }
+
+        [HttpPost]
+        public JsonResult SubmitUserExam(UserExamRecordViewModel model)
+        {
+            if (model.UserEmails == null || !model.UserEmails.Any())
+            {
+                return Json(new { success = false, message = "At least one email is required." });
+            }
+            var userId = SessionHelper.UserId;
+            List<object> examRecords = new List<object>();
+
+            foreach (var email in model.UserEmails)
+            {
+                var existingUser = _userProfileService.GetUserByEmailId(email);
+
+                if (existingUser == null)
+                {
+                    string defaultPassword = "CANDIDATE@123";
+                    WebSecurity.CreateUserAndAccount(email, defaultPassword, propertyValues: new
+                    {
+                        Email = email,
+                        IsActive = 1,
+                        IsDeleted = 0,
+                        CreatedOn = DateTime.UtcNow,
+                        CreatedBy = userId,
+                        UpdatedOn = DateTime.UtcNow,
+                        UpdatedBy = userId
+                    });
+                    Roles.AddUserToRole(email, "CANDIDATE");
+                    existingUser = _userProfileService.GetUserByEmailId(email);
+                }
+
+                // Encrypt userId and PaperSetId into a secure token
+                string tokenData = $"{existingUser.UserId}|{model.PaperSetId}";
+                string encryptedToken = EncryptionHelper.Encrypt(tokenData);
+
+                var examRecord = new UserExamRecord
+                {
+                    UserId = existingUser.UserId,
+                    PaperSetId = model.PaperSetId,
+                    Token = encryptedToken,
+                    ExamStatus = Constants.ExamStatus.PENDING,
+                    ExpiryDate = DateTime.UtcNow.AddDays(30),
+                    CreatedOn = DateTime.UtcNow,
+                    CreatedBy = userId,
+                };
+
+                // Save to database
+                _userExamRecordService.CreateUserExamRecord(examRecord);
+
+                examRecords.Add(new { email, token = encryptedToken });
+            }
+
+
+            //var existingUser = _userProfileService.GetUserByEmailId(model.UserEmail);
+            //if (existingUser == null)
+            //{
+            //    WebSecurity.CreateUserAndAccount(model.UserName,"CANDIDATE@123", propertyValues: new { Email = model.UserEmail, IsActive = 1, IsDeleted = 0, CreatedOn = DateTime.UtcNow, CreatedBy = userId, UpdatedOn = DateTime.UtcNow, UpdatedBy = userId });
+            //    Roles.AddUserToRole(model.UserName, "CANDIDATE");
+            //    existingUser = _userProfileService.GetUserByEmailId(model.UserEmail);
+            //}
+
+            //string tokenData = $"{existingUser.UserId}|{model.PaperSetId}";
+            //string encryptedToken = EncryptionHelper.Encrypt(tokenData);
+
+            //var examRecord = new UserExamRecord
+            //{
+            //    UserId = existingUser.UserId,
+            //    PaperSetId = model.PaperSetId,
+            //    Token = encryptedToken,
+            //    ExamStatus = Constants.ExamStatus.PENDING,
+            //    ExpiryDate = DateTime.UtcNow.AddDays(30),
+            //    CreatedOn = DateTime.UtcNow,
+            //    CreatedBy = userId,
+            //};
+
+            //_userExamRecordService.CreateUserExamRecord(examRecord);
+
+
+            return Json(new { success = true, records = examRecords });
+        }
+
+
+
+        //public ActionResult GenerateOrGetLink(int paperSetId)
+        //{
+        //    var userId = SessionHelper.UserId;
+        //    var existingLink = _paperSetLinkService.GetPaperSetLinkByPaperSetId(paperSetId);
+        //    var currentTime = DateTime.UtcNow;
+        //    if (existingLink == null || (existingLink.ExpiryDate.HasValue && existingLink.ExpiryDate <= currentTime))
+        //    {
+        //        var newToken = Guid.NewGuid().ToString();
+
+        //        if (existingLink == null)
+        //        {
+        //            existingLink = new PaperSetLink
+        //            {
+        //                PaperSetId = paperSetId,
+        //                Token = newToken,
+        //                IsActive = true,
+        //                ExpiryDate = currentTime.AddDays(30),
+        //                CreatedAt = currentTime,
+        //                CreatedBy = userId
+        //            };
+
+        //            _paperSetLinkService.CreatePaperSetLink(existingLink);
+        //        }
+        //        else
+        //        {
+        //            existingLink.Token = newToken;
+        //            existingLink.ExpiryDate = currentTime.AddDays(30);
+        //            existingLink.IsActive = true;
+        //            existingLink.UpdatedAt = currentTime;
+        //            existingLink.UpdatedBy = userId;
+
+        //            _paperSetLinkService.UpdatePaperSetLink(existingLink);
+        //        }
+
+        //    }
+        //    var linkUrl = Url.Action("ViewByToken", "PaperSet", new { token = existingLink.Token }, Request.Url.Scheme);
+        //    return Json(new { success = true, link = linkUrl }, JsonRequestBehavior.AllowGet);
+        //}
 
         [AllowAnonymous]
         public ActionResult ViewByToken(string token)

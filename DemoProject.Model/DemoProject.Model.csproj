@@ -60,6 +60,7 @@
     <Compile Include="DemoProjectContextConfiguration.cs" />
     <Compile Include="DemoProjectEntities.cs" />
     <Compile Include="ErrorLog.cs" />
+    <Compile Include="UserExamRecord.cs" />
     <Compile Include="FormRoleMapping.cs" />
     <Compile Include="Forms.cs" />
     <Compile Include="MenuVW.cs" />

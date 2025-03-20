@@ -2237,6 +2237,7 @@
     <Compile Include="Controllers\QuestionTypeController.cs" />
     <Compile Include="Controllers\RolesController.cs" />
     <Compile Include="Controllers\SubjectController.cs" />
+    <Compile Include="Controllers\UserExamRecordController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="Filters\ActivityLogFilter.cs" />
     <Compile Include="Filters\AuthenticationFilter.cs" />
@@ -2257,6 +2258,7 @@
     <Compile Include="Models\QuestionTypeModel.cs" />
     <Compile Include="Models\RolesModel.cs" />
     <Compile Include="Models\SubjectModel.cs" />
+    <Compile Include="Models\UserExamRecordViewModel.cs" />
     <Compile Include="Models\UserProfileModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -3013,6 +3015,8 @@
     <Content Include="Views\Question\_ViewQuestionBody.cshtml" />
     <Content Include="Views\PaperSet\InvalidLink.cshtml" />
     <Content Include="Views\PaperSet\ExamView.cshtml" />
+    <Content Include="Views\PaperSet\_UserExamRecord.cshtml" />
+    <Content Include="Views\UserExamRecord\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

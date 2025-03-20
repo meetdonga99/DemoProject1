@@ -127,5 +127,13 @@ namespace DemoProject.Helper
             public const string DRAFT = "DRAFT";
             public const string COMPLETED = "COMPLETED";
         }
+
+        public static class ExamStatus
+        {
+            public const string PENDING = "PENDING";
+            public const string INPROGRESS = "INPROGRESS";
+            public const string COMPLETED = "COMPLETED";
+            public const string EXPIRED = "EXPIRED";
+        }
     }
 }

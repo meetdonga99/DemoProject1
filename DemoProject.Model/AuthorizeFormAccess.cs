@@ -16,7 +16,7 @@ namespace DemoProject.Model
             QUESTIONTYPE = 4,
             QUESTION = 5,
             PAPERSET = 6,
-            //CXREP = 6,
+            USEREXAMRECORD = 7,
 
             //LANGUAGE = 8,
             //COUNTRY = 9,
