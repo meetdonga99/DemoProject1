@@ -357,6 +357,9 @@ namespace DemoProject.Controllers
                     existingUser = _userProfileService.GetUserByEmailId(email);
                 }
 
+                var existingRecord = _userExamRecordService.GetRecordByPaperSetIdAndUserId(model.PaperSetId, existingUser.UserId);
+
+
                 // Encrypt userId and PaperSetId into a secure token
                 string tokenData = $"{existingUser.UserId}|{model.PaperSetId}";
                 string encryptedToken = EncryptionHelper.Encrypt(tokenData);

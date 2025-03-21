@@ -98,7 +98,7 @@
             columns.Bound(c => c.Id)
     .Title("Actions")
     .Width("5%")
-    .ClientTemplate("#if(Status == 'COMPLETED'){#<a href='javascript:void(0);' onclick='openUserExamModal(#=Id#)' title='View Details'><i class='fa fa-link'></i></a>#} else {# &#160; #}#")
+    .ClientTemplate("#if(Status == 'COMPLETED'){#<a href='javascript:void(0);' onclick='openUserExamModal(#=Id#)' title='Generate Tokens'><i class='fa fa-link'></i></a>#} else {# &#160; #}#")
     .Filterable(false)
     .Sortable(false);
 

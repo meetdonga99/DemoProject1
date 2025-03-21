@@ -40,5 +40,13 @@ namespace DemoProject.Controllers
             var data = _userExamRecordService.GetAllUserExamRecordGrid();
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
+
+
+        public ActionResult GenerateLinkByToken(string token)
+        {
+            // Assuming the token is used to generate a unique URL for each record
+            var link = Url.Action("ViewByLink", "UserExamRecord", new { token = token }, protocol: Request.Url.Scheme);
+            return Json(new { link = link }, JsonRequestBehavior.AllowGet);
+        }
     }
 }

@@ -48,11 +48,18 @@ namespace DemoProject.Data
                     select new UserExamRecordGridModel()
                     {
                         Id = userExamRecord.Id,
+                        Token = userExamRecord.Token,
                         PaperSetName = userExamRecord.PaperSet.PaperSetName,
                         UserEmail = userExamRecord.User.Email,
                         ExamStatus = userExamRecord.ExamStatus,
                         ExpiryDate = userExamRecord.ExpiryDate
                     }).AsQueryable();
+        }
+
+        public UserExamRecord GetRecordByPaperSetIdAndUserId(int paperSetId, int userId)
+        {
+            var record = (from a in _db.UserExamRecord where a.PaperSetId == paperSetId && a.UserId == userId select a).FirstOrDefault();
+            return record;
         }
     }
 }

@@ -36,6 +36,7 @@ namespace DemoProject.Model
     public class UserExamRecordGridModel
     {
         public int Id { get; set; }
+        public string Token { get; set; }
         public string PaperSetName { get; set; }
         public string UserEmail { get; set; }
         public string ExamStatus { get; set; }

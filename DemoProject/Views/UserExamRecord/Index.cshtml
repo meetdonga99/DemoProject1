@@ -21,7 +21,6 @@
 }
 @Html.Hidden("hdnFormAccessCode", formCode)
 <div class="coman_content">
-    <!--This is Title div -->
     <div class="subheader">
         <div class="left_title">
             <h2>@ViewBag.Title</h2>
@@ -34,7 +33,6 @@
             </div>
         </div>
     </div>
-    <!--END Title div-->
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
         @(Html.Kendo().Grid<DemoProject.Model.UserExamRecordGridModel>()
@@ -47,6 +45,12 @@
               columns.Bound(c => c.UserEmail).Title("User Email");
               columns.Bound(c => c.ExamStatus).Title("Exam Status");
               columns.Bound(c => c.ExpiryDate).Title("Expiry Date");
+
+              columns.Bound(c => c.Token).Title("Actions").Width("5%").ClientTemplate(
+    "<a href='javascript:void(0);' onclick='copyLink(\"#= Token #\")' class='btn btn-link'>" +
+    "<i class='fa fa-link'></i></a>"
+);
+
 
           })
           .Events(evt => evt
@@ -72,11 +76,55 @@
           ))
     </div>
 </div>
+
+
+<div class="modal fade" id="copyLinkModal" tabindex="-1" role="dialog" aria-labelledby="copyLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="copyLinkModalLabel">Copy Link</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button> 
+            </div>
+            <div class="modal-body">
+                <input type="text" id="linkToCopy" class="form-control" readonly />
+                <button class="btn btn-primary mt-2" onclick="copyToClipboard()">Copy Link</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <script>
     $(document).ready(function () {
         $('#gridQuestionTypes').data('kendoGrid').dataSource.read();
         $('#gridQuestionTypes').data('kendoGrid').refresh();
     });
+
+
+    function copyLink(token) {
+        $.ajax({
+            url: '/UserExamRecord/GenerateLinkByToken', 
+            type: 'GET',
+            data: { token: token },
+            success: function (response) {
+                $('#linkToCopy').val(response.link);
+                $('#copyLinkModal').modal('show');
+            }
+        });
+    }
+
+    function copyToClipboard() {
+        var copyText = document.getElementById("linkToCopy");
+
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+        document.execCommand("copy");
+
+        alert("Link copied to clipboard!");
+    }
 
 </script>
 

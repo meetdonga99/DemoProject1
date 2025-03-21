@@ -30,5 +30,10 @@ namespace DemoProject.Service
         {
             return _userExamRecordProvider.GetAllUserExamRecordGrid();
         }
+
+        public UserExamRecord GetRecordByPaperSetIdAndUserId(int paperSetId, int userId)
+        {
+            return _userExamRecordProvider.GetRecordByPaperSetIdAndUserId(paperSetId, userId);
+        }
     }
 }
