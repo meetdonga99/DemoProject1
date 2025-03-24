@@ -231,6 +231,16 @@
           <NavigationProperty Name="PaperSet" Relationship="Self.PaperSetQuestionMapping_PaperSet" FromRole="PaperSetQuestionMapping_PaperSet_Source" ToRole="PaperSetQuestionMapping_PaperSet_Target" />
           <NavigationProperty Name="Question" Relationship="Self.PaperSetQuestionMapping_Question" FromRole="PaperSetQuestionMapping_Question_Source" ToRole="PaperSetQuestionMapping_Question_Target" />
         </EntityType>
+        <EntityType Name="UserExamAnswer" customannotation:ClrType="DemoProject.Model.UserExamAnswer, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="UserExamRecordId" Type="Int32" Nullable="false" />
+          <Property Name="QuestionId" Type="Int32" Nullable="false" />
+          <Property Name="SelectedOptions" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="DescriptiveAnswer" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
         <EntityType Name="UserExamRecord" customannotation:ClrType="DemoProject.Model.UserExamRecord, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -419,6 +429,7 @@
           <EntitySet Name="PaperSet" EntityType="Self.PaperSet" />
           <EntitySet Name="PaperSetLink" EntityType="Self.PaperSetLink" />
           <EntitySet Name="PaperSetQuestionMapping" EntityType="Self.PaperSetQuestionMapping" />
+          <EntitySet Name="UserExamAnswer" EntityType="Self.UserExamAnswer" />
           <EntitySet Name="UserExamRecord" EntityType="Self.UserExamRecord" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" />
@@ -695,6 +706,17 @@
                 <ScalarProperty Name="PaperSetId" ColumnName="PaperSetId" />
                 <ScalarProperty Name="QuestionId" ColumnName="QuestionId" />
                 <ScalarProperty Name="CustomMarks" ColumnName="CustomMarks" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserExamAnswer">
+            <EntityTypeMapping TypeName="DemoProject.Model.UserExamAnswer">
+              <MappingFragment StoreEntitySet="UserExamAnswer">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="UserExamRecordId" ColumnName="UserExamRecordId" />
+                <ScalarProperty Name="QuestionId" ColumnName="QuestionId" />
+                <ScalarProperty Name="SelectedOptions" ColumnName="SelectedOptions" />
+                <ScalarProperty Name="DescriptiveAnswer" ColumnName="DescriptiveAnswer" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -991,6 +1013,16 @@
           <Property Name="QuestionId" Type="int" customannotation:Index="{ Name: IX_QuestionId, Order: 0 }" Nullable="false" />
           <Property Name="CustomMarks" Type="int" Nullable="false" />
         </EntityType>
+        <EntityType Name="UserExamAnswer">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="UserExamRecordId" Type="int" Nullable="false" />
+          <Property Name="QuestionId" Type="int" Nullable="false" />
+          <Property Name="SelectedOptions" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="DescriptiveAnswer" Type="nvarchar(max)" Nullable="true" />
+        </EntityType>
         <EntityType Name="UserExamRecord">
           <Key>
             <PropertyRef Name="Id" />
@@ -1177,6 +1209,7 @@
           <EntitySet Name="PaperSet" EntityType="Self.PaperSet" Schema="dbo" Table="PaperSet" />
           <EntitySet Name="PaperSetLink" EntityType="Self.PaperSetLink" Schema="dbo" Table="PaperSetLink" />
           <EntitySet Name="PaperSetQuestionMapping" EntityType="Self.PaperSetQuestionMapping" Schema="dbo" Table="PaperSetQuestionMapping" />
+          <EntitySet Name="UserExamAnswer" EntityType="Self.UserExamAnswer" Schema="dbo" Table="UserExamAnswer" />
           <EntitySet Name="UserExamRecord" EntityType="Self.UserExamRecord" Schema="dbo" Table="UserExamRecord" />
           <EntitySet Name="webpages_Membership" EntityType="Self.webpages_Membership" Schema="dbo" Table="webpages_Membership" />
           <EntitySet Name="webpages_OAuthMembership" EntityType="Self.webpages_OAuthMembership" Schema="dbo" Table="webpages_OAuthMembership" />

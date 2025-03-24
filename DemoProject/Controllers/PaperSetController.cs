@@ -358,54 +358,33 @@ namespace DemoProject.Controllers
                 }
 
                 var existingRecord = _userExamRecordService.GetRecordByPaperSetIdAndUserId(model.PaperSetId, existingUser.UserId);
-
-
-                // Encrypt userId and PaperSetId into a secure token
-                string tokenData = $"{existingUser.UserId}|{model.PaperSetId}";
-                string encryptedToken = EncryptionHelper.Encrypt(tokenData);
-
-                var examRecord = new UserExamRecord
+                if(existingRecord != null && existingRecord.ExpiryDate < DateTime.UtcNow)
                 {
-                    UserId = existingUser.UserId,
-                    PaperSetId = model.PaperSetId,
-                    Token = encryptedToken,
-                    ExamStatus = Constants.ExamStatus.PENDING,
-                    ExpiryDate = DateTime.UtcNow.AddDays(30),
-                    CreatedOn = DateTime.UtcNow,
-                    CreatedBy = userId,
-                };
+                    existingRecord.ExpiryDate = DateTime.UtcNow.AddDays(30);
+                    existingRecord.UpdatedOn = DateTime.UtcNow;
+                    existingRecord.UpdatedBy = userId;
+                    _userExamRecordService.UpdateUserExamRecord(existingRecord);
+                }
+                else if(existingRecord == null){
+                    string tokenData = $"{existingUser.UserId}|{model.PaperSetId}";
+                    string encryptedToken = EncryptionHelper.Encrypt(tokenData);
 
-                // Save to database
-                _userExamRecordService.CreateUserExamRecord(examRecord);
+                    var examRecord = new UserExamRecord
+                    {
+                        UserId = existingUser.UserId,
+                        PaperSetId = model.PaperSetId,
+                        Token = encryptedToken,
+                        ExamStatus = Constants.ExamStatus.PENDING,
+                        ExpiryDate = DateTime.UtcNow.AddDays(30),
+                        CreatedOn = DateTime.UtcNow,
+                        CreatedBy = userId,
+                    };
+                    _userExamRecordService.CreateUserExamRecord(examRecord);
 
-                examRecords.Add(new { email, token = encryptedToken });
+                    examRecords.Add(new { email, token = encryptedToken });
+                }
+                
             }
-
-
-            //var existingUser = _userProfileService.GetUserByEmailId(model.UserEmail);
-            //if (existingUser == null)
-            //{
-            //    WebSecurity.CreateUserAndAccount(model.UserName,"CANDIDATE@123", propertyValues: new { Email = model.UserEmail, IsActive = 1, IsDeleted = 0, CreatedOn = DateTime.UtcNow, CreatedBy = userId, UpdatedOn = DateTime.UtcNow, UpdatedBy = userId });
-            //    Roles.AddUserToRole(model.UserName, "CANDIDATE");
-            //    existingUser = _userProfileService.GetUserByEmailId(model.UserEmail);
-            //}
-
-            //string tokenData = $"{existingUser.UserId}|{model.PaperSetId}";
-            //string encryptedToken = EncryptionHelper.Encrypt(tokenData);
-
-            //var examRecord = new UserExamRecord
-            //{
-            //    UserId = existingUser.UserId,
-            //    PaperSetId = model.PaperSetId,
-            //    Token = encryptedToken,
-            //    ExamStatus = Constants.ExamStatus.PENDING,
-            //    ExpiryDate = DateTime.UtcNow.AddDays(30),
-            //    CreatedOn = DateTime.UtcNow,
-            //    CreatedBy = userId,
-            //};
-
-            //_userExamRecordService.CreateUserExamRecord(examRecord);
-
 
             return Json(new { success = true, records = examRecords });
         }

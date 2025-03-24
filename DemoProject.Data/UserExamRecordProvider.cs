@@ -61,6 +61,12 @@ namespace DemoProject.Data
             var record = (from a in _db.UserExamRecord where a.PaperSetId == paperSetId && a.UserId == userId select a).FirstOrDefault();
             return record;
         }
+
+        public UserExamRecord GetRecordByToken(string token)
+        {
+            var record = (from a in _db.UserExamRecord where a.Token == token select a).FirstOrDefault();
+            return record;
+        }
     }
 }
 

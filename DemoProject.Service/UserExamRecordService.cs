@@ -35,5 +35,11 @@ namespace DemoProject.Service
         {
             return _userExamRecordProvider.GetRecordByPaperSetIdAndUserId(paperSetId, userId);
         }
+
+        public UserExamRecord GetRecordByToken(string token)
+        {
+            return _userExamRecordProvider.GetRecordByToken(token);
+        }
+
     }
 }
