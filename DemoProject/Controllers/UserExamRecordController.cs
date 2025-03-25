@@ -106,6 +106,7 @@ namespace DemoProject.Controllers
             return View("ExamView", model);
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public JsonResult StartExam(UserExamViewModel model)
         {
@@ -143,6 +144,8 @@ namespace DemoProject.Controllers
             }
         }
 
+
+        [AllowAnonymous]
         [HttpPost]
         public JsonResult SaveAnswer(UserExamViewModel model)
         {
@@ -170,7 +173,6 @@ namespace DemoProject.Controllers
                     }
                 }
 
-
                 model.Answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId).Select(a => new SaveAnswerModel
                 {
                     UserExamRecordId = a.UserExamRecordId,
@@ -187,6 +189,7 @@ namespace DemoProject.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public ActionResult FinishExam(UserExamViewModel model)
         {
@@ -205,13 +208,22 @@ namespace DemoProject.Controllers
                 record.EndTime = DateTime.UtcNow;
                 record.ExamStatus = Constants.ExamStatus.COMPLETED;
                 _userExamRecordService.UpdateUserExamRecord(record);
-                return Json(new { success = true, message = "Exam finished successfully." });
+
+                return Json(new { success = true, redirectUrl = Url.Action("SubmissionSuccess", "UserExamRecord", new { examId = record.Id }) });
+                //return Json(new { success = true, message = "Exam finished successfully." });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Error finishing exam: " + ex.Message });
             }
 
+        }
+
+        [AllowAnonymous]
+        public ActionResult SubmissionSuccess(int examId)
+        {
+            ViewBag.ExamId = examId;
+            return View();
         }
 
 

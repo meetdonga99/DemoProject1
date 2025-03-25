@@ -13,45 +13,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Exam View</title>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .disabled-email {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            border: 1px solid #ced4da;
+            cursor: not-allowed;
+        }
+
+    </style>
 </head>
 <body>
 
     <!-- Bootstrap Modal for User Details -->
     <div id="userDetailsModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">User Details</h5>
+        <div class="modal-dialog modal-lg">
+            <!-- Increased size -->
+            <div class="modal-content shadow-lg border-0 rounded-3">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Start Your Exam</h5>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <div class="row">
                         <!-- Left: User Details -->
                         <div class="col-md-6">
-                            <label>Email</label>
-                            <input type="email" class="form-control" value="@Model.Email" readonly>
-                            <label>Name</label>
-                            <input type="text" class="form-control" id="name" value="@Model.Name">
-                            <label>Username</label>
+                            <label class="fw-bold">Email</label>
+                            <input type="email" class="form-control disabled-email mb-3" value="@Model.Email" readonly>
+
+                            <label class="fw-bold">Name</label>
+                            <input type="text" class="form-control mb-3" id="name" value="@Model.Name">
+
+                            <label class="fw-bold">Username</label>
                             <input type="text" class="form-control" id="username" value="@Model.UserName">
                         </div>
+
+                        <!-- Right: Paper Set Details -->
                         <!-- Right: Paper Set Details -->
                         <div class="col-md-6">
-                            <h6>Paper Set: @Model.PaperSetName</h6>
-                            <h6>Total Marks: @Model.TotalMarks</h6>
-                            <h6>Duration: @Model.DurationInMinutes mins</h6>
+                            <div class="card shadow-sm border-0 rounded-3 bg-light p-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold text-primary mb-3">
+                                        <i class="fas fa-file-alt me-2"></i> Paper Set Details
+                                    </h6>
+                                    <p><i class="fas fa-book me-2 text-dark"></i> <strong>Paper Set:</strong> @Model.PaperSetName</p>
+                                    <p><i class="fas fa-star me-2 text-warning"></i> <strong>Total Marks:</strong> @Model.TotalMarks</p>
+                                    <p><i class="fas fa-clock me-2 text-danger"></i> <strong>Duration:</strong> @Model.DurationInMinutes mins</p>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="startExamBtn">Submit & Start Test</button>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-primary px-4" id="startExamBtn">Submit & Start Test</button>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Exam Layout -->
     <div id="examContainer" style="display: none;">
@@ -88,7 +110,8 @@
             userExamRecordId: userExamModel.UserExamRecordId,
             name: $('#name').val(),
             username: $('#username').val(),
-            paperSetId: userExamModel.PaperSetId
+            paperSetId: userExamModel.PaperSetId,
+            userId: userExamModel.UserId
         };
 
         $.post('/UserExamRecord/StartExam', userData, function (response) {
@@ -156,18 +179,21 @@
         }
     });
 
-    $('#finishExam').click(function () {
-        saveAnswer(function () {
-            $.post('/UserExamRecord/FinishExam', userExamModel, function (response) {
-                if (response.success) {
-                    alert('Exam finished successfully.');
-                    window.location.href = '/Exam/Results/' + userExamModel.UserExamRecordId;
-                } else {
-                    alert('Error finishing the exam. Please try again.');
-                }
+        $('#finishExam').click(function () {
+            saveAnswer(function () {
+                $.post('/UserExamRecord/FinishExam', userExamModel, function (response) {
+                    if (response.success) {
+                        window.location.href = response.redirectUrl; // Redirect to the success page
+                    } else {
+                        alert(response.message || 'Error finishing the exam. Please try again.');
+                    }
+                }).fail(function () {
+                    alert('Something went wrong. Please try again.');
+                });
             });
         });
-    });
+
+
 
     function saveAnswer(callback) {
         let q = questions[currentIndex];
@@ -213,8 +239,6 @@
         }, 1000);
     }
     </script>
-
-
 
 </body>
 </html>
