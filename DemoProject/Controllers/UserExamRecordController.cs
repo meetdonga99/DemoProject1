@@ -78,6 +78,11 @@ namespace DemoProject.Controllers
 
             UserExamViewModel model = new UserExamViewModel();
             model.UserExamRecordId = record.Id;
+            model.ExamStatus = record.ExamStatus;
+            model.StartTime = record.StartTime;
+            model.EndTime = record.EndTime;
+
+
             model.UserId = record.UserId;
             model.UserName = getUser.UserName;
             model.Name = getUser.Name;
@@ -103,6 +108,13 @@ namespace DemoProject.Controllers
                                    options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
                                }
                                ).ToList();
+            model.Answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId).Select(a => new SaveAnswerModel
+            {
+                UserExamRecordId = a.UserExamRecordId,
+                QuestionId = a.QuestionId,
+                SelectedOptions = a.SelectedOptions.Split(',').Where(s => !string.IsNullOrEmpty(s)).Select(int.Parse).ToList(),
+                DescriptiveAnswer = a.DescriptiveAnswer,
+            }).ToList();
             return View("ExamView", model);
         }
 
@@ -130,7 +142,7 @@ namespace DemoProject.Controllers
                 var existingRecord = _userExamRecordService.GetRecordByPaperSetIdAndUserId(model.PaperSetId, model.UserId);
                 if (existingRecord != null)
                 {
-                    existingRecord.StartTime = DateTime.UtcNow;
+                    existingRecord.StartTime = DateTime.Now;
                     existingRecord.ExamStatus = Constants.ExamStatus.INPROGRESS;
                     _userExamRecordService.UpdateUserExamRecord(existingRecord);
                 }
@@ -205,7 +217,7 @@ namespace DemoProject.Controllers
                 {
                     return Json(new { success = false, message = "Exam record not found." });
                 }
-                record.EndTime = DateTime.UtcNow;
+                record.EndTime = DateTime.Now;
                 record.ExamStatus = Constants.ExamStatus.COMPLETED;
                 _userExamRecordService.UpdateUserExamRecord(record);
 

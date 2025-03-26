@@ -8,6 +8,9 @@ namespace DemoProject.Models
     public class UserExamViewModel
     {
         public int UserExamRecordId { get; set; }
+        public string ExamStatus { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public int UserId { get; set; }
         public string UserName { get; set; }
         public string Name { get; set; }
