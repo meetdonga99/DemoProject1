@@ -62,6 +62,27 @@ namespace DemoProject.Controllers
             return Json(new { link = link }, JsonRequestBehavior.AllowGet);
         }
 
+
+        [HttpPost]
+        public JsonResult SendLinkByEmail(string token)
+        {
+            var link = Url.Action("ViewByToken", "UserExamRecord", new { token = token }, protocol: Request.Url.Scheme);
+            var record = _userExamRecordService.GetRecordByToken(token);
+            var userEmail = record.User.Email;
+
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                bool emailSent = EmailService.Send(userEmail, "Your Exam Link", $"Here is your exam link: <a href='{link}'>{link}</a>");
+
+                if (emailSent)
+                    return Json(new { success = true });
+                else
+                    return Json(new { success = false, message = "Email sending failed." });
+            }
+            return Json(new { success = false, message = "User email not found." });
+        }
+
+
         [AllowAnonymous]
         public ActionResult ViewByToken(string token)
         {
@@ -163,10 +184,10 @@ namespace DemoProject.Controllers
         {
             try
             {
-                foreach(var answer in model.Answers)
+                foreach (var answer in model.Answers)
                 {
-                    var existingAnswer = _userExamAnswerService.GetAnswerByExamIdAndQuestionId(model.UserExamRecordId,answer.QuestionId);
-                    if(existingAnswer == null)
+                    var existingAnswer = _userExamAnswerService.GetAnswerByExamIdAndQuestionId(model.UserExamRecordId, answer.QuestionId);
+                    if (existingAnswer == null)
                     {
                         var newAnswer = new UserExamAnswer
                         {
@@ -238,6 +259,21 @@ namespace DemoProject.Controllers
             return View();
         }
 
+        public ActionResult CompletedExamGrid()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult GetCompletedExamGridData([DataSourceRequest] DataSourceRequest request)
+        {
+            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USEREXAMRECORD.ToString(), AccessPermission.IsView))
+            //{
+            //    return RedirectToAction("AccessDenied", "Base");
+            //}
+            var data = _userExamRecordService.GetAllUserExamRecordGrid().Where(a => a.ExamStatus == "COMPLETED");
+            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+        }
 
     }
 }

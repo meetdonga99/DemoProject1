@@ -176,7 +176,7 @@
                         </div>
                         <div class="d-flex align-items-center">
                             <span class="btn btn-sm btn-success me-2" style="width: 30px; height: 30px;"></span>
-                            <span>Fully Answered</span>
+                            <span>Answered</span>
                         </div>
                     </div>
                 </div>
@@ -259,7 +259,8 @@
             $('#userDetailsModal').modal('hide');
             $('#examContainer').show();
             startTimer(remainingTime);
-            loadQuestion();
+        loadQuestion();
+        checkAllQuestionsVisited();
         });
 
     $('#startExamBtn').click(function () {
@@ -282,6 +283,7 @@
                 alert('Error starting the exam. Please try again.');
             }
         });
+        checkAllQuestionsVisited();
     });
 
         function loadQuestion() {
@@ -352,8 +354,23 @@
                 saveAnswer(function () {
                     currentIndex = targetIndex;
                     loadQuestion();
+                    checkAllQuestionsVisited();
                 });
             });
+        }
+
+
+        function checkAllQuestionsVisited() {
+            let visitedQuestions = new Set();
+
+            $('#questionPalette .btn').each(function () {
+                if ($(this).hasClass('btn-success') || $(this).hasClass('btn-warning') || $(this).hasClass('btn-primary')) {
+                    visitedQuestions.add(parseInt($(this).text()) - 1);
+                }
+            });
+
+            let allQuestionsVisited = visitedQuestions.size === questions.length;
+            $('#finishExam').prop('disabled', !allQuestionsVisited);
         }
 
 
@@ -362,6 +379,7 @@
             saveAnswer(function () {
                 currentIndex--;
                 loadQuestion();
+                checkAllQuestionsVisited();
             });
         }
     });
@@ -371,9 +389,12 @@
             saveAnswer(function () {
                 currentIndex++;
                 loadQuestion();
+                checkAllQuestionsVisited();
             });
         }
     });
+
+        $('#finishExam').prop('disabled', true);
 
         $('#finishExam').click(function () {
             // Calculate exam summary
@@ -465,3 +486,4 @@
 
 </body>
 </html>
+

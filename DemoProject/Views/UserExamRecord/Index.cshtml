@@ -90,6 +90,8 @@
             <div class="modal-body">
                 <input type="text" id="linkToCopy" class="form-control" readonly />
                 <button class="btn btn-primary mt-2" onclick="copyToClipboard()">Copy Link</button>
+                <input type="text" id="token" hidden/>
+                <button class="btn btn-success mt-2" onclick="sendEmailLink()">Send Email</button>
             </div>
         </div>
     </div>
@@ -103,8 +105,29 @@
         $('#gridQuestionTypes').data('kendoGrid').refresh();
     });
 
+    function sendEmailLink() {
+        var token = $('#token').val();
+        $.ajax({
+            url: '/UserExamRecord/SendLinkByEmail',
+            type: 'POST',
+            data: { token: token },
+            success: function (response) {
+                if (response.success) {
+                    alert("Email sent successfully!");
+                } else {
+                    alert("Failed to send email: " + response.message);
+                }
+            },
+            error: function () {
+                alert("Error sending email.");
+            }
+        });
+    }
+
+
 
     function copyLink(token) {
+        $('#token').val(token);
         $.ajax({
             url: '/UserExamRecord/GenerateLinkByToken', 
             type: 'GET',
