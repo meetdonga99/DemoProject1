@@ -3022,6 +3022,7 @@
     <Content Include="Views\UserExamRecord\ExamView.cshtml" />
     <Content Include="Views\UserExamRecord\SubmissionSuccess.cshtml" />
     <Content Include="Views\UserExamRecord\CompletedExamGrid.cshtml" />
+    <Content Include="Views\UserExamRecord\EvaluateTestPaper.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

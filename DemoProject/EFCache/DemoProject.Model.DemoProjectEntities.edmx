@@ -240,6 +240,7 @@
           <Property Name="QuestionId" Type="Int32" Nullable="false" />
           <Property Name="SelectedOptions" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="DescriptiveAnswer" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="ObtainedMarks" Type="Int32" />
         </EntityType>
         <EntityType Name="UserExamRecord" customannotation:ClrType="DemoProject.Model.UserExamRecord, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
@@ -717,6 +718,7 @@
                 <ScalarProperty Name="QuestionId" ColumnName="QuestionId" />
                 <ScalarProperty Name="SelectedOptions" ColumnName="SelectedOptions" />
                 <ScalarProperty Name="DescriptiveAnswer" ColumnName="DescriptiveAnswer" />
+                <ScalarProperty Name="ObtainedMarks" ColumnName="ObtainedMarks" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -1022,6 +1024,7 @@
           <Property Name="QuestionId" Type="int" Nullable="false" />
           <Property Name="SelectedOptions" Type="nvarchar(max)" Nullable="true" />
           <Property Name="DescriptiveAnswer" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="ObtainedMarks" Type="int" Nullable="true" />
         </EntityType>
         <EntityType Name="UserExamRecord">
           <Key>

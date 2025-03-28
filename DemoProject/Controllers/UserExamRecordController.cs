@@ -275,5 +275,89 @@ namespace DemoProject.Controllers
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
+        public ActionResult EvaluateTestPaper(string token)
+        {
+            var record = _userExamRecordService.GetRecordByToken(token);
+            if (record == null || (record.ExpiryDate.HasValue && record.ExpiryDate < DateTime.UtcNow))
+            {
+                return View("InvalidLink");
+            }
+
+            var getPaperSet = _paperSetService.GetPaperSetById(record.PaperSetId);
+            var getUser = _userProfileService.GetUserById(record.UserId);
+            var mappings = _paperSetQuestionMappingService.GetMappingsByPaperSetId(record.PaperSetId);
+            var questions = _questionService.GetAllQuestions();
+
+            UserExamViewModel model = new UserExamViewModel();
+            model.UserExamRecordId = record.Id;
+            model.ExamStatus = record.ExamStatus;
+            model.StartTime = record.StartTime;
+            model.EndTime = record.EndTime;
+
+
+            model.UserId = record.UserId;
+            model.UserName = getUser.UserName;
+            model.Name = getUser.Name;
+            model.Email = getUser.Email;
+
+            model.PaperSetId = record.PaperSetId;
+            model.PaperSetName = getPaperSet.PaperSetName;
+            model.TotalMarks = getPaperSet.TotalMarks;
+            model.DurationInMinutes = getPaperSet.DurationInMinutes;
+            model.Questions = (from mapping in mappings
+                               join question in questions
+                               on mapping.QuestionId equals question.Id
+                               select new QuestionModel()
+                               {
+                                   Id = question.Id,
+                                   SubjectId = question.Subjects.Id,
+                                   QuestionTypeId = question.QuestionTypes.Id,
+                                   QuestionText = question.QuestionText,
+                                   DefaultMarks = mapping.CustomMarks,
+                                   DifficultyLevel = question.DifficultyLevel,
+                                   Image = question.Image,
+                                   IsActive = question.IsActive,
+                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
+                               }
+                               ).ToList();
+
+            var data = from i in model.Questions
+                       select new CorrectAnswer()
+                       {
+                           QuestionId = i.Id,
+                           CorrectOptions = i.options.Where(o => o.IsCorrect).Select(o => o.Id).ToList()
+
+                       };
+
+            model.Answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId).Select(a => new SaveAnswerModel
+            {
+                UserExamRecordId = a.UserExamRecordId,
+                QuestionId = a.QuestionId,
+                SelectedOptions = a.SelectedOptions.Split(',').Where(s => !string.IsNullOrEmpty(s)).Select(int.Parse).ToList(),
+                DescriptiveAnswer = a.DescriptiveAnswer,
+                ObtainedMarks = a.ObtainedMarks != 0 ? 
+    ((from i in data
+     where i.QuestionId == a.QuestionId
+     select i.CorrectOptions)
+    .FirstOrDefault() 
+    .OrderBy(x => x) 
+    .SequenceEqual(
+        a.SelectedOptions.Split(',')
+        .Where(s => !string.IsNullOrEmpty(s))
+        .Select(int.Parse) 
+        .OrderBy(x => x) 
+    )
+    ? model.Questions.Where(o => o.Id == a.QuestionId && (o.QuestionTypeId == 1 || o.QuestionTypeId == 2))
+                     .Select(o => o.DefaultMarks)
+                     .FirstOrDefault()
+    : 0) : 0,
+            }).ToList();
+
+            
+            TempData["CorrectAnswers"] = data;
+
+            return View("EvaluateTestPaper", model);
+        }
+
     }
 }

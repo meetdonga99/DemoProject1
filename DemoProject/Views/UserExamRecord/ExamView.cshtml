@@ -404,14 +404,12 @@
             ).length;
             let unansweredQuestions = totalQuestions - answeredQuestions;
 
-            // Update summary text
             $('#examSummaryText').html(`
         <strong>Total Questions:</strong> ${totalQuestions}<br>
         <strong>Answered Questions:</strong> ${answeredQuestions}<br>
         <strong>Unanswered Questions:</strong> ${unansweredQuestions}
     `);
 
-            // Show the confirmation modal
             let finishExamConfirmModal = new bootstrap.Modal('#finishExamConfirmModal');
             finishExamConfirmModal.show();
         });
@@ -420,7 +418,6 @@
             $('#confirmFinishExamBtn').prop('disabled', !this.checked);
         });
 
-        // Confirm finish exam button handler
         $('#confirmFinishExamBtn').click(function () {
             saveAnswer(function () {
                 $.post('/UserExamRecord/FinishExam', userExamModel, function (response) {
@@ -478,10 +475,94 @@
 
                 if (timeLeft-- <= 0) {
                     clearInterval(timerInterval);
-                    $('#confirmFinishExamBtn').click();
+                    showTimeoutSubmissionModal();
                 }
             }, 1000);
         }
+
+        function showTimeoutSubmissionModal() {
+            let timeoutModalHtml = `
+    <div class="modal fade" id="examTimeoutModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Exam Time Expired</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <strong>Your exam time has expired.</strong>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Exam Summary:</h6>
+                        <p id="timeoutExamSummaryText"></p>
+                    </div>
+                    <div class="text-center mt-3">
+                        <h4 class="text-danger">Auto Submit in: <span id="autoSubmitCountdown">1:00</span></h4>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="timeoutConfirmFinishExamBtn">Submit Exam</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+            
+            if ($('#examTimeoutModal').length === 0) {
+                $('body').append(timeoutModalHtml);
+            }
+
+           
+            let totalQuestions = questions.length;
+            let answeredQuestions = userExamModel.Answers.filter(a =>
+                a.SelectedOptions.length > 0 || (a.DescriptiveAnswer && a.DescriptiveAnswer.trim() !== '')
+            ).length;
+            let unansweredQuestions = totalQuestions - answeredQuestions;
+
+           
+            $('#timeoutExamSummaryText').html(`
+        <strong>Total Questions:</strong> ${totalQuestions}<br>
+        <strong>Answered Questions:</strong> ${answeredQuestions}<br>
+        <strong>Unanswered Questions:</strong> ${unansweredQuestions}
+    `);
+
+            
+            let timeoutModal = new bootstrap.Modal('#examTimeoutModal', {
+                backdrop: 'static',
+                keyboard: false
+            });
+            timeoutModal.show();
+
+            
+            let timeLeft = 60;
+            let countdownInterval = setInterval(function () {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                $('#autoSubmitCountdown').text(`${minutes}:${seconds < 10 ? '0' + seconds : seconds}`);
+
+                if (timeLeft-- <= 0) {
+                    clearInterval(countdownInterval);
+                    $('#timeoutConfirmFinishExamBtn').click();
+                }
+            }, 1000);
+
+            
+            $('#timeoutConfirmFinishExamBtn').off('click').on('click', function () {
+                clearInterval(countdownInterval); 
+                saveAnswer(function () {
+                    $.post('/UserExamRecord/FinishExam', userExamModel, function (response) {
+                        if (response.success) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            alert(response.message || 'Error finishing the exam. Please try again.');
+                        }
+                    }).fail(function () {
+                        alert('Something went wrong. Please try again.');
+                    });
+                });
+            });
+        }
+
     </script>
 
 </body>

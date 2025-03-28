@@ -29,5 +29,12 @@ namespace DemoProject.Models
         public int QuestionId { get; set; }
         public List<int> SelectedOptions { get; set; } = new List<int>();
         public string DescriptiveAnswer { get; set; }
+        public int ObtainedMarks { get; set; }
+    }
+
+    public class CorrectAnswer
+    {
+        public int QuestionId { get; set; }
+        public List<int> CorrectOptions { get; set; }
     }
 }

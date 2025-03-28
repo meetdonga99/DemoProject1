@@ -44,6 +44,11 @@
               columns.Bound(c => c.UserEmail).Title("User Email");
               columns.Bound(c => c.ExamStatus).Title("Exam Status");
               columns.Bound(c => c.ExpiryDate).Title("Expiry Date");
+              columns.Bound(c => c.Token).Title("Actions").Width("5%").ClientTemplate(
+    "<a href='javascript:void(0);' onclick='evaluateTest(\"#= Token #\")' class='btn btn-primary'>" +
+    "Evaluate Test</a>"
+);
+
 
           })
           .Events(evt => evt
@@ -78,6 +83,12 @@
         $('#gridQuestionTypes').data('kendoGrid').refresh();
     });
 
+
+    function evaluateTest(token) {
+    if (token) {
+        window.location.href = '@Url.Action("EvaluateTestPaper", "UserExamRecord")' + '?token=' + encodeURIComponent(token);
+    }
+}
 
 </script>
 

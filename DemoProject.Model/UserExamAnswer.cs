@@ -13,7 +13,8 @@ namespace DemoProject.Model
         public int Id { get; set; }
         public int UserExamRecordId { get; set; }
         public int QuestionId { get; set; }
-        public string SelectedOptions { get; set; } 
+        public string SelectedOptions { get; set; }
         public string DescriptiveAnswer { get; set; }
+        public int? ObtainedMarks { get; set; }
     }
 }
