@@ -41,6 +41,7 @@ namespace DemoProject.Model
         public string UserEmail { get; set; }
         public string ExamStatus { get; set; }
         public DateTime? ExpiryDate { get; set; }
+        public int Score { get; set; }
 
     }
 }

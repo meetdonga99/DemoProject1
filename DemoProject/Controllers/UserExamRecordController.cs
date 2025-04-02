@@ -91,6 +91,10 @@ namespace DemoProject.Controllers
             {
                 return View("InvalidLink");
             }
+            if(record.ExamStatus == "COMPLETED")
+            {
+                return RedirectToAction("SubmissionSuccess", new { examId = record.Id });
+            }
 
             var getPaperSet = _paperSetService.GetPaperSetById(record.PaperSetId);
             var getUser = _userProfileService.GetUserById(record.UserId);
@@ -141,6 +145,21 @@ namespace DemoProject.Controllers
 
         [AllowAnonymous]
         [HttpPost]
+        public JsonResult GetRemainingMinutes(int userExamRecordId)
+        {
+            var record = _userExamRecordService.GetRecordByUserExamRecordId(userExamRecordId);
+            TimeSpan diff = DateTime.UtcNow.Subtract(record.StartTime.Value);
+            var usedMinutes = diff.TotalMinutes;
+
+            
+            return Json(new { usedMinutes = usedMinutes });
+        }
+
+
+
+
+        [AllowAnonymous]
+        [HttpPost]
         public JsonResult StartExam(UserExamViewModel model)
         {
             if (model == null)
@@ -150,7 +169,6 @@ namespace DemoProject.Controllers
 
             try
             {
-                // Save user details (Name, Username) if needed
                 var user = _userProfileService.GetUserById(model.UserId);
                 if (user != null)
                 {
@@ -159,11 +177,10 @@ namespace DemoProject.Controllers
                     _userProfileService.UpdateUserProfile(user);
                 }
 
-                // Log exam start
                 var existingRecord = _userExamRecordService.GetRecordByPaperSetIdAndUserId(model.PaperSetId, model.UserId);
                 if (existingRecord != null)
                 {
-                    existingRecord.StartTime = DateTime.Now;
+                    existingRecord.StartTime = DateTime.UtcNow;
                     existingRecord.ExamStatus = Constants.ExamStatus.INPROGRESS;
                     _userExamRecordService.UpdateUserExamRecord(existingRecord);
                 }
@@ -194,7 +211,8 @@ namespace DemoProject.Controllers
                             UserExamRecordId = model.UserExamRecordId,
                             QuestionId = answer.QuestionId,
                             SelectedOptions = string.Join(",", answer.SelectedOptions),
-                            DescriptiveAnswer = answer.DescriptiveAnswer
+                            DescriptiveAnswer = answer.DescriptiveAnswer,
+                            ObtainedMarks = 0
                         };
                         _userExamAnswerService.CreateUserExamAnswer(newAnswer);
                     }
@@ -233,12 +251,30 @@ namespace DemoProject.Controllers
 
             try
             {
+                foreach (var answer in model.Answers)
+                {
+                    var existingAnswer = _userExamAnswerService.GetAnswerByExamIdAndQuestionId(model.UserExamRecordId, answer.QuestionId);
+                    if (existingAnswer == null)
+                    {
+                        var newAnswer = new UserExamAnswer
+                        {
+                            UserExamRecordId = model.UserExamRecordId,
+                            QuestionId = answer.QuestionId,
+                            SelectedOptions = string.Join(",", answer.SelectedOptions),
+                            DescriptiveAnswer = answer.DescriptiveAnswer,
+                            ObtainedMarks = 0
+                        };
+                        _userExamAnswerService.CreateUserExamAnswer(newAnswer);
+                    }
+                }
+
+
                 var record = _userExamRecordService.GetRecordByPaperSetIdAndUserId(model.PaperSetId, model.UserId);
                 if (record == null)
                 {
                     return Json(new { success = false, message = "Exam record not found." });
                 }
-                record.EndTime = DateTime.Now;
+                record.EndTime = DateTime.UtcNow;
                 record.ExamStatus = Constants.ExamStatus.COMPLETED;
                 _userExamRecordService.UpdateUserExamRecord(record);
 
@@ -271,7 +307,7 @@ namespace DemoProject.Controllers
             //{
             //    return RedirectToAction("AccessDenied", "Base");
             //}
-            var data = _userExamRecordService.GetAllUserExamRecordGrid().Where(a => a.ExamStatus == "COMPLETED");
+            var data = _userExamRecordService.GetAllUserExamRecordGrid().Where(a => (a.ExamStatus != "PENDING" && a.ExamStatus != "INPROGRESS"));
             return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
@@ -293,6 +329,7 @@ namespace DemoProject.Controllers
             model.ExamStatus = record.ExamStatus;
             model.StartTime = record.StartTime;
             model.EndTime = record.EndTime;
+            model.Score = record.Score;
 
 
             model.UserId = record.UserId;
@@ -335,8 +372,8 @@ namespace DemoProject.Controllers
                 QuestionId = a.QuestionId,
                 SelectedOptions = a.SelectedOptions.Split(',').Where(s => !string.IsNullOrEmpty(s)).Select(int.Parse).ToList(),
                 DescriptiveAnswer = a.DescriptiveAnswer,
-                ObtainedMarks = a.ObtainedMarks != 0 ? 
-    ((from i in data
+                ObtainedMarks = (int)(a.ObtainedMarks != 0 ? a.ObtainedMarks :
+    (from i in data
      where i.QuestionId == a.QuestionId
      select i.CorrectOptions)
     .FirstOrDefault() 
@@ -350,7 +387,10 @@ namespace DemoProject.Controllers
     ? model.Questions.Where(o => o.Id == a.QuestionId && (o.QuestionTypeId == 1 || o.QuestionTypeId == 2))
                      .Select(o => o.DefaultMarks)
                      .FirstOrDefault()
-    : 0) : 0,
+    : 0) ,
+
+                IsEvaluated =  a.IsEvaluated == false? (model.Questions.Where(o => o.Id == a.QuestionId).Select(o => o.QuestionTypeId == 1 || o.QuestionTypeId == 2).FirstOrDefault() ? true : false) : a.IsEvaluated,
+
             }).ToList();
 
             
@@ -359,5 +399,44 @@ namespace DemoProject.Controllers
             return View("EvaluateTestPaper", model);
         }
 
-    }
+        [HttpPost]
+        public JsonResult SubmitEvaluation(UserExamViewModel model)
+        {
+            try
+            {
+                var record = _userExamRecordService.GetRecordByPaperSetIdAndUserId(model.PaperSetId, model.UserId);
+                if (record == null)
+                {
+                    return Json(new { success = false, message = "Exam record not found." });
+                }
+                record.ExamStatus = Constants.ExamStatus.RESULT_PUBLISHED;
+                record.Score = model.Score;
+                record.Percentage = (decimal)(model.Score * 100) / (decimal)model.TotalMarks;
+                _userExamRecordService.UpdateUserExamRecord(record);
+
+                foreach (var answer in model.Answers)
+                {
+                    var existingAnswer = _userExamAnswerService.GetAnswerByExamIdAndQuestionId(model.UserExamRecordId, answer.QuestionId);
+                    if(existingAnswer != null)
+                    {
+                        existingAnswer.ObtainedMarks = answer.ObtainedMarks;
+                        existingAnswer.IsEvaluated = answer.IsEvaluated;
+                        _userExamAnswerService.UpdateUserExamAnswer(existingAnswer);
+                    }
+                }
+
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Evaluation submitted successfully",
+                        redirectUrl = Url.Action("CompletedExamGrid", "UserExamRecord") 
+                    });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while processing your request" });
+            }
+        }
+
+        }
 }

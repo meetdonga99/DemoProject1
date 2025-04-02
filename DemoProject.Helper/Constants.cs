@@ -133,6 +133,7 @@ namespace DemoProject.Helper
             public const string PENDING = "PENDING";
             public const string INPROGRESS = "INPROGRESS";
             public const string COMPLETED = "COMPLETED";
+            public const string RESULT_PUBLISHED = "RESULT_PUBLISHED";
             public const string EXPIRED = "EXPIRED";
         }
     }

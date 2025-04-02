@@ -52,7 +52,8 @@ namespace DemoProject.Data
                         PaperSetName = userExamRecord.PaperSet.PaperSetName,
                         UserEmail = userExamRecord.User.Email,
                         ExamStatus = userExamRecord.ExamStatus,
-                        ExpiryDate = userExamRecord.ExpiryDate
+                        ExpiryDate = userExamRecord.ExpiryDate,
+                        Score = userExamRecord.Score
                     }).AsQueryable();
         }
 
@@ -65,6 +66,12 @@ namespace DemoProject.Data
         public UserExamRecord GetRecordByToken(string token)
         {
             var record = (from a in _db.UserExamRecord where a.Token == token select a).FirstOrDefault();
+            return record;
+        }
+
+        public UserExamRecord GetRecordByUserExamRecordId(int userExamRecordId)
+        {
+            var record = (from a in _db.UserExamRecord where a.Id == userExamRecordId select a).FirstOrDefault();
             return record;
         }
     }

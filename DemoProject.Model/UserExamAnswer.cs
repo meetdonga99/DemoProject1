@@ -16,5 +16,6 @@ namespace DemoProject.Model
         public string SelectedOptions { get; set; }
         public string DescriptiveAnswer { get; set; }
         public int? ObtainedMarks { get; set; }
+        public bool IsEvaluated { get; set; }
     }
 }

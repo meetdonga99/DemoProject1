@@ -18,6 +18,7 @@ namespace DemoProject.Models
         public int PaperSetId { get; set; }
         public string PaperSetName { get; set; }
         public int TotalMarks { get; set; }
+        public int Score { get; set; }
         public int DurationInMinutes { get; set; }
         public List<QuestionModel> Questions { get; set; }
         public List<SaveAnswerModel> Answers { get; set; }
@@ -30,6 +31,7 @@ namespace DemoProject.Models
         public List<int> SelectedOptions { get; set; } = new List<int>();
         public string DescriptiveAnswer { get; set; }
         public int ObtainedMarks { get; set; }
+        public bool IsEvaluated { get; set; }
     }
 
     public class CorrectAnswer

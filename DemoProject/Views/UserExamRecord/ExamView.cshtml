@@ -229,18 +229,30 @@
         let currentIndex = 0;
         let remainingTime;
 
+        function callRemainingMinutesController(userExamRecordId) {
+            let url = '/UserExamRecord/GetRemainingMinutes';
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userExamRecordId: userExamRecordId })
+            })
+                .then(response => response.json()) 
+                .then(data => {
+                    remainingTime = Math.max(Math.floor(@Model.DurationInMinutes - data.usedMinutes), 0);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+
+
     $(document).ready(function () {
     $('#userDetailsModal').modal('show');
 
-        let startTimeString = '@Model.StartTime.ToString()';
-        let dateParts = startTimeString.split(' ');
-        let date = dateParts[0].split('-');
-        let time = dateParts[1];
-        let isoDateString = `${date[2]}-${date[1]}-${date[0]}T${time}`;
-        let startTime = new Date(isoDateString);
-        let currentTime = new Date();
-    let usedMinutes = Math.floor((currentTime - startTime) / 60000);
-     remainingTime = Math.max(@Model.DurationInMinutes - usedMinutes, 0);
+        callRemainingMinutesController(@Model.UserExamRecordId);
 
 
     if ('@Model.ExamStatus' === "INPROGRESS") {
@@ -325,6 +337,7 @@
                 $('#optionsContainer').html(`<textarea class="form-control" id="descriptiveAnswer">${existingAnswer.DescriptiveAnswer || ''}</textarea>`);
             }
             updateQuestionPalette();
+            updateNavigationButtons();
         }
 
         function updateQuestionPalette() {
@@ -480,6 +493,11 @@
             }, 1000);
         }
 
+        function updateNavigationButtons() {
+            $('#prevQuestion').prop('disabled', currentIndex === 0);
+            $('#nextQuestion').prop('disabled', currentIndex === questions.length - 1);
+        }
+
         function showTimeoutSubmissionModal() {
             let timeoutModalHtml = `
     <div class="modal fade" id="examTimeoutModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -548,6 +566,15 @@
 
             
             $('#timeoutConfirmFinishExamBtn').off('click').on('click', function () {
+
+                questions.forEach(function (question) {
+                    let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === question.Id) || { UserExamRecordId: userExamModel.UserExamRecordId, QuestionId: question.Id, SelectedOptions: [], DescriptiveAnswer: '' };
+                    if (!userExamModel.Answers.some(a => a.QuestionId === question.Id)) {
+                        userExamModel.Answers.push(existingAnswer);
+                    }
+                });
+
+
                 clearInterval(countdownInterval); 
                 saveAnswer(function () {
                     $.post('/UserExamRecord/FinishExam', userExamModel, function (response) {

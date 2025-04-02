@@ -41,5 +41,10 @@ namespace DemoProject.Service
             return _userExamRecordProvider.GetRecordByToken(token);
         }
 
+        public UserExamRecord GetRecordByUserExamRecordId(int userExamRecordId)
+        {
+            return _userExamRecordProvider.GetRecordByUserExamRecordId(userExamRecordId);
+        }
+
     }
 }

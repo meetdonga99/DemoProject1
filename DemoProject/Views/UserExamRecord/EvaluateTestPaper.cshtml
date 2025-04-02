@@ -1,7 +1,7 @@
 ﻿@using System.Web.Helpers
 @{
     ViewBag.Title = "Exam Evaluation";
-    Layout = null;
+    //Layout = null;
 }
 
 @model DemoProject.Models.UserExamViewModel
@@ -83,8 +83,8 @@
             </div>
             <div>
                 <h5 class="fw-bold text-primary">Student Details</h5>
-                <p class="mb-0"><b>Name: @Model.Name</b></p>
-                <p class="mb-0"><b>Email: @Model.Email</b></p>
+                <p class="mb-0"><b>Name:</b> @Model.Name</p>
+                <p class="mb-0"><b>Email:</b> @Model.Email</p>
             </div>
         </div>
 
@@ -101,6 +101,7 @@
                         <h5>Obtained Marks: <span id="totalObtainedMarks">0</span> / <span id="totalMarks">@Model.TotalMarks</span></h5>
                     </div>
                     <div class="navigation-buttons">
+                        <button class="btn btn-danger btn-lg me-2" id="cancelEvaluation">Cancel</button>
                         <button class="btn btn-outline-secondary btn-lg me-2" id="prevQuestion">Previous</button>
                         <button class="btn btn-primary btn-lg me-2" id="nextQuestion">Next</button>
                         <button class="btn btn-success btn-lg" id="submitEvaluation">Submit Evaluation</button>
@@ -142,7 +143,7 @@
     let userExamModel = @Html.Raw(Json.Encode(Model));
     let currentIndex = 0;
 
-    // Temporary correct answers data (this would typically come from server)
+    
         let correctAnswersData = @Html.Raw(Json.Encode(TempData["CorrectAnswers"]));
         console.log("shdshdjks", correctAnswersData);
 
@@ -150,6 +151,11 @@
         loadQuestion();
         updateTotalObtainedMarks();
     });
+
+        $('#cancelEvaluation').click(function () {
+            
+            window.location.href = '/UserExamRecord/CompletedExamGrid'; 
+        });
 
     function loadQuestion() {
         let q = questions[currentIndex];
@@ -203,58 +209,128 @@
                 existingAnswer.ObtainedMarks = obtainedMarks;
             }
         } else { // Descriptive answer
+           
+            let expectedAnswersHtml = '';
+                expectedAnswersHtml = q.options.map(o => `<li>${o.OptionText}</li>`).join('');
+
             $('#optionsContainer').html(`
-                <textarea class="form-control" id="descriptiveAnswer" readonly>${existingAnswer.DescriptiveAnswer || ''}</textarea>
-                <div class="mt-3">
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="showExpectedAnswers">
+            <label class="form-check-label" for="showExpectedAnswers">Show Expected Answers</label>
+        </div>
+        
+        <div id="expectedAnswersContainer" class="mb-3 p-3 bg-light border rounded" style="display: none;">
+            <h6 class="mb-2">Expected Answers:</h6>
+            <ul>${expectedAnswersHtml || '<li>No expected answers available</li>'}</ul>
+        </div>
+        
+        <textarea class="form-control" id="descriptiveAnswer" readonly>${existingAnswer.DescriptiveAnswer || ''}</textarea>
+        <div class="mt-3">
+            <div class="d-flex align-items-center gap-3">
+                <div>
                     <label for="manualMarks" class="form-label">Marks Obtained</label>
                     <input type="number" class="form-control" id="manualMarks"
-                           max="${q.DefaultMarks}"
-                           value="${existingAnswer.ObtainedMarks || 0}"
-                           onchange="updateDescriptiveMarks(this.value)"
+                    max="${q.DefaultMarks}"
+                    value="${existingAnswer.ObtainedMarks || 0}"
+                    step="1"  
+                    onchange="updateDescriptiveMarks(this.value)"
+                    style="width: 100px;"
                     >
                     <small class="text-muted">Max Marks: ${q.DefaultMarks}</small>
                 </div>
-            `);
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" id="isEvaluated" 
+                        ${existingAnswer.IsEvaluated ? 'checked' : ''}
+                        onchange="updateEvaluationStatus(this.checked)">
+                    <label class="form-check-label" for="isEvaluated">
+                        Mark as Evaluated
+                    </label>
+                </div>
+            </div>
+        </div>
+    `);
+
+           
+            $('#showExpectedAnswers').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#expectedAnswersContainer').slideDown();
+                } else {
+                    $('#expectedAnswersContainer').slideUp();
+                }
+            });
         }
 
         updateQuestionPalette();
-    }
+        updateNavigationButtons();
+        }
 
-    function updateDescriptiveMarks(marks) {
-        let q = questions[currentIndex];
-        let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
-        existingAnswer.ObtainedMarks = parseFloat(marks);
-        updateTotalObtainedMarks();
-        updateQuestionPalette();
-    }
+        function updateNavigationButtons() {
+            $('#prevQuestion').prop('disabled', currentIndex === 0);
+            $('#nextQuestion').prop('disabled', currentIndex === questions.length - 1);
+        }
 
-    function updateQuestionPalette() {
-        let paletteHtml = questions.map((q, index) => {
+        function updateEvaluationStatus(isChecked) {
+            let q = questions[currentIndex];
             let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
+            existingAnswer.IsEvaluated = isChecked;
+            updateQuestionPalette();
+        }
 
-            let statusClass = 'btn-warning'; // Not evaluated
-            if (index === currentIndex) {
-                statusClass = 'btn-primary'; // Current question
-            } else if (existingAnswer && existingAnswer.ObtainedMarks !== undefined) {
-                statusClass = existingAnswer.ObtainedMarks > 0 ? 'btn-success' : 'btn-danger';
+        function updateDescriptiveMarks(marks) {
+            marks = parseInt(marks, 10);
+            if (isNaN(marks)) {
+                marks = 0;
             }
 
-            return `<button class="btn ${statusClass} btn-sm" data-question-index="${index}">${index + 1}</button>`;
-        }).join('');
+            let q = questions[currentIndex];
+            let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
+            existingAnswer.ObtainedMarks = marks;
+            updateTotalObtainedMarks();
+            updateQuestionPalette();
+        }
 
-        $('#questionPalette').html(paletteHtml);
+        function updateQuestionPalette() {
+            let paletteHtml = questions.map((q, index) => {
+                let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
 
-        $('#questionPalette .btn').click(function () {
-            let targetIndex = $(this).data('question-index');
-            currentIndex = targetIndex;
-            loadQuestion();
-        });
-    }
+                let statusClass = 'btn-warning'; // Default: Not evaluated or score is zero
+
+                if (index === currentIndex) {
+                    statusClass = 'btn-primary'; // Current question
+                } else if (q.QuestionTypeId === 1 || q.QuestionTypeId === 2) {
+                    // Auto-evaluated MCQ/multiple-choice
+                    if (existingAnswer && existingAnswer.ObtainedMarks > 0) {
+                        statusClass = 'btn-success'; // Evaluated Correct
+                    } else {
+                        statusClass = 'btn-danger'; // Evaluated Incorrect
+                    }
+                } else {
+                    // Descriptive answer
+                    if (existingAnswer && existingAnswer.IsEvaluated) {
+                        if (existingAnswer.ObtainedMarks > 0) {
+                            statusClass = 'btn-success'; // Evaluated Correct
+                        } else {
+                            statusClass = 'btn-danger'; // Evaluated Incorrect
+                        }
+                    }
+                }
+
+                return `<button class="btn ${statusClass} btn-sm" data-question-index="${index}">${index + 1}</button>`;
+            }).join('');
+
+            $('#questionPalette').html(paletteHtml);
+
+            $('#questionPalette .btn').click(function () {
+                let targetIndex = $(this).data('question-index');
+                currentIndex = targetIndex;
+                loadQuestion();
+            });
+        }
 
     function updateTotalObtainedMarks() {
-        let totalObtained = userExamModel.Answers.reduce((sum, answer) =>
-            sum + (answer.ObtainedMarks || 0), 0);
-        $('#totalObtainedMarks').text(totalObtained.toFixed(2));
+        userExamModel.Score = userExamModel.Answers.reduce((sum, answer) =>
+            sum + (parseInt(answer.ObtainedMarks) || 0), 0);
+        $('#totalObtainedMarks').text(userExamModel.Score.toFixed(0));
     }
 
     $('#prevQuestion').click(function () {
@@ -272,7 +348,7 @@
     });
 
     $('#submitEvaluation').click(function () {
-        // Send evaluation data to server
+        
         $.ajax({
             url: '/UserExamRecord/SubmitEvaluation',
             type: 'POST',
@@ -280,7 +356,7 @@
             data: JSON.stringify(userExamModel),
             success: function (response) {
                 if (response.success) {
-                    alert('Evaluation submitted successfully');
+                    showToast("Evaluation submitted successfully", "success");
                     window.location.href = response.redirectUrl;
                 } else {
                     alert('Error submitting evaluation');
