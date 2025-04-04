@@ -150,6 +150,7 @@
     $(document).ready(function () {
         loadQuestion();
         updateTotalObtainedMarks();
+        checkAllQuestionsEvaluated();
     });
 
         $('#cancelEvaluation').click(function () {
@@ -173,7 +174,7 @@
 
         let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
 
-        if (q.QuestionTypeId === 1 || q.QuestionTypeId === 2) { // Single or Multiple choice
+        if (q.QuestionTypeId === 1 || q.QuestionTypeId === 2) { 
             $('#optionsContainer').html(q.options.map(o => {
                 let isSelected = existingAnswer && existingAnswer.SelectedOptions.includes(o.Id);
                 let isCorrect = correctAnswer && correctAnswer.CorrectOptions.includes(o.Id);
@@ -200,15 +201,17 @@
                 </div>`;
             }).join(''));
 
-            // Auto-mark for MCQ
+       
             if (correctAnswer) {
                 let obtainedMarks = 0;
                 if (JSON.stringify(existingAnswer.SelectedOptions.sort()) === JSON.stringify(correctAnswer.CorrectOptions.sort())) {
                     obtainedMarks = q.DefaultMarks;
                 }
                 existingAnswer.ObtainedMarks = obtainedMarks;
+                existingAnswer.IsEvaluated = true;
+                checkAllQuestionsEvaluated();
             }
-        } else { // Descriptive answer
+        } else { 
            
             let expectedAnswersHtml = '';
                 expectedAnswersHtml = q.options.map(o => `<li>${o.OptionText}</li>`).join('');
@@ -231,6 +234,7 @@
                     <label for="manualMarks" class="form-label">Marks Obtained</label>
                     <input type="number" class="form-control" id="manualMarks"
                     max="${q.DefaultMarks}"
+                    min="0"
                     value="${existingAnswer.ObtainedMarks || 0}"
                     step="1"  
                     onchange="updateDescriptiveMarks(this.value)"
@@ -250,7 +254,24 @@
         </div>
     `);
 
-           
+            $('#manualMarks').on('input', function () {
+                const maxMarks = questions[currentIndex].DefaultMarks;
+                let enteredValue = parseInt($(this).val(), 10);
+
+                if (isNaN(enteredValue)) {
+                    enteredValue = 0;
+                    $(this).val(0);
+                } else if (enteredValue < 0) {
+                    enteredValue = 0;
+                    $(this).val(0);
+                } else if (enteredValue > maxMarks) {
+                    enteredValue = maxMarks;
+                    $(this).val(maxMarks);
+                }
+
+                updateDescriptiveMarks(enteredValue);
+            });
+
             $('#showExpectedAnswers').change(function () {
                 if ($(this).is(':checked')) {
                     $('#expectedAnswersContainer').slideDown();
@@ -283,6 +304,16 @@
             }
 
             let q = questions[currentIndex];
+            const maxMarks = q.DefaultMarks;
+            if (marks < 0) {
+                marks = 0;
+                $('#manualMarks').val(0);
+            }
+            else if (marks > maxMarks) {
+                marks = maxMarks;
+                $('#manualMarks').val(maxMarks);
+            }
+
             let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
             existingAnswer.ObtainedMarks = marks;
             updateTotalObtainedMarks();
@@ -293,24 +324,24 @@
             let paletteHtml = questions.map((q, index) => {
                 let existingAnswer = userExamModel.Answers.find(a => a.QuestionId === q.Id);
 
-                let statusClass = 'btn-warning'; // Default: Not evaluated or score is zero
+                let statusClass = 'btn-warning'; 
 
                 if (index === currentIndex) {
-                    statusClass = 'btn-primary'; // Current question
+                    statusClass = 'btn-primary';
                 } else if (q.QuestionTypeId === 1 || q.QuestionTypeId === 2) {
-                    // Auto-evaluated MCQ/multiple-choice
+                  
                     if (existingAnswer && existingAnswer.ObtainedMarks > 0) {
-                        statusClass = 'btn-success'; // Evaluated Correct
+                        statusClass = 'btn-success'; 
                     } else {
-                        statusClass = 'btn-danger'; // Evaluated Incorrect
+                        statusClass = 'btn-danger'; 
                     }
                 } else {
-                    // Descriptive answer
+                    
                     if (existingAnswer && existingAnswer.IsEvaluated) {
                         if (existingAnswer.ObtainedMarks > 0) {
-                            statusClass = 'btn-success'; // Evaluated Correct
+                            statusClass = 'btn-success'; 
                         } else {
-                            statusClass = 'btn-danger'; // Evaluated Incorrect
+                            statusClass = 'btn-danger'; 
                         }
                     }
                 }
@@ -331,7 +362,14 @@
         userExamModel.Score = userExamModel.Answers.reduce((sum, answer) =>
             sum + (parseInt(answer.ObtainedMarks) || 0), 0);
         $('#totalObtainedMarks').text(userExamModel.Score.toFixed(0));
-    }
+        }
+
+        function checkAllQuestionsEvaluated() {
+            const allEvaluated = userExamModel.Answers.every(answer => answer.IsEvaluated);
+            $('#submitEvaluation').prop('disabled', !allEvaluated);
+
+            
+        }
 
     $('#prevQuestion').click(function () {
         if (currentIndex > 0) {
@@ -348,7 +386,12 @@
     });
 
     $('#submitEvaluation').click(function () {
-        
+
+        if (!userExamModel.Answers.every(answer => answer.IsEvaluated)) {
+            alert('Please evaluate all questions before submitting.');
+            return;
+        }
+
         $.ajax({
             url: '/UserExamRecord/SubmitEvaluation',
             type: 'POST',

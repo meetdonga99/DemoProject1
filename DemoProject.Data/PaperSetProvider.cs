@@ -90,6 +90,57 @@ namespace DemoProject.Data
             }
         }
 
+        public bool IsUsedForUserExam(int paperSetId)
+        {
+            var record = _db.UserExamRecord.Where(o => o.PaperSetId == paperSetId).FirstOrDefault();
+            return record != null ? true : false;
+        }
+
+        public bool ClonePaperSet(int paperSetId)
+        {
+            try
+            {
+                int userId = SessionHelper.UserId;
+                var record = _db.PaperSet.Find(paperSetId);
+                var total = _db.PaperSet.Where(o => o.PaperSetName.Contains(record.PaperSetName)).Select(o => o.Id).Count();
+                var clonedPaperSet = new PaperSet
+                {
+                    PaperSetName = record.PaperSetName + "(Copy " + (total - 1).ToString() + ")",
+                    TotalMarks = record.TotalMarks,
+                    DurationInMinutes = record.DurationInMinutes,
+                    IsActive = record.IsActive,
+                    Status = record.Status,
+                    CreatedOn = record.CreatedOn,
+                    CreatedBy = userId,
+                };
+                _db.PaperSet.Add(clonedPaperSet);
+                _db.SaveChanges();
+                int newPaperSetId = clonedPaperSet.Id;
+
+                var newMappings = _db.PaperSetQuestionMapping
+    .Where(o => o.PaperSetId == paperSetId)
+    .Select(o => new
+    {
+        o.QuestionId,
+        o.CustomMarks
+    })
+    .ToList();
+                var newMappingEntities = newMappings.Select(o => new PaperSetQuestionMapping
+                {
+                    PaperSetId = newPaperSetId,
+                    QuestionId = o.QuestionId,
+                    CustomMarks = o.CustomMarks
+                }).ToList();
+
+                _db.PaperSetQuestionMapping.AddRange(newMappingEntities);
+                _db.SaveChanges();
+                return true;
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
 
         public void SaveChanges()
         {

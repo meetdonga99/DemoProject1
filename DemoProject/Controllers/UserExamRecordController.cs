@@ -156,8 +156,6 @@ namespace DemoProject.Controllers
         }
 
 
-
-
         [AllowAnonymous]
         [HttpPost]
         public JsonResult StartExam(UserExamViewModel model)
@@ -181,6 +179,7 @@ namespace DemoProject.Controllers
                 if (existingRecord != null)
                 {
                     existingRecord.StartTime = DateTime.UtcNow;
+                    existingRecord.EndTime = DateTime.UtcNow.AddMinutes(model.DurationInMinutes);
                     existingRecord.ExamStatus = Constants.ExamStatus.INPROGRESS;
                     _userExamRecordService.UpdateUserExamRecord(existingRecord);
                 }
@@ -275,7 +274,7 @@ namespace DemoProject.Controllers
                     return Json(new { success = false, message = "Exam record not found." });
                 }
                 record.EndTime = DateTime.UtcNow;
-                record.ExamStatus = Constants.ExamStatus.COMPLETED;
+                record.ExamStatus = Constants.ExamStatus.COMPLETED; 
                 _userExamRecordService.UpdateUserExamRecord(record);
 
                 return Json(new { success = true, redirectUrl = Url.Action("SubmissionSuccess", "UserExamRecord", new { examId = record.Id }) });

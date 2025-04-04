@@ -86,19 +86,27 @@
 
 
             columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" })
-                .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
-                .ClientTemplate("<div class='k_action_table'>" +
-                    (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "PaperSet") + "/#=Id#'><i class='fa fa-edit'></i></a>" : "") +
-                "</div>")
-                .Filterable(false)
-                .Title("Edit")
-                .Width("5%")
-                .Sortable(false);
+    .HtmlAttributes(new { @class = "kendogrid_Action center_text" })
+    .ClientTemplate("<div class='k_action_table'>" +
+        (AllowedEdit ? "<a title='Edit' href='javascript:void(0);' onclick='checkIfUsed(#=Id#)'><i class='fa fa-edit'></i></a>" : "") +
+    "</div>")
+    .Filterable(false)
+    .Title("Edit")
+    .Width("5%")
+    .Sortable(false);
+
 
             columns.Bound(c => c.Id)
     .Title("Actions")
     .Width("5%")
     .ClientTemplate("#if(Status == 'COMPLETED'){#<a href='javascript:void(0);' onclick='openUserExamModal(#=Id#)' title='Generate Tokens'><i class='fa fa-link'></i></a>#} else {# &#160; #}#")
+    .Filterable(false)
+    .Sortable(false);
+
+            columns.Bound(c => c.Id)
+    .Title("Clone")
+    .Width("3%")
+    .ClientTemplate("<a href='javascript:void(0);' onclick='clonePaperSet(#=Id#)' title='Clone'><i class='fa fa-copy'></i></a>")
     .Filterable(false)
     .Sortable(false);
 
@@ -141,10 +149,8 @@
 
 <div class="modal fade" id="viewPaperSetModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-fullscreen" role="document">
-        <!-- Fullscreen modal -->
         <div class="modal-content">
             <div class="modal-body">
-                <!-- Question details will be loaded here dynamically via AJAX -->
             </div>
         </div>
     </div>
@@ -157,7 +163,6 @@
         type: 'GET',
         data: { id: id },
         success: function (response) {
-            // Assuming response contains HTML content for modal
             $("#viewPaperSetModal .modal-body").html(response);
             $("#viewPaperSetModal").modal("show");
         },
@@ -170,58 +175,6 @@
 </script>
 
 
-@*<div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModalLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Paper Set Link</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="generatedLink" class="form-control" readonly onclick="this.select();">
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="copyLink()">Copy Link</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>*@
-
-
-@*<script>
-    function generateOrShowLink(paperSetId) {
-        $.ajax({
-            url: '@Url.Action("GenerateOrGetLink", "PaperSet")',
-            type: 'POST',
-            data: { paperSetId: paperSetId },
-            success: function(response) {
-                if (response.success) {
-                    $("#generatedLink").val(response.link);
-                    $("#linkModal").modal("show");
-                } else {
-                    alert("Failed to generate link.");
-                }
-            },
-            error: function() {
-                alert("Error occurred while generating the link.");
-            }
-        });
-    }
-
-        function copyLink() {
-            var linkText = document.getElementById("generatedLink");
-            linkText.select();
-            linkText.setSelectionRange(0, 99999); // For mobile devices
-
-            try {
-                document.execCommand("copy"); // Copy text to clipboard
-                //alert("Link copied to clipboard!");
-            } catch (err) {
-                alert("Failed to copy the link. Please copy it manually.");
-            }
-        }
-    </script>*@
 
 <div id="userExamModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -233,11 +186,51 @@
                 </button>
             </div>
             <div class="modal-body">
-                <!-- Partial view content loads here -->
             </div>
         </div>
     </div>
 </div>
+
+
+<div id="myModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h4 class="modal-title" id="myModalLabel"><i class="fa fa-exclamation-triangle"></i> Attention</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>This paper set is already used for a user exam. Please review it before proceeding.</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cloneSuccessModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="cloneSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-light">
+                <h5 class="modal-title" id="cloneSuccessModalLabel">Success</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4>The paper set has been successfully cloned!</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -256,5 +249,44 @@
             }
         });
     }
+
+    function checkIfUsed(paperSetId) {
+    $.ajax({
+        url: '@Url.Action("CheckIfUsed", "PaperSet")',
+        type: 'GET',
+        data: { id: paperSetId },
+        success: function (response) {
+            if (response === true) {
+                $('#myModal').modal('show');
+            } else {
+                window.location.href = '@Url.Action("Create", "PaperSet")/' + paperSetId;
+            }
+        },
+        error: function () {
+            alert('An error occurred while checking the paper set status.');
+        }
+    });
+}
+
+function clonePaperSet(paperSetId) {
+    $.ajax({
+        url: '@Url.Action("Clone", "PaperSet")', // Adjust the action name and controller as necessary
+        type: 'POST',
+        data: { paperSetId: paperSetId },
+        success: function(response) {
+            if (response.success) {
+                // Show success message in modal
+                $('#cloneSuccessModal').modal('show');
+            } else {
+                alert('Failed to clone the paper set.');
+            }
+        },
+        error: function() {
+            alert('An error occurred while cloning the paper set.');
+        }
+    });
+}
+
+
 
 </script>

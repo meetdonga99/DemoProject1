@@ -74,6 +74,11 @@ namespace DemoProject.Data
             var record = (from a in _db.UserExamRecord where a.Id == userExamRecordId select a).FirstOrDefault();
             return record;
         }
+
+        public List<UserExamRecord> GetAllInprogressRecords()
+        {
+            return (from a in _db.UserExamRecord where a.ExamStatus == "INPROGRESS" select a).ToList();
+        }
     }
 }
 

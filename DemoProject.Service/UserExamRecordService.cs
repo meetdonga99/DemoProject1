@@ -46,5 +46,10 @@ namespace DemoProject.Service
             return _userExamRecordProvider.GetRecordByUserExamRecordId(userExamRecordId);
         }
 
+        public List<UserExamRecord> GetAllInprogressRecords()
+        {
+            return _userExamRecordProvider.GetAllInprogressRecords();
+        }
+
     }
 }

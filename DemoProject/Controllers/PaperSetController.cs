@@ -189,6 +189,30 @@ namespace DemoProject.Controllers
             return model;
         }
 
+        [HttpPost]
+        public JsonResult Clone(int paperSetId)
+        {
+            try
+            {
+                bool success = _paperSetService.ClonePaperSet(paperSetId);
+                return Json(new { success = success }); 
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        public JsonResult CheckIfUsed(int id)
+        {
+            
+            bool isUsed = _paperSetService.IsUsedForUserExam(id);
+
+            return Json(isUsed, JsonRequestBehavior.AllowGet);
+        }
+
         public JsonResult GetPaperSetStatusData([DataSourceRequest] DataSourceRequest request)
         {
             List<SelectListItem> _Status = new List<SelectListItem>();
@@ -387,84 +411,6 @@ namespace DemoProject.Controllers
             }
 
             return Json(new { success = true, records = examRecords });
-        }
-
-
-
-        //public ActionResult GenerateOrGetLink(int paperSetId)
-        //{
-        //    var userId = SessionHelper.UserId;
-        //    var existingLink = _paperSetLinkService.GetPaperSetLinkByPaperSetId(paperSetId);
-        //    var currentTime = DateTime.UtcNow;
-        //    if (existingLink == null || (existingLink.ExpiryDate.HasValue && existingLink.ExpiryDate <= currentTime))
-        //    {
-        //        var newToken = Guid.NewGuid().ToString();
-
-        //        if (existingLink == null)
-        //        {
-        //            existingLink = new PaperSetLink
-        //            {
-        //                PaperSetId = paperSetId,
-        //                Token = newToken,
-        //                IsActive = true,
-        //                ExpiryDate = currentTime.AddDays(30),
-        //                CreatedAt = currentTime,
-        //                CreatedBy = userId
-        //            };
-
-        //            _paperSetLinkService.CreatePaperSetLink(existingLink);
-        //        }
-        //        else
-        //        {
-        //            existingLink.Token = newToken;
-        //            existingLink.ExpiryDate = currentTime.AddDays(30);
-        //            existingLink.IsActive = true;
-        //            existingLink.UpdatedAt = currentTime;
-        //            existingLink.UpdatedBy = userId;
-
-        //            _paperSetLinkService.UpdatePaperSetLink(existingLink);
-        //        }
-
-        //    }
-        //    var linkUrl = Url.Action("ViewByToken", "PaperSet", new { token = existingLink.Token }, Request.Url.Scheme);
-        //    return Json(new { success = true, link = linkUrl }, JsonRequestBehavior.AllowGet);
-        //}
-
-        [AllowAnonymous]
-        public ActionResult ViewByToken(string token)
-        {
-            var link = _paperSetLinkService.GetPaperSetLinkByToken(token);
-            if (link == null || (link.ExpiryDate.HasValue && link.ExpiryDate < DateTime.UtcNow))
-            {
-                return View("InvalidLink");
-            }
-
-            var getPaperSet = _paperSetService.GetPaperSetById(link.PaperSetId);
-            var mappings = _paperSetQuestionMappingService.GetMappingsByPaperSetId(link.PaperSetId);
-            var questions = _questionService.GetAllQuestions();
-            ViewPaperSetModel model = new ViewPaperSetModel();
-            model.Id = link.PaperSetId;
-            model.PaperSetName = getPaperSet.PaperSetName;
-            model.TotalMarks = getPaperSet.TotalMarks;
-            model.DurationInMinutes = getPaperSet.DurationInMinutes;
-            model.Questions = (from mapping in mappings
-                               join question in questions
-                               on mapping.QuestionId equals question.Id
-                               select new QuestionModel()
-                               {
-                                   Id = question.Id,
-                                   SubjectId = question.Subjects.Id,
-                                   QuestionTypeId = question.QuestionTypes.Id,
-                                   QuestionText = question.QuestionText,
-                                   DefaultMarks = mapping.CustomMarks,
-                                   DifficultyLevel = question.DifficultyLevel,
-                                   Image = question.Image,
-                                   IsActive = question.IsActive,
-                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
-                               }
-                               ).ToList();
-
-            return View("ExamView",model);
         }
 
     }

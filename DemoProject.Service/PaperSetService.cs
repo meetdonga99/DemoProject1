@@ -46,6 +46,16 @@ namespace DemoProject.Service
             return _paperSetProvider.DeletePaperSet(paperSetId);
         }
 
+        public bool IsUsedForUserExam(int paperSetId)
+        {
+            return _paperSetProvider.IsUsedForUserExam(paperSetId);
+        }
+
+        public bool ClonePaperSet(int paperSetId)
+        {
+            return _paperSetProvider.ClonePaperSet(paperSetId);
+        }
+
         public void SaveChanges()
         {
            _paperSetProvider.SaveChanges();
