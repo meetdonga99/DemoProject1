@@ -46,6 +46,7 @@
     <Compile Include="ErrorLogService.cs" />
     <Compile Include="FormRoleMappingService.cs" />
     <Compile Include="FormsService.cs" />
+    <Compile Include="LeaderBoardService.cs" />
     <Compile Include="MessageService.cs" />
     <Compile Include="OptionService.cs" />
     <Compile Include="PaperSetLinkService.cs" />

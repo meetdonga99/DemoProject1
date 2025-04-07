@@ -43,7 +43,8 @@
 
               columns.Bound(c => c.PaperSetName).Title("Paper Set Name");
               columns.Bound(c => c.UserEmail).Title("User Email");
-              columns.Bound(c => c.ExamStatus).Title("Exam Status");
+              columns.Bound(c => c.ExamStatus).Title("Exam Status")
+                              .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=ExamStatus#</span>#} else {# #=ExamStatus# #}#");
               columns.Bound(c => c.ExpiryDate).Title("Expiry Date");
 
               columns.Bound(c => c.Token).Title("Actions").Width("5%").ClientTemplate(

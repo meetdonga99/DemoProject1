@@ -1191,6 +1191,7 @@
     <Content Include="Content\kendo\Office365\sprite_2x.png" />
     <Content Include="Content\kendo\Office365\sprite_kpi.png" />
     <Content Include="Content\kendo\Office365\sprite_kpi_2x.png" />
+    <Content Include="Content\QuestionImages\no-image.jpg" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
@@ -2254,6 +2255,7 @@
     <Compile Include="Controllers\FormController.cs" />
     <Compile Include="Controllers\FormRoleMappingController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LeaderBoardController.cs" />
     <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\PaperSetController.cs" />
     <Compile Include="Controllers\QuestionController.cs" />
@@ -3045,6 +3047,8 @@
     <Content Include="Views\UserExamRecord\SubmissionSuccess.cshtml" />
     <Content Include="Views\UserExamRecord\CompletedExamGrid.cshtml" />
     <Content Include="Views\UserExamRecord\EvaluateTestPaper.cshtml" />
+    <Content Include="Views\LeaderBoard\Index.cshtml" />
+    <Content Include="Views\LeaderBoard\_ViewExam.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -3054,7 +3058,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Content\QuestionImages\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DemoProject.Data\DemoProject.Data.csproj">

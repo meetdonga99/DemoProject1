@@ -104,12 +104,17 @@
         .Name("gridQuestion")
         .Columns(columns =>
         {
-            columns.Bound(c => c.Image).Width("10%").Title("Image")
-    .ClientTemplate("# if(Image) { # " +
+            columns.Bound(c => c.Image)
+    .Width("10%")
+    .Title("Image")
+    .ClientTemplate("# if (Image) { # " +
         "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
-        "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
-        "</a> # } else { # <span>No Image</span> # } #")
+        "<img src='/Content/QuestionImages/#=Image#' class='grid-image' />" +
+        "</a> # } else { # " +
+        "<img src='/Content/QuestionImages/no-image.jpg' class='grid-image' />" +
+        "# } #")
     .HtmlAttributes(new { style = "text-align:center;" });
+
 
             columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
             columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");

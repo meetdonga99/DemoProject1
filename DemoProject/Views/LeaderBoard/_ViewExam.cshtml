@@ -1,0 +1,234 @@
+﻿@model DemoProject.Models.UserExamViewModel
+
+<div class="exam-summary card mb-4">
+    <div class="card-header">
+        <h3>Exam Summary</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <p><strong>Start Time:</strong> @Model.StartTime.ToString()</p>
+            </div>
+            <div class="col-md-3">
+                <p><strong>End Time:</strong> @Model.EndTime.ToString()</p>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Duration:</strong> @Model.DurationInMinutes minutes</p>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Score:</strong> @Model.Score / @Model.TotalMarks</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    var correctAnswers = TempData["CorrectAnswers"] as IEnumerable<DemoProject.Models.CorrectAnswer>;
+}
+
+<div class="questions-container">
+    @for (int i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        var userAnswer = Model.Answers.FirstOrDefault(a => a.QuestionId == question.Id);
+        var correctAnswer = correctAnswers.FirstOrDefault(ca => ca.QuestionId == question.Id);
+
+        <div class="question-card card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h4>Question @(i + 1)</h4>
+                <span class="marks">Marks: @question.DefaultMarks</span>
+            </div>
+            <div class="card-body">
+                <div class="question-text mb-3">
+                    @Html.Raw(question.QuestionText)
+                </div>
+
+                @if (!string.IsNullOrEmpty(question.Image))
+                {
+                    <div class="question-image mb-3">
+                        <img src="@Url.Content("/Content/QuestionImages/"+question.Image)" alt="Question Image" class="img-fluid" />
+                    </div>
+                }
+
+                @if (question.QuestionTypeId == 1) // Radio buttons (single choice)
+                {
+                    <div class="options-container">
+                        @foreach (var option in question.options)
+                        {
+                            bool isSelected = userAnswer != null && userAnswer.SelectedOptions != null && userAnswer.SelectedOptions.Contains(option.Id);
+                            bool isCorrect = correctAnswer != null && correctAnswer.CorrectOptions != null && correctAnswer.CorrectOptions.Contains(option.Id);
+                            string optionClass = "";
+                            string statusIcon = "";
+
+                            if (isSelected && isCorrect)
+                            {
+                                optionClass = "correct-selected";
+                                statusIcon = "<i class='fa fa-check-circle text-success'></i>";
+                            }
+                            else if (isSelected && !isCorrect)
+                            {
+                                optionClass = "incorrect-selected";
+                                statusIcon = "<i class='fa fa-times-circle text-danger'></i>";
+                            }
+                            else if (!isSelected && isCorrect)
+                            {
+                                optionClass = "correct-not-selected";
+                                statusIcon = "<i class='fa fa-check-circle text-warning'></i>";
+                            }
+
+                            <div class="option-item d-flex align-items-center @optionClass">
+                                <div class="option-input mr-2">
+                                    <input type="radio" id="option_@(option.Id)" name="question_@(question.Id)" value="@option.Id" @(isSelected ? "checked" : "") disabled />
+                                </div>
+                                <label for="option_@(option.Id)" class="option-label mb-0 flex-grow-1">@Html.Raw(option.OptionText)</label>
+                                <div class="option-status ml-2">
+                                    @Html.Raw(statusIcon)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (question.QuestionTypeId == 2) // Checkboxes (multiple choice)
+                {
+                    <div class="options-container">
+                        @foreach (var option in question.options)
+                        {
+                            bool isSelected = userAnswer != null && userAnswer.SelectedOptions != null && userAnswer.SelectedOptions.Contains(option.Id);
+                            bool isCorrect = correctAnswer != null && correctAnswer.CorrectOptions != null && correctAnswer.CorrectOptions.Contains(option.Id);
+                            string optionClass = "";
+                            string statusIcon = "";
+
+                            if (isSelected && isCorrect)
+                            {
+                                optionClass = "correct-selected";
+                                statusIcon = "<i class='fa fa-check-circle text-success'></i>";
+                            }
+                            else if (isSelected && !isCorrect)
+                            {
+                                optionClass = "incorrect-selected";
+                                statusIcon = "<i class='fa fa-times-circle text-danger'></i>";
+                            }
+                            else if (!isSelected && isCorrect)
+                            {
+                                optionClass = "correct-not-selected";
+                                statusIcon = "<i class='fa fa-check-circle text-warning'></i>";
+                            }
+
+                            <div class="option-item d-flex align-items-center @optionClass">
+                                <div class="option-input mr-2">
+                                    <input type="checkbox" id="option_@(option.Id)" name="question_@(question.Id)" value="@option.Id" @(isSelected ? "checked" : "") disabled />
+                                </div>
+                                <label for="option_@(option.Id)" class="option-label mb-0 flex-grow-1">@Html.Raw(option.OptionText)</label>
+                                <div class="option-status ml-2">
+                                    @Html.Raw(statusIcon)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else // Descriptive (text area)
+                {
+                    <div class="descriptive-answer">
+                        <h5>User's Answer:</h5>
+                        <div class="user-answer">
+                            @Html.Raw(userAnswer?.DescriptiveAnswer ?? "No answer provided")
+                        </div>
+                    </div>
+                }
+
+                @if (userAnswer != null)
+                {
+                    <div class="obtained-marks mt-3 @(userAnswer.ObtainedMarks == question.DefaultMarks ? "full-marks" : userAnswer.ObtainedMarks > 0 ? "partial-marks" : "zero-marks")">
+                        <strong>Marks Obtained:</strong>
+                        <span class="marks-value">@userAnswer.ObtainedMarks / @question.DefaultMarks</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .correct-selected {
+        background-color: rgba(40, 167, 69, 0.1);
+        border-left: 4px solid #28a745;
+        padding-left: 10px;
+    }
+
+    .incorrect-selected {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+        padding-left: 10px;
+    }
+
+    .correct-not-selected {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-left: 4px solid #ffc107;
+        padding-left: 10px;
+    }
+
+    .question-card {
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .option-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .option-label {
+        margin-left: 8px;
+    }
+
+    .marks {
+        font-weight: bold;
+        background: #f8f9fa;
+        padding: 4px 10px;
+        border-radius: 4px;
+    }
+
+    .user-answer {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        border-left: 4px solid #6c757d;
+        margin-top: 10px;
+    }
+
+    .obtained-marks {
+        padding: 8px 15px;
+        border-radius: 4px;
+        display: inline-block;
+        font-weight: 500;
+    }
+
+    .full-marks {
+        background-color: rgba(40, 167, 69, 0.2);
+        border-left: 4px solid #28a745;
+    }
+
+    .partial-marks {
+        background-color: rgba(255, 193, 7, 0.2);
+        border-left: 4px solid #ffc107;
+    }
+
+    .zero-marks {
+        background-color: rgba(220, 53, 69, 0.2);
+        border-left: 4px solid #dc3545;
+    }
+
+    .marks-value {
+        font-weight: bold;
+    }
+
+    .option-status {
+        min-width: 24px;
+        text-align: center;
+    }
+</style>
+
+<!-- Add Font Awesome for the status icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

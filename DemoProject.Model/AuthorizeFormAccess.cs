@@ -18,7 +18,7 @@ namespace DemoProject.Model
             PAPERSET = 6,
             USEREXAMRECORD = 7,
 
-            //LANGUAGE = 8,
+            LEADERBOARD = 8,
             //COUNTRY = 9,
             FORMMASTER = 10,
             ROLES = 11,

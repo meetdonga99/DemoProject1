@@ -42,6 +42,7 @@ namespace DemoProject.Model
         public string ExamStatus { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public int Score { get; set; }
+        public string BadgeCode { get; set; }
 
     }
 }

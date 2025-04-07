@@ -1,4 +1,5 @@
-﻿using DemoProject.Model;
+﻿using DemoProject.Helper;
+using DemoProject.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +44,9 @@ namespace DemoProject.Data
 
         public IQueryable<UserExamRecordGridModel> GetAllUserExamRecordGrid()
         {
-            return (from userExamRecord in _db.UserExamRecord
+            return (from userExamRecord in _db.UserExamRecord 
+                    join commonLookUp in _db.CommonLookup on userExamRecord.ExamStatus equals commonLookUp.Code
+                    where commonLookUp.Type == LookupType.ExamStatus
                         //where paperSet.IsDeleted == false
                     select new UserExamRecordGridModel()
                     {
@@ -53,7 +56,8 @@ namespace DemoProject.Data
                         UserEmail = userExamRecord.User.Email,
                         ExamStatus = userExamRecord.ExamStatus,
                         ExpiryDate = userExamRecord.ExpiryDate,
-                        Score = userExamRecord.Score
+                        Score = userExamRecord.Score,
+                        BadgeCode = commonLookUp.BadgeCode
                     }).AsQueryable();
         }
 

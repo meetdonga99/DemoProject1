@@ -1,0 +1,277 @@
+﻿@{
+    ViewBag.Title = "Leaderboard";
+}
+@using Kendo.Mvc.UI
+@using DemoProject.Model
+@using DemoProject.Controllers
+@using DemoProject.Helper
+@using DemoProject.Service
+@{
+    string formCode = AuthorizeFormAccess.FormAccessCode.LEADERBOARD.ToString();
+    var formName = FormUtility.GetFormName(formCode);
+    string parentFormname = FormUtility.GetParentFormName(formCode);
+}
+<div class="coman_content">
+
+    <div class="subheader">
+        <div class="left_title">
+            <h2>@ViewBag.Title</h2>
+            <div class="left breadcrumb_list">
+                <ul>
+                    <li><a href="@Url.Action("Index", "Home")"><i class="fa fa-home"></i></a></li>
+                    <li>@formName</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+            <div style="flex-grow: 1; max-width: 300px;">
+                <label for="paperSetDropdown" style="display: block; margin-bottom: 5px; font-weight: 500;">Exam</label>
+
+                @(Html.Kendo().DropDownList()
+    .Name("paperSetDropdown")
+    .OptionLabel("All Exams")
+    .DataTextField("Name")
+    .DataValueField("Id")
+    .HtmlAttributes(new { style = "width: 100%;" })
+)
+            </div>
+
+            <div style="flex-grow: 1; max-width: 300px;">
+                <label for="globalSearch" style="display: block; margin-bottom: 5px; font-weight: 500;">Search</label>
+                <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 100%;" />
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: flex-end;" class="mt-4">
+                <button id="applyFilters" class="k-button k-primary" style="height: 36px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 36px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="common_white_box listingpage">
+        <div class="page-loader k-loading-image"></div>
+        @(Html.Kendo().Grid<DemoProject.Model.LeaderBoardGridModel>()
+            .Name("gridLeaderBoard")
+            .AutoBind(true)
+            .Columns(columns =>
+            {
+                columns.Bound(c => c.Email).Title("User Email");
+                columns.Bound(c => c.PaperSetName).Title("Exam");
+                columns.Bound(c => c.Score).Title("Score");
+                columns.Bound(c => c.Date).Title("Date").Format("{0:yyyy-MM-dd}");
+                columns.Bound(c => c.UserExamRecordId)
+.Title("View")
+.Width("2%")
+.ClientTemplate("<a href='javascript:void(0);' onclick='viewExam(#=UserExamRecordId#)' title='View'><i class='fa fa-eye'></i></a>")
+.Filterable(false)
+.Sortable(false);
+            })
+            .Events(evt => evt
+                .DataBinding("fnKendoGridCommonDataBinding")
+                .DataBound("fnKendoGridDataBoundEvent")
+            )
+            .NoRecords("No record found")
+            .Sortable()
+            .Pageable(pageable => pageable
+                .Refresh(true)
+                .PageSizes(new[] {10, 20, 50, 100, 200})
+                .ButtonCount(5)
+            )
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .Read(read => read.Action("GetLeaderBoardGridData", "LeaderBoard").Data("getFilterData"))
+                .PageSize(10)
+            )
+        )
+    </div>
+</div>
+
+<div id="examDrawer" class="exam-drawer">
+    <div class="exam-drawer-header">
+        <h3>Exam Details</h3>
+        <button type="button" class="close-drawer" onclick="closeExamDrawer()">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+    <div class="exam-drawer-content">
+    </div>
+</div>
+<div id="drawerOverlay" class="drawer-overlay" onclick="closeExamDrawer()"></div>
+
+<style>
+    .exam-drawer {
+        position: fixed;
+        top: 0;
+        right: -50%; /* Changed from -100% to match new width */
+        width: 50%; /* Changed from 90% to 50% */
+        max-width: 1200px;
+        height: 100%;
+        background-color: #fff;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        transition: right 0.3s ease-in-out;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .drawer-open {
+        right: 0;
+    }
+
+    .drawer-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        display: none;
+    }
+
+    .exam-drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        background-color: #f8f9fa;
+    }
+
+    .exam-drawer-header h3 {
+        margin: 0;
+    }
+
+    .close-drawer {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #555;
+    }
+
+    .close-drawer:hover {
+        color: #000;
+    }
+
+    .exam-drawer-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    @@media (max-width: 768px) {
+        .exam-drawer {
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+
+<script>
+    function viewExam(userExamRecordId) {
+        $(".exam-drawer-content").html('<div class="text-center p-5"><i class="fa fa-spinner fa-spin fa-3x"></i><p class="mt-3">Loading exam details...</p></div>');
+
+        $("#examDrawer").addClass("drawer-open");
+        $("#drawerOverlay").show();
+
+        $.ajax({
+            url: '@Url.Action("ViewExam", "LeaderBoard")',
+            type: 'GET',
+            data: { userExamRecordId: userExamRecordId },
+            success: function (response) {
+                $(".exam-drawer-content").html(response);
+            },
+            error: function () {
+                $(".exam-drawer-content").html('<div class="text-center p-5"><i class="fa fa-exclamation-circle fa-3x text-danger"></i><p class="mt-3">Error loading exam details.</p></div>');
+            }
+        });
+
+        $("body").css("overflow", "hidden");
+    }
+
+    function closeExamDrawer() {
+        $("#examDrawer").removeClass("drawer-open");
+        $("#drawerOverlay").hide();
+
+        $("body").css("overflow", "");
+
+        setTimeout(function() {
+            $(".exam-drawer-content").empty();
+        }, 300);
+    }
+
+    $(document).keydown(function(e) {
+        if (e.key === "Escape" && $("#examDrawer").hasClass("drawer-open")) {
+            closeExamDrawer();
+        }
+    });
+
+    function getFilterData() {
+        return {
+            paperSetName: $("#paperSetDropdown").data("kendoDropDownList").value(),
+            searchTerm: $("#globalSearch").val()
+        };
+    }
+
+    $(document).ready(function () {
+
+        $.ajax({
+            url: '/LeaderBoard/GetPaperSetNames',
+            method: 'GET',
+            success: function (data) {
+                var dropdown = $('#paperSetDropdown').data("kendoDropDownList");
+
+
+                dropdown.setDataSource(new kendo.data.DataSource({
+                    data: data
+                }));
+
+                dropdown.setOptions({
+                    optionLabel: "All Exams"
+                });
+            }
+        });
+
+
+        $('#applyFilters').click(function () {
+            var grid = $('#gridLeaderBoard').data('kendoGrid');
+            grid.dataSource.read();
+        });
+
+
+        $('#clearFilters').click(function () {
+            var dropdown = $('#paperSetDropdown').data('kendoDropDownList');
+            dropdown.select(0);
+            $('#globalSearch').val('');
+
+            var grid = $('#gridLeaderBoard').data('kendoGrid');
+            grid.dataSource.read();
+        });
+
+
+        $('#globalSearch').keypress(function (e) {
+            if (e.which == 13) {
+                $('#applyFilters').click();
+            }
+        });
+
+        $('#paperSetDropdown').kendoDropDownList({
+            change: function () {
+                var grid = $('#gridLeaderBoard').data('kendoGrid');
+                grid.dataSource.read();
+            }
+        });
+
+    });
+</script>
