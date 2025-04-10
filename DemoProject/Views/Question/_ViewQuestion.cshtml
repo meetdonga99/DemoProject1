@@ -1,19 +1,18 @@
 ﻿@using DemoProject.Service
 @model DemoProject.Models.QuestionModel
 
-@*@ViewBag.IsIsShowExtraFields*@
 
 <style>
-    /* Improved styling for radio buttons and checkboxes */
+   
     .modal-content input[type="radio"],
     .modal-content input[type="checkbox"] {
-        transform: scale(1.5); /* Increase size */
-        margin-right: 8px; /* Add spacing */
+        transform: scale(1.5); 
+        margin-right: 8px; 
         cursor: pointer;
     }
 
     label {
-        font-size: 16px; /* Increase font size */
+        font-size: 16px;
         font-weight: 500;
         cursor: pointer;
     }
@@ -29,7 +28,6 @@
         background-color: #f9f9f9;
     }
 
-    /* Improve layout */
     .option-list {
         list-style: none;
         padding: 0;
@@ -51,16 +49,16 @@
     </div>
 
     <div class="modal-body">
-        <!-- Question Text -->
+        
         <p><strong>Question:</strong> @Model.QuestionText</p>
 
-        <!-- Show Difficulty Level if IsIsShowExtraFields is true -->
+       
         @if (TempData["IsIsShowExtraFields"] != null && (bool)TempData["IsIsShowExtraFields"])
         {
             <p><strong>Difficulty Level:</strong> @Model.DifficultyLevel</p>
         }
 
-        <!-- Image (if available) -->
+      
         @if (!string.IsNullOrEmpty(Model.Image))
         {
             <div style="text-align: center; margin: 10px 0;">
@@ -70,7 +68,7 @@
             </div>
         }
 
-        <!-- Options -->
+        
         @if (Model.QuestionTypeId == 1 || Model.QuestionTypeId == 2)
         {
             <p class="mt-3"><strong>Options:</strong></p>
@@ -87,17 +85,17 @@
                 @foreach (var option in Model.options)
                 {
                     <li>
-                        @if (Model.QuestionTypeId == 1) // Single correct answer (Radio)
+                        @if (Model.QuestionTypeId == 1) 
                         {
                             <input type="radio" disabled @(option.IsCorrect ? "checked" : "") />
                             <label>@option.OptionText</label>
                         }
-                        else if (Model.QuestionTypeId == 2) // Multiple correct answers (Checkbox)
+                        else if (Model.QuestionTypeId == 2) 
                         {
                             <input type="checkbox" disabled @(option.IsCorrect ? "checked" : "") />
                             <label>@option.OptionText</label>
                         }
-                        else // Text answers
+                        else 
                         {
                             <strong>Answer @optionCount: </strong>
                             <div>

@@ -123,14 +123,25 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.ROLES.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var data = _rolesService.GetAllRolesGrid();
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Name != null && x.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.RoleCode != null && x.RoleCode.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
         public JsonResult CheckDuplicateRoleCode(string RoleCode, int Id)
         {

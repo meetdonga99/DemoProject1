@@ -19,13 +19,13 @@
     <div class="subheader">
         <div class="left_title">
             <h1 class="mr-3">Forms</h1>
-           
+
             <div class="left breadcrumb_list">
                 <ul>
-                <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
-                <li><a href="javascript:void(0)">@parentFormname</a></li>
-                <li>@formName</li>
-            </ul>
+                    <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                    <li><a href="javascript:void(0)">@parentFormname</a></li>
+                    <li>@formName</li>
+                </ul>
             </div>
         </div>
         <div class="subheader_right">
@@ -39,8 +39,27 @@
             }
         </div>
     </div>
-    <!--END Title div-->
 
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
@@ -49,12 +68,12 @@
             .AutoBind(false)
             .Columns(columns =>
             {
-                columns.Bound(c => c.Name).Width("14%").Title("Form Name");
-                columns.Bound(c => c.FormAccessCode).Width("15%").Title("Form Code");
-                columns.Bound(c => c.NavigateURL).Width("17%").Title("Navigate URL");
-                columns.Bound(c => c.ParentFormName).Width("5%").Title("Parent Form").Width("10%");
+                columns.Bound(c => c.Name).Width("14%").Title("Form Name").Filterable(false);
+                columns.Bound(c => c.FormAccessCode).Width("15%").Title("Form Code").Filterable(false);
+                columns.Bound(c => c.NavigateURL).Width("17%").Title("Navigate URL").Filterable(false);
+                columns.Bound(c => c.ParentFormName).Width("5%").Title("Parent Form").Width("10%").Filterable(false);
                 columns.Bound(c => c.DisplayOrder).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).Title("Display Order").Filterable(false);
-                columns.Bound(c => c.IsDisplayMenu).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsDisplayMenu == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Is Menu").Filterable(filterable => filterable.Enabled(false));
+                columns.Bound(c => c.IsDisplayMenu).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsDisplayMenu == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Is Menu").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
                 columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
                 columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Form") + "/#=Id#' " + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Edit").Width("3%").Sortable(false);
 
@@ -79,7 +98,7 @@
              .DataSource(dataSource => dataSource
                  .Ajax()
                  .Sort(sortable=>sortable.Add("Name").Ascending())
-                 .Read(read => read.Action("GetGridData", "Form")).PageSize(10)
+                 .Read(read => read.Action("GetGridData", "Form").Data("getFilterData")).PageSize(10)
              )
         )
     </div>
@@ -87,6 +106,9 @@
 
 <script>
     $(document).ready(function () {
+
+        initializeGridFilter('#gridForm', '#globalSearch', '#applyFilters', '#clearFilters');
+
         $('#gridForm').data('kendoGrid').dataSource.read();
         $('#gridForm').data('kendoGrid').refresh();
     });

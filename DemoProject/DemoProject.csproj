@@ -2278,6 +2278,7 @@
     <Compile Include="Helper\FormUtility.cs" />
     <Compile Include="Helper\MyJob.cs" />
     <Compile Include="Models\CommonLookupModel.cs" />
+    <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\FormModel.cs" />
     <Compile Include="Models\OptionModel.cs" />
     <Compile Include="Models\PaperSetModel.cs" />

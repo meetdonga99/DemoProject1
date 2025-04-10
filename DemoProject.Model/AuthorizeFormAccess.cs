@@ -17,12 +17,12 @@ namespace DemoProject.Model
             QUESTION = 5,
             PAPERSET = 6,
             USEREXAMRECORD = 7,
-
+            USEREXAMRECORDLIST = 9,
             LEADERBOARD = 8,
-            //COUNTRY = 9,
+            
             FORMMASTER = 10,
             ROLES = 11,
-            //UPDATESTS = 12,
+            COMPLETEDUSEREXAM = 12,
             //MANGINITFEED = 13,
             //MANGSENTCVS = 14,
             EMAILTEMPLATE = 15,

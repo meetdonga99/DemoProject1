@@ -127,12 +127,28 @@ namespace AiRecruitment.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(formCode, AccessPermission.IsView))
                 return AccessDenied();
             var commonLookUpData = _commonLookupService.GetAllLookup();
-            return Json(commonLookUpData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = commonLookUpData.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Name != null && x.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Type != null && x.Type.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Code != null && x.Code.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Comment != null && x.Comment.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    x.DisplayOrder.ToString().Contains(searchTerm)
+
+
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
 

@@ -37,7 +37,7 @@ namespace DemoProject.Controllers
         // GET: UserExamRecord
         public ActionResult Index()
         {
-            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USEREXAMRECORD.ToString(), AccessPermission.IsView))
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USEREXAMRECORDLIST.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
@@ -45,14 +45,29 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
-            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USEREXAMRECORD.ToString(), AccessPermission.IsView))
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USEREXAMRECORDLIST.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var data = _userExamRecordService.GetAllUserExamRecordGrid();
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Token != null && x.Token.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.PaperSetName != null && x.PaperSetName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.UserEmail != null && x.UserEmail.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.ExamStatus != null && x.ExamStatus.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    x.Score.ToString().Contains(searchTerm) ||
+                    (x.ExpiryDate != null && x.ExpiryDate.ToString("yyyy-MM-dd").IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
 
@@ -300,14 +315,28 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetCompletedExamGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetCompletedExamGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
-            //if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USEREXAMRECORD.ToString(), AccessPermission.IsView))
-            //{
-            //    return RedirectToAction("AccessDenied", "Base");
-            //}
+            if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.COMPLETEDUSEREXAM.ToString(), AccessPermission.IsView))
+            {
+                return RedirectToAction("AccessDenied", "Base");
+            }
             var data = _userExamRecordService.GetAllUserExamRecordGrid().Where(a => (a.ExamStatus != "PENDING" && a.ExamStatus != "INPROGRESS"));
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.PaperSetName != null && x.PaperSetName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.UserEmail != null && x.UserEmail.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.ExamStatus != null && x.ExamStatus.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    x.Score.ToString().Contains(searchTerm) ||
+                    (x.ExpiryDate != null && x.ExpiryDate.ToString("yyyy-MM-dd").IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult EvaluateTestPaper(string token)

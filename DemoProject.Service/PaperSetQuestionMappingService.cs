@@ -31,6 +31,16 @@ namespace DemoProject.Service
             return _paperSetQuestionMappingProvider.RemoveQuestionFromPaper(recId);
         }
 
+        public bool AddQuestionsInPaper(List<PaperSetQuestionMapping> mappings)
+        {
+            return _paperSetQuestionMappingProvider.AddQuestionsInPaper(mappings);
+        }
+
+        public bool UpdateMappings(IEnumerable<PaperSetQuestionMapping> mappings)
+        {
+            return _paperSetQuestionMappingProvider.UpdateMappings(mappings);
+        }
+
         public bool RemoveQuestionsFromPaper(List<PaperSetQuestionMapping> mappings)
         {
             return _paperSetQuestionMappingProvider.RemoveQuestionsFromPaper(mappings);

@@ -70,8 +70,13 @@
                             <label class="fw-bold">Name</label>
                             <input type="text" class="form-control mb-3 @((Model.ExamStatus == "INPROGRESS") ? "disabled-field" : "")" id="name" value="@Model.Name" @(Model.ExamStatus == "INPROGRESS" ? "readonly" : "")>
 
-                            <label class="fw-bold">Username</label>
-                            <input type="text" class="form-control @((Model.ExamStatus == "INPROGRESS") ? "disabled-field" : "")" id="username" value="@Model.UserName" @(Model.ExamStatus == "INPROGRESS" ? "readonly" : "")>
+                            <div class="mb-3">
+                                <label class="fw-bold">Username</label>
+                                <input type="text" class="form-control @((Model.ExamStatus == "INPROGRESS") ? "disabled-field" : "")"
+                                       id="username" value="@Model.UserName"
+                                       @(Model.ExamStatus == "INPROGRESS" ? "readonly" : "")>
+                                <!-- Error message will be inserted here dynamically -->
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -247,9 +252,48 @@
                 });
         }
 
+        function validateUsername() {
+            let username = $('#username').val();
+            let userId = userExamModel.UserId || 0;
 
+            if (username.trim() === '') {
+                return; 
+            }
 
-    $(document).ready(function () {
+            $.ajax({
+                url: '/UserProfile/CheckDuplicateUserName',
+                type: 'GET',
+                data: {
+                    UserName: username,
+                    UserId: userId
+                },
+                success: function (response) {
+                    if (response === true) {
+                       
+                        $('#username').removeClass('is-invalid').addClass('is-valid');
+                        $('#usernameError').remove();
+                        $('#startExamBtn').prop('disabled', false);
+                    } else {
+                        
+                        $('#username').removeClass('is-valid').addClass('is-invalid');
+
+                        
+                        $('#usernameError').remove();
+                        $('#username').after('<div id="usernameError" class="invalid-feedback">' + "Username is not available." + '</div>');
+                        $('#startExamBtn').prop('disabled', true);
+                    }
+                },
+                error: function () {
+                   
+                    alert('Error checking username availability. Please try again.');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $('#username').on('blur', function () {
+                validateUsername();
+            });
 
     $('#userDetailsModal').modal('show');
 

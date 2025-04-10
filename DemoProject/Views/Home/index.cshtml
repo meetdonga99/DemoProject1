@@ -1,9 +1,350 @@
-﻿@{
-    ViewBag.Title = "Home Page";
-}
+﻿@using Newtonsoft.Json;
 
-<main>
-    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Analytics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     
-</main>
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+    <style>
+        :root {
+            --main-color: #4f46e5;
+            --secondary-color: #818cf8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-primary);
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+            }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+        }
+
+        .chart-container {
+            border-radius: 12px;
+            height: 100%;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: none;
+            transition: box-shadow 0.3s ease;
+        }
+
+            .card:hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+
+        .card-header {
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1rem 1.5rem;
+        }
+
+        #examsPerMonthChart, #passFailChart {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="dashboard-header text-white text-center mb-4">
+            <h1 class="display-5 fw-bold mb-2">Exam Analytics Dashboard</h1>
+            <p class="lead mb-0">Performance overview and statistics</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon bg-light" style="color: var(--main-color);">
+                            <i class="fas fa-clipboard-list fa-2x"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mt-3" id="totalExams">@Model.TotalExams</h3>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-0">Total Exams</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon bg-light" style="color: var(--success-color);">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mt-3" id="totalCandidates">@Model.TotalCandidates</h3>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-0">Total Candidates</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon bg-light" style="color: #007bff;">
+                            <i class="fas fa-book fa-2x"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mt-3" id="avgScore">@Model.TotalSubjects</h3>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-0">Total Subjects</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon bg-light" style="color: var(--warning-color);">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h3 class="display-6 fw-bold mt-3" id="avgScore">@Model.AvgScore.ToString("0.00")%</h3>
+                        <p class="text-secondary text-uppercase small fw-semibold mb-0">Average Score</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card chart-container">
+                    <div class="card-header bg-white">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chart-bar me-2" style="color: var(--main-color);"></i>
+                            <h5 class="mb-0">Exams Per Month</h5>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="examsPerMonthChart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card chart-container">
+                    <div class="card-header bg-white">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-chart-pie me-2" style="color: var(--main-color);"></i>
+                            <h5 class="mb-0">Pass/Fail Distribution</h5>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="passFailChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get data from model
+        const examsPerMonthLabels = @Html.Raw(JsonConvert.SerializeObject(Model.ExamsPerMonthLabels));
+        const examsPerMonthData = @Html.Raw(JsonConvert.SerializeObject(Model.ExamsPerMonthData));
+        const passedCount = @Model.PassedCount;
+        const failedCount = @Model.FailedCount;
+
+        // Prepare data for amCharts
+        const examsData = examsPerMonthLabels.map((month, index) => {
+            return {
+                month: month,
+                exams: examsPerMonthData[index]
+            };
+        });
+
+        const passFailData = [
+            {
+                category: "Passed",
+                value: passedCount,
+                color: am5.color("#10b981")
+            },
+            {
+                category: "Failed",
+                value: failedCount,
+                color: am5.color("#ef4444")
+            }
+        ];
+
+        // Create Bar Chart - Exams Per Month
+        am5.ready(function() {
+            // Create root element
+            const root = am5.Root.new("examsPerMonthChart");
+
+            // Set themes
+            root.setThemes([am5themes_Animated.new(root)]);
+
+            // Create chart
+            const chart = root.container.children.push(
+                am5xy.XYChart.new(root, {
+                    panX: false,
+                    panY: false,
+                    wheelX: "panX",
+                    wheelY: "zoomX",
+                    layout: root.verticalLayout,
+                    paddingBottom: 30
+                })
+            );
+
+            // Create axes
+            const xAxis = chart.xAxes.push(
+                am5xy.CategoryAxis.new(root, {
+                    categoryField: "month",
+                    renderer: am5xy.AxisRendererX.new(root, {}),
+                    tooltip: am5.Tooltip.new(root, {})
+                })
+            );
+
+            xAxis.data.setAll(examsData);
+
+            const yAxis = chart.yAxes.push(
+                am5xy.ValueAxis.new(root, {
+                    min: 0,
+                    renderer: am5xy.AxisRendererY.new(root, {})
+                })
+            );
+
+            // Create series
+            const series = chart.series.push(
+                am5xy.ColumnSeries.new(root, {
+                    name: "Exams",
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: "exams",
+                    categoryXField: "month",
+                    tooltip: am5.Tooltip.new(root, {
+                        labelText: "{valueY} Exams"
+                    })
+                })
+            );
+
+            series.columns.template.setAll({
+                cornerRadiusTL: 5,
+                cornerRadiusTR: 5,
+                fillOpacity: 0.8,
+                fill: am5.color("#4f46e5")
+            });
+
+            series.data.setAll(examsData);
+
+            // Add legend
+            const legend = chart.children.push(am5.Legend.new(root, {
+                centerX: am5.percent(50),
+                x: am5.percent(50),
+                layout: root.horizontalLayout
+            }));
+
+            legend.data.setAll(chart.series.values);
+
+            // Add cursor
+            chart.set("cursor", am5xy.XYCursor.new(root, {
+                behavior: "zoomX"
+            }));
+
+            // Make stuff animate on load
+            series.appear(1000);
+            chart.appear(1000, 100);
+        });
+
+        // Create Pie Chart - Pass/Fail Distribution
+        am5.ready(function() {
+            // Create root element
+            const root = am5.Root.new("passFailChart");
+
+            // Set themes
+            root.setThemes([am5themes_Animated.new(root)]);
+
+            // Create chart
+            const chart = root.container.children.push(
+                am5percent.PieChart.new(root, {
+                    layout: root.verticalLayout,
+                    innerRadius: am5.percent(50)
+                })
+            );
+
+            // Create series
+            const series = chart.series.push(
+                am5percent.PieSeries.new(root, {
+                    valueField: "value",
+                    categoryField: "category",
+                    alignLabels: false
+                })
+            );
+
+            series.slices.template.setAll({
+                stroke: am5.color(0xffffff),
+                strokeWidth: 2,
+                templateField: "sliceSettings"
+            });
+
+            // Set custom colors for each slice
+            series.data.setAll(passFailData.map(item => ({
+                category: item.category,
+                value: item.value,
+                sliceSettings: {
+                    fill: item.color
+                }
+            })));
+
+            // Add label
+            series.labels.template.setAll({
+                text: "{category}: {value} ({valuePercentTotal.formatNumber('0.0')}%)",
+                radius: 10
+            });
+
+            // Add legend
+            const legend = chart.children.push(am5.Legend.new(root, {
+                centerX: am5.percent(50),
+                x: am5.percent(50),
+                layout: root.horizontalLayout,
+                marginTop: 20
+            }));
+
+            legend.data.setAll(series.dataItems);
+
+            // Make stuff animate on load
+            series.appear(1000, 100);
+        });
+    </script>
+</body>
+</html>

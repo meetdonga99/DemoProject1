@@ -125,15 +125,28 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.SUBJECT.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var data = _subjectService.GetAllSubjectsGrid();
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Name != null && x.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Code != null && x.Code.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
+
+
         public JsonResult CheckDuplicateSubjectCode(string Code, int Id)
         {
             var getSubjectDetails = _subjectService.CheckDuplicateSubjectCode(Code);

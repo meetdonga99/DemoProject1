@@ -14,6 +14,11 @@ namespace DemoProject.Data
         {
 
         }
+
+        public IQueryable<UserExamRecord> GetAllRecords()
+        {
+            return from i in _db.UserExamRecord select i;
+        }
         public int CreateUserExamRecord(UserExamRecord userExamRecord)
         {
             try
@@ -55,7 +60,7 @@ namespace DemoProject.Data
                         PaperSetName = userExamRecord.PaperSet.PaperSetName,
                         UserEmail = userExamRecord.User.Email,
                         ExamStatus = userExamRecord.ExamStatus,
-                        ExpiryDate = userExamRecord.ExpiryDate,
+                        ExpiryDate = userExamRecord.ExpiryDate.Value,
                         Score = userExamRecord.Score,
                         BadgeCode = commonLookUp.BadgeCode
                     }).AsQueryable();

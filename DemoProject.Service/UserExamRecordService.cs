@@ -16,6 +16,11 @@ namespace DemoProject.Service
             _userExamRecordProvider = new UserExamRecordProvider();
         }
 
+        public IQueryable<UserExamRecord> GetAllRecords()
+        {
+            return _userExamRecordProvider.GetAllRecords();
+        }
+
         public int CreateUserExamRecord(UserExamRecord userExamRecord)
         {
             return _userExamRecordProvider.CreateUserExamRecord(userExamRecord);

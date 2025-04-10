@@ -32,7 +32,29 @@
             }
         </div>
     </div>
-    <!--END Title div-->
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <div class="common_white_box listingpage inlinegrid_edit">
         <div class="page-loader k-loading-image"></div>
         @(Html.Kendo().Grid<DemoProject.Model.MessageGridModel>()
@@ -41,9 +63,9 @@
           {
               columns.Bound(c => c.Id).Hidden(true);
               columns.Bound(c=>c.UpdatedOn).Hidden(true);
-              columns.Bound(c => c.Code).Title("Code").ClientTemplate("<span class='uppercase' >#=Code#</span>");
-              columns.Bound(c => c.Message).Title("Message");
-              columns.Bound(c => c.Comment).Title("Comment").Width(300);
+              columns.Bound(c => c.Code).Title("Code").ClientTemplate("<span class='uppercase' >#=Code#</span>").Filterable(false);
+              columns.Bound(c => c.Message).Title("Message").Filterable(false);
+              columns.Bound(c => c.Comment).Title("Comment").Width(300).Filterable(false);
               columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
               columns.Command(command => { command.Edit(); }).Width(50).Hidden(!(AllowedAdd || AllowedEdit)).Title("Edit");
           })
@@ -71,7 +93,7 @@
                    .Ajax()
                    .Sort(sort=>sort.Add("Code").Ascending())
                    .Create(create => create.Action("Message_Create", "Message"))
-                   .Read(read => read.Action("GetGridData", "Message"))
+                   .Read(read => read.Action("GetGridData", "Message").Data("getFilterData"))
                    .Update(update => update.Action("Message_Update", "Message"))
                    .Destroy(destroy => destroy.Action("Message_Destroy", "Message"))
                    .Events(events => events.Error("error_handler"))
@@ -86,6 +108,9 @@
 </div>
 <script>
     $(document).ready(function () {
+
+        initializeGridFilter('#gridmessage', '#globalSearch', '#applyFilters', '#clearFilters');
+
         $('#gridmessage').data('kendoGrid').dataSource.read();
         $('#gridmessage').data('kendoGrid').refresh();
 

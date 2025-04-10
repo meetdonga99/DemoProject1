@@ -120,8 +120,6 @@ namespace DemoProject.Controllers
                 return RedirectToAction("AccessDenied", "Base");
             }
 
-            //SaveUpdatePaperSets(model);
-            //return RedirectToAction("Index");
             ModelState.Remove(nameof(model.QuestionMappings));
             if (ModelState.IsValid)
             {
@@ -163,29 +161,33 @@ namespace DemoProject.Controllers
                 _paperSetService.UpdatePaperSet(obj);
             }
             var _allMappings = _paperSetQuestionMappingService.GetMappingsByPaperSetId(model.Id);
+            var mappingsToBeUpdate = new List<PaperSetQuestionMapping>();
+            var mappingsToBeCreate = new List<PaperSetQuestionMapping>();
             foreach (var qm in model.QuestionMappings)
             {
-                var mapping = _paperSetQuestionMappingService.GetMappingsByPaperSetId(model.Id).Where(q => q.QuestionId == qm.QuestionId).FirstOrDefault();
+                var mapping = _allMappings.Where(q => q.QuestionId == qm.QuestionId).FirstOrDefault();
                 if(mapping != null)
                 {
                     mapping.CustomMarks = qm.CustomMarks;
-                    _paperSetQuestionMappingService.UpdateMapping(mapping);
+                    mappingsToBeUpdate.Add(mapping);
                     _allMappings.Remove(mapping);
                 }
                 else
                 {
-                    _paperSetQuestionMappingService.AddQuestionInPaper(new PaperSetQuestionMapping
+                    
+                    mappingsToBeCreate.Add(new PaperSetQuestionMapping
                     {
                         PaperSetId = model.Id,
                         QuestionId = qm.QuestionId,
                         CustomMarks = qm.CustomMarks
                     });
                 }
-                foreach(var rm in _allMappings)
-                {
-                    _paperSetQuestionMappingService.RemoveQuestionFromPaper(rm.Id);
-                }
+
             }
+           
+                _paperSetQuestionMappingService.RemoveQuestionsFromPaper(_allMappings);
+            _paperSetQuestionMappingService.AddQuestionsInPaper(mappingsToBeCreate);
+            _paperSetQuestionMappingService.UpdateMappings(mappingsToBeUpdate);
             return model;
         }
 
@@ -199,7 +201,6 @@ namespace DemoProject.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -230,15 +231,57 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.PAPERSET.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var data = _paperSetService.GetAllPaperSetsGrid();
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.PaperSetName != null && x.PaperSetName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Status != null && x.Status.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    x.TotalMarks.ToString().Contains(searchTerm) ||
+                    x.DurationInMinutes.ToString().Contains(searchTerm) 
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
+
+        //[HttpPost]
+        //public ActionResult GetLeaderBoardGridData([DataSourceRequest] DataSourceRequest request, string paperSetName, string searchTerm)
+        //{
+        //    if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.LEADERBOARD.ToString(), AccessPermission.IsView))
+        //    {
+        //        return RedirectToAction("AccessDenied", "Base");
+        //    }
+
+        //    var data = _leaderBoardService.GetLeaderBoardGrid();
+
+        //    if (!string.IsNullOrEmpty(paperSetName))
+        //    {
+        //        data = data.Where(x => x.PaperSetName == paperSetName);
+        //    }
+        //    var materializedData = data.ToList().AsQueryable();
+
+        //    if (!string.IsNullOrEmpty(searchTerm))
+        //    {
+        //        materializedData = materializedData.Where(x =>
+        //            (x.Email != null && x.Email.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+        //            (x.PaperSetName != null && x.PaperSetName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+        //            x.Score.ToString().Contains(searchTerm) ||
+        //            (x.Date != null && x.Date.ToString("yyyy-MM-dd").IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+        //        );
+        //    }
+        //    return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+        //}
+
+
 
         [HttpPost]
         public ActionResult GetUnselectedQuestionsGridData([DataSourceRequest] DataSourceRequest request, int paperSetId)

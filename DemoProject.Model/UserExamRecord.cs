@@ -40,7 +40,7 @@ namespace DemoProject.Model
         public string PaperSetName { get; set; }
         public string UserEmail { get; set; }
         public string ExamStatus { get; set; }
-        public DateTime? ExpiryDate { get; set; }
+        public DateTime ExpiryDate { get; set; }
         public int Score { get; set; }
         public string BadgeCode { get; set; }
 

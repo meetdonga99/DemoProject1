@@ -8,14 +8,14 @@
 @using DemoProject.Helper
 @using DemoProject.Service
 @{
-//string formCode = AuthorizeFormAccess.FormAccessCode.USEREXAMRECORD.ToString();
-//var formName = FormUtility.GetFormName(formCode);
-//string parentFormname = FormUtility.GetParentFormName(formCode);
-//ViewBag.Title = formName;
-//BaseController _base = new BaseController();
-//bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
-//bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
-//bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
+    string formCode = AuthorizeFormAccess.FormAccessCode.COMPLETEDUSEREXAM.ToString();
+    var formName = FormUtility.GetFormName(formCode);
+    string parentFormname = FormUtility.GetParentFormName(formCode);
+    //ViewBag.Title = formName;
+    //BaseController _base = new BaseController();
+    //bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
+    //bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
+    //bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
 
 }
 @*@Html.Hidden("hdnFormAccessCode", formCode)*@
@@ -26,34 +26,56 @@
             <div class="left breadcrumb_list">
                 <ul>
                     <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
-                    @*<li><a href="javascript:void(0)">@parentFormname</a></li>
-                    <li>@formName</li>*@
+                    <li><a href="javascript:void(0)">@parentFormname</a></li>
+                    <li>@formName</li>
                 </ul>
             </div>
         </div>
     </div>
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
         @(Html.Kendo().Grid<DemoProject.Model.UserExamRecordGridModel>()
-          .Name("gridQuestionTypes")
+          .Name("gridCompletedExams")
           .AutoBind(false)
           .Columns(columns =>
           {
 
-              columns.Bound(c => c.PaperSetName).Title("Paper Set Name");
-              columns.Bound(c => c.UserEmail).Title("User Email");
+              columns.Bound(c => c.PaperSetName).Title("Paper Set Name").Filterable(false);
+              columns.Bound(c => c.UserEmail).Title("User Email").Filterable(false);
               columns.Bound(c => c.ExamStatus).Title("Exam Status")
-                              .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=ExamStatus#</span>#} else {# #=ExamStatus# #}#");
+                              .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=ExamStatus#</span>#} else {# #=ExamStatus# #}#").Filterable(false);
 
-              columns.Bound(c => c.ExpiryDate).Title("Expiry Date");
-              columns.Bound(c => c.Score).Title("Score").Width("3%");
+              columns.Bound(c => c.ExpiryDate).Title("Expiry Date").Format("{0:yyyy-MM-dd}").Filterable(false);
+              columns.Bound(c => c.Score).Title("Score").Width("3%").Filterable(false);
               columns.Bound(c => c.Token).Title("Actions").Width("5%").ClientTemplate(
     "# if (ExamStatus !== 'RESULT_PUBLISHED') { #" +
         "<a href='javascript:void(0);' onclick='evaluateTest(\"#= Token #\")' class='btn btn-primary'>Evaluate Test</a>" +
     "# } else { #" +
         "<button class='btn btn-secondary' disabled>Test Evaluated</button>" +
     "# } #"
-);
+).Filterable(false);
           })
           .Events(evt => evt
               .DataBinding("fnKendoGridCommonDataBinding")
@@ -74,7 +96,7 @@
           )
           .DataSource(dataSource => dataSource
               .Ajax()
-              .Read(read => read.Action("GetCompletedExamGridData", "UserExamRecord")).PageSize(10)
+              .Read(read => read.Action("GetCompletedExamGridData", "UserExamRecord").Data("getFilterData")).PageSize(10)
           ))
     </div>
 </div>
@@ -83,8 +105,12 @@
 
 <script>
     $(document).ready(function () {
-        $('#gridQuestionTypes').data('kendoGrid').dataSource.read();
-        $('#gridQuestionTypes').data('kendoGrid').refresh();
+
+        initializeGridFilter('#gridCompletedExams', '#globalSearch', '#applyFilters', '#clearFilters');
+
+
+        $('#gridCompletedExams').data('kendoGrid').dataSource.read();
+        $('#gridCompletedExams').data('kendoGrid').refresh();
     });
 
 

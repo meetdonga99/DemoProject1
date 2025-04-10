@@ -29,12 +29,24 @@ namespace DemoProject.Controllers
 
             return View();
         }
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(formCode, AccessPermission.IsView))
                 return AccessDenied();
             var messageData = _messageService.GetAllMessageData();
-            return Json(messageData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = messageData.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Code != null && x.Code.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Comment != null && x.Comment.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Message != null && x.Message.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
         [HttpPost]
         public ActionResult Message_Create([DataSourceRequest] DataSourceRequest request, Message_Mst msg)

@@ -134,14 +134,28 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.FORMMASTER.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var data = _formsService.GetAllFormsGrid();
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Name != null && x.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.NavigateURL != null && x.NavigateURL.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.ParentFormName != null && x.ParentFormName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.FormAccessCode != null && x.FormAccessCode.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    x.DisplayOrder.ToString().Contains(searchTerm) 
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
         private void BindDropdown(ref FormModel model)

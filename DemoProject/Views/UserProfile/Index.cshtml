@@ -35,7 +35,28 @@
             </div>
         }
     </div>
-    <!--END Title div-->
+
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
 
 
     <div class="common_white_box listingpage">
@@ -45,11 +66,11 @@
         .Name("gridUserProfile")
         .Columns(columns =>
         {
-            columns.Bound(c => c.UpdatedOn).Hidden(true);
-            columns.Bound(c => c.Name).Width("14%").Title("Name");
-            columns.Bound(c => c.UserName).Width("14%").Title("User Name");
-            columns.Bound(c => c.Email).Width("14%").Title("Email");
-            columns.Bound(c => c.Role).Width("14%").Title("Role");
+            columns.Bound(c => c.UpdatedOn).Hidden(true).Filterable(false);
+            columns.Bound(c => c.Name).Width("14%").Title("Name").Filterable(false);
+            columns.Bound(c => c.UserName).Width("14%").Title("User Name").Filterable(false);
+            columns.Bound(c => c.Email).Width("14%").Title("Email").Filterable(false);
+            columns.Bound(c => c.Role).Width("14%").Title("Role").Filterable(false);
             columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
             columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "UserProfile") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Edit").Width("5%").Sortable(false);
 
@@ -74,10 +95,18 @@
         .DataSource(dataSource => dataSource
             .Ajax()
             .Sort(sortable=>sortable.Add("UpdatedOn").Descending())
-            .Read(read => read.Action("User_Read", "UserProfile")).PageSize(10)
+            .Read(read => read.Action("User_Read", "UserProfile").Data("getFilterData")).PageSize(10)
         ))
     </div>
 </div>
+
+<script>
+    $(document).ready(function () {
+        initializeGridFilter('#gridUserProfile', '#globalSearch', '#applyFilters', '#clearFilters');
+    });
+</script>
+
+
 @*<script>
         function fnConfirmDeleteRecord(id, name) {
             if (confirm('Are you sure you want to delete ' + name + '?')) {

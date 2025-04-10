@@ -17,6 +17,48 @@
 @Html.Hidden("hdnFormAccessCode", formCode)
 
 <style>
+    .slideout-panel {
+        position: fixed;
+        top: 0;
+        right: -50%;
+        width: 50%;
+        height: 100%;
+        background-color: white;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+        z-index: 1050;
+        transition: all 0.3s ease-in-out;
+        overflow-y: auto;
+    }
+
+        .slideout-panel.open {
+            right: 0;
+        }
+
+    .slideout-content {
+        position: relative;
+        padding: 20px;
+        height: 100%;
+    }
+
+    .close-slideout {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .slideout-body {
+        margin-top: 40px;
+        height: calc(100% - 40px);
+        overflow-y: auto;
+    }
+
+    body.slideout-open {
+        overflow: hidden;
+    }
+
     .close-modal {
         position: absolute;
         top: 10px;
@@ -53,7 +95,29 @@
             </div>
         }
     </div>
-    <!-- End Title Section -->
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+
 
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
@@ -63,11 +127,11 @@
         .Columns(columns =>
         {
 
-            columns.Bound(c => c.PaperSetName).Width("10%").Title("Paper Set Name");
-            columns.Bound(c => c.TotalMarks).Width("7%").Title("Total Marks");
-            columns.Bound(c => c.DurationInMinutes).Width("7%").Title("Duration In Minutes");
+            columns.Bound(c => c.PaperSetName).Width("10%").Title("Paper Set Name").Filterable(false);
+            columns.Bound(c => c.TotalMarks).Width("7%").Title("Total Marks").Filterable(false); 
+            columns.Bound(c => c.DurationInMinutes).Width("7%").Title("Duration In Minutes").Filterable(false); 
             columns.Bound(c => c.Status).Width("7%").Title("Status")
-                            .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=Status#</span>#} else {# #=Status# #}#");
+                            .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=Status#</span>#} else {# #=Status# #}#").Filterable(false); 
 
             columns.Bound(c => c.IsActive).Width("5%")
                 .HeaderHtmlAttributes(new { @class = "center_text" })
@@ -140,19 +204,17 @@
         )
         .DataSource(dataSource => dataSource
             .Ajax()
-            .Read(read => read.Action("GetGridData", "PaperSet"))
+            .Read(read => read.Action("GetGridData", "PaperSet").Data("getFilterData"))
             .PageSize(10)
         ))
     </div>
 </div>
 
 
-<div class="modal fade" id="viewPaperSetModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-fullscreen" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-            </div>
-        </div>
+<div id="viewPaperSetSlideout" class="slideout-panel">
+    <div class="slideout-content">
+        <span class="close-slideout">&times;</span>
+        <div class="slideout-body"></div>
     </div>
 </div>
 
@@ -163,14 +225,30 @@
         type: 'GET',
         data: { id: id },
         success: function (response) {
-            $("#viewPaperSetModal .modal-body").html(response);
-            $("#viewPaperSetModal").modal("show");
+            $("#viewPaperSetSlideout .slideout-body").html(response);
+            $("#viewPaperSetSlideout").addClass("open");
+            $("body").addClass("slideout-open");
         },
         error: function () {
             alert("Error loading paper set details.");
         }
     });
 }
+
+
+$(document).on("click", ".close-slideout", function() {
+    $("#viewPaperSetSlideout").removeClass("open");
+    $("body").removeClass("slideout-open");
+});
+
+$(document).on("click", function(e) {
+    if ($(e.target).closest(".slideout-content").length === 0 &&
+        $(e.target).closest("a[onclick^='viewPaperSet']").length === 0 &&
+        $("#viewPaperSetSlideout").hasClass("open")) {
+        $("#viewPaperSetSlideout").removeClass("open");
+        $("body").removeClass("slideout-open");
+    }
+});
 
 </script>
 
@@ -285,8 +363,9 @@ function clonePaperSet(paperSetId) {
             alert('An error occurred while cloning the paper set.');
         }
     });
-}
+    }
 
-
-
+    $(document).ready(function () {
+        initializeGridFilter('#gridPaperSet', '#globalSearch', '#applyFilters', '#clearFilters');
+    });
 </script>

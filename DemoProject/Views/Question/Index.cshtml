@@ -95,7 +95,28 @@
             </div>
         }
     </div>
-    <!-- End Title Section -->
+
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
@@ -113,21 +134,21 @@
         "</a> # } else { # " +
         "<img src='/Content/QuestionImages/no-image.jpg' class='grid-image' />" +
         "# } #")
-    .HtmlAttributes(new { style = "text-align:center;" });
+    .HtmlAttributes(new { style = "text-align:center;" }).Filterable(false);
 
 
-            columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
-            columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");
+            columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name").Filterable(false);
+            columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type").Filterable(false);
             columns.Bound(c => c.QuestionText)
                 .Width("42%")
                 .ClientTemplate("#= (QuestionText && QuestionText.length > 70) ? QuestionText.substring(0, 70).concat('...') : QuestionText #")
-                .Title("Question");
+                .Title("Question").Filterable(false);
 
 
 
-            columns.Bound(c => c.DefaultMarks).Width("7%").Title("Default Marks");
+            columns.Bound(c => c.DefaultMarks).Width("7%").Title("Default Marks").Filterable(false);
             columns.Bound(c => c.DifficultyLevel).Width("7%").Title("Difficulty Level")
-                .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=DifficultyLevel#</span>#} else {# #=DifficultyLevel# #}#");
+                .ClientTemplate("#if(BadgeCode!=null && BadgeCode!=''){#" + "<span class='status' style='background:#=BadgeCode#'>#=DifficultyLevel#</span>#} else {# #=DifficultyLevel# #}#").Filterable(false);
 
             columns.Bound(c => c.IsActive).Width("5%")
                 .HeaderHtmlAttributes(new { @class = "center_text" })
@@ -184,7 +205,7 @@
         )
         .DataSource(dataSource => dataSource
             .Ajax()
-            .Read(read => read.Action("GetGridData", "Question")).PageSize(10)
+            .Read(read => read.Action("GetGridData", "Question").Data("getFilterData")).PageSize(10)
         ))
     </div>
 </div>
@@ -225,6 +246,10 @@
 
 <script>
     $(document).ready(function () {
+
+        initializeGridFilter('#gridQuestion', '#globalSearch', '#applyFilters', '#clearFilters');
+
+
         var grid = $('#gridQuestion').data('kendoGrid');
         var deleteId = null;
 

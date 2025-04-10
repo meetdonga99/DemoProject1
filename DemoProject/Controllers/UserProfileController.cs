@@ -146,7 +146,6 @@ namespace DemoProject.Controllers
                 //user.DefaultPageId = (model.DefaultFormId == null ? 0 : model.DefaultFormId.Value);
 
                 int id = _userProfileService.UpdateUserProfile(user);
-                int flag = 0;
                 //foreach (int org in model.OrganizationId)
                 //{
                 //    UserOrganizationMapping obj = new UserOrganizationMapping();
@@ -245,14 +244,27 @@ namespace DemoProject.Controllers
             }
         }
 
-        public ActionResult User_Read([DataSourceRequest] DataSourceRequest request)
+        public ActionResult User_Read([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.USER.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var getallusers = _userProfileService.GetAllUserProfileGrid();
-            return Json(getallusers.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = getallusers.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.Name != null && x.Name.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.UserName != null && x.UserName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Email != null && x.Email.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.Role != null && x.Role.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
 

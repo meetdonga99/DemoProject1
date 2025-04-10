@@ -48,6 +48,35 @@ namespace DemoProject.Data
             return true;
         }
 
+        public bool AddQuestionsInPaper(List<PaperSetQuestionMapping> mappings)
+        {
+            _db.PaperSetQuestionMapping.AddRange(mappings);
+            _db.SaveChanges();
+
+            return true;
+        }
+
+        public bool UpdateMappings(IEnumerable<PaperSetQuestionMapping> mappings)
+        {
+            try
+            {
+                foreach (var mapping in mappings)
+                {
+                    _db.Entry(mapping).State = System.Data.Entity.EntityState.Modified;
+                }
+
+                _db.SaveChanges();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+
+
         public bool RemoveQuestionsFromPaper(List<PaperSetQuestionMapping> mappings)
         {
             //var rec = _db.PaperSetQuestionMapping.Find(recId);

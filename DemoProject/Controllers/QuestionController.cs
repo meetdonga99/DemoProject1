@@ -197,8 +197,8 @@ namespace DemoProject.Controllers
             {
                 string fileName = Path.GetFileName(file.FileName);
                 string filePath = Server.MapPath("~//Content//QuestionImages//") + fileName;
-                file.SaveAs(filePath); // Save file to server
-                obj.Image = fileName; // Set relative path
+                file.SaveAs(filePath); 
+                obj.Image = fileName; 
             }
             //else if (model.Id > 0)
             //{
@@ -222,14 +222,14 @@ namespace DemoProject.Controllers
             {
                 var existingOptions = _optionService.GetOptionsByQuestionId(obj.Id).ToList();
 
-                // Store IDs of incoming options for comparison
+                
                 var incomingOptionIds = model.options.Select(o => o.Id).ToHashSet();
 
                 foreach (var option in model.options)
                 {
                     if (option.Id == 0)
                     {
-                        // Add new option
+                        
                         Option newOption = new Option
                         {
                             QuestionId = obj.Id,
@@ -242,7 +242,7 @@ namespace DemoProject.Controllers
                     }
                     else
                     {
-                        // Update existing option
+                        
                         Option existingOption = existingOptions.FirstOrDefault(o => o.Id == option.Id);
                         if (existingOption != null)
                         {
@@ -255,11 +255,11 @@ namespace DemoProject.Controllers
                     }
                 }
 
-                // DELETE options that are in existingOptions but not in model.options
+               
                 var optionsToDelete = existingOptions.Where(o => !incomingOptionIds.Contains(o.Id)).ToList();
                 foreach (var option in optionsToDelete)
                 {
-                    _optionService.DeleteOption(option.Id); // Delete the option
+                    _optionService.DeleteOption(option.Id); 
                 }
             }
 
@@ -267,14 +267,28 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request)
+        public ActionResult GetGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTION.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
             var data = _questionService.GetAllQuestionsGrid();
-            return Json(data.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
+
+            var materializedData = data.ToList().AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                materializedData = materializedData.Where(x =>
+                    (x.SubjectName != null && x.SubjectName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.QuestionType != null && x.QuestionType.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.QuestionText != null && x.QuestionText.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (x.DifficultyLevel != null && x.DifficultyLevel.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    x.DefaultMarks.ToString().Contains(searchTerm)
+                );
+            }
+
+            return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
 

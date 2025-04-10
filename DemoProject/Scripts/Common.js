@@ -1,6 +1,47 @@
 ﻿var ACTIVE_REQ_CNT = 0;
 var kendoGridRowNumber = 0;
 
+// common.js
+
+function initializeGridFilter(gridSelector, searchInputId = '#globalSearch', applyBtnId = '#applyFilters', clearBtnId = '#clearFilters') {
+    const $searchInput = $(searchInputId);
+    const $applyBtn = $(applyBtnId);
+    const $clearBtn = $(clearBtnId);
+
+    // Apply Filters button
+    $applyBtn.on('click', function () {
+        const grid = $(gridSelector).data('kendoGrid');
+        if (grid) {
+            grid.dataSource.read();
+        }
+    });
+
+    // Clear Filters button
+    $clearBtn.on('click', function () {
+        $searchInput.val('');
+        const grid = $(gridSelector).data('kendoGrid');
+        if (grid) {
+            grid.dataSource.read();
+        }
+    });
+
+    // Enter key in search box
+    $searchInput.on('keypress', function (e) {
+        if (e.which === 13) {
+            $applyBtn.click();
+        }
+    });
+}
+
+// Common method to get search data
+function getFilterData() {
+    var searchInputId = '#globalSearch';
+    return {
+        searchTerm: $(searchInputId).val()
+    };
+}
+
+
 function fnShowWaitImage() {
     //document.getElementById('loaderContainer').style.display = 'block';
     $(".page-loader").css("display", "block");

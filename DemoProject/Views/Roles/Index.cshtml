@@ -33,7 +33,29 @@
             <a class="button button_primary button_rounded" href="@Url.Action("Create", "Roles")">Add New Role</a>
         </div>
     </div>
-    <!--END Title div-->
+
+    <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
+
+            <div style="flex-grow: 1;">
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
+                <div style="max-width: 300px;">
+                    <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
+                </div>
+
+                <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-search"></i> Apply Filters
+                </button>
+                <button id="clearFilters" class="k-button" style="height: 31px;">
+                    <i class="fa fa-times"></i> Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <div class="common_white_box listingpage">
         <div class="page-loader k-loading-image"></div>
         @(Html.Kendo().Grid<DemoProject.Models.RolesGridModel>()
@@ -42,8 +64,8 @@
           .Columns(columns =>
           {
 
-              columns.Bound(c => c.Name).Title("Name");
-              columns.Bound(c => c.RoleCode).Title("Role Code");
+              columns.Bound(c => c.Name).Title("Name").Filterable(false);
+              columns.Bound(c => c.RoleCode).Title("Role Code").Filterable(false);
               columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
               if (role == "sadmin")
               {
@@ -78,12 +100,14 @@
           )
           .DataSource(dataSource => dataSource
               .Ajax()
-              .Read(read => read.Action("GetGridData", "Roles")).PageSize(10)
+              .Read(read => read.Action("GetGridData", "Roles").Data("getFilterData")).PageSize(10)
           ))
     </div>
 </div>
 <script>
     $(document).ready(function () {
+        initializeGridFilter('#gridRoles', '#globalSearch', '#applyFilters', '#clearFilters');
+
         $('#gridRoles').data('kendoGrid').dataSource.read();
         $('#gridRoles').data('kendoGrid').refresh();
     });
