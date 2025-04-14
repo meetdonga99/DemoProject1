@@ -15,6 +15,7 @@ namespace DemoProject.Models
             _SubjectList = new List<SelectListItem>();
             _QuestionTypeList = new List<SelectListItem>();
             options = new List<OptionModel>();
+            mediaFiles = new List<MediaModel>();
 
         }
         public int Id { get; set; }
@@ -37,6 +38,7 @@ namespace DemoProject.Models
         public bool IsActive { get; set; }
         [MinOptionsRequired(1)]
         public List<OptionModel> options { get; set; }
+        public List<MediaModel> mediaFiles { get; set; }
 
     }
 

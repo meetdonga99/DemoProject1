@@ -1,4 +1,6 @@
 ﻿@using System.Web.Helpers
+@using System.Web;
+@using System.Web.Optimization;
 @{
     ViewBag.Title = "ExamView";
     Layout = null;
@@ -13,9 +15,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Exam View</title>
 
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.thumbs.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.thumbs.js"></script>
     <style>
         .disabled-email,
         .disabled-field {
@@ -24,6 +31,7 @@
             border: 1px solid #ced4da;
             cursor: not-allowed;
         }
+
         #questionPalette .btn {
             width: 40px;
             height: 40px;
@@ -50,6 +58,36 @@
             .question-status-legend .btn {
                 pointer-events: none;
             }
+
+
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .gallery-thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+            .gallery-thumbnail:hover {
+                transform: scale(1.05);
+            }
+
+        .fancybox-thumbs {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .fancybox-thumbs__list a::before {
+            border-color: #ff5268;
+        }
     </style>
 </head>
 <body>
@@ -75,7 +113,6 @@
                                 <input type="text" class="form-control @((Model.ExamStatus == "INPROGRESS") ? "disabled-field" : "")"
                                        id="username" value="@Model.UserName"
                                        @(Model.ExamStatus == "INPROGRESS" ? "readonly" : "")>
-                                <!-- Error message will be inserted here dynamically -->
                             </div>
                         </div>
 
@@ -257,7 +294,7 @@
             let userId = userExamModel.UserId || 0;
 
             if (username.trim() === '') {
-                return; 
+                return;
             }
 
             $.ajax({
@@ -269,22 +306,22 @@
                 },
                 success: function (response) {
                     if (response === true) {
-                       
+
                         $('#username').removeClass('is-invalid').addClass('is-valid');
                         $('#usernameError').remove();
                         $('#startExamBtn').prop('disabled', false);
                     } else {
-                        
+
                         $('#username').removeClass('is-valid').addClass('is-invalid');
 
-                        
+
                         $('#usernameError').remove();
                         $('#username').after('<div id="usernameError" class="invalid-feedback">' + "Username is not available." + '</div>');
                         $('#startExamBtn').prop('disabled', true);
                     }
                 },
                 error: function () {
-                   
+
                     alert('Error checking username availability. Please try again.');
                 }
             });
@@ -350,12 +387,48 @@
 
             $('#questionText').html(`<strong>Question ${currentIndex + 1}:</strong> ${q.QuestionText} <strong>(Marks: ${q.DefaultMarks})</strong>`);
 
+            // Clear previous content including any existing galleries
             $('#optionsContainer').empty();
+            $('.image-gallery').remove();
 
-            if (q.Image && q.Image.trim() !== "") {
-                $('#questionImage').attr('src', "/Content/QuestionImages/" + q.Image).show();
-            } else {
-                $('#questionImage').hide();
+            // Create image gallery only if mediaFiles exist and not empty
+            if (q.mediaFiles && q.mediaFiles.length > 0) {
+                // Create an image gallery div
+                let galleryHtml = '<div class="image-gallery">';
+
+                // Add each image to the gallery
+                q.mediaFiles.forEach((mediaFile, index) => {
+                    galleryHtml += `
+                <a href="/Content/QuestionImages/${mediaFile.MediaName}" data-fancybox="gallery-question" class="gallery-item">
+                    <img src="/Content/QuestionImages/${mediaFile.MediaName}" class="gallery-thumbnail" alt="Question image ${index + 1}">
+                </a>
+            `;
+                });
+
+                galleryHtml += '</div>';
+
+                // Insert the gallery after the question text
+                $('#questionText').after(galleryHtml);
+
+                // Initialize FancyBox with thumbnails for this gallery
+                $('[data-fancybox="gallery-question"]').fancybox({
+                    buttons: [
+                        "zoom",
+                        "slideShow",
+                        "fullScreen",
+                        "close"
+                    ],
+                    loop: true,
+                    protect: true,
+                    thumbs: {
+                        autoStart: true,  // Show thumbnails by default
+                        hideOnClose: true
+                    },
+                    // Clear any previous instances to prevent duplicates
+                    afterClose: function () {
+                        $.fancybox.destroy();
+                    }
+                });
             }
 
             if (!userExamModel.Answers) {

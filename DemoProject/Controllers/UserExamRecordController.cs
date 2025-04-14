@@ -22,6 +22,8 @@ namespace DemoProject.Controllers
         private readonly UserProfileService _userProfileService;
         private readonly OptionService _optionService;
         private readonly UserExamAnswerService _userExamAnswerService;
+        private readonly MediaService _mediaService;
+
 
         public UserExamRecordController()
         {
@@ -32,6 +34,7 @@ namespace DemoProject.Controllers
             _userProfileService = new UserProfileService();
             _optionService = new OptionService();
             _userExamAnswerService = new UserExamAnswerService();
+            _mediaService = new MediaService();
         }
 
         // GET: UserExamRecord
@@ -145,7 +148,15 @@ namespace DemoProject.Controllers
                                    DifficultyLevel = question.DifficultyLevel,
                                    Image = question.Image,
                                    IsActive = question.IsActive,
-                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
+                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList(),
+                                   mediaFiles = _mediaService.GetMediaByQuestionId(question.Id).Select(m => new MediaModel
+                                   {
+                                       Id = m.Id,
+                                       QuestionId = m.QuestionId,
+                                       MediaName = m.MediaName,
+                                       MediaType = m.MediaType,
+                                       IsDeleted = false
+                                   }).ToList()
                                }
                                ).ToList();
             model.Answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId).Select(a => new SaveAnswerModel
@@ -382,9 +393,18 @@ namespace DemoProject.Controllers
                                    DifficultyLevel = question.DifficultyLevel,
                                    Image = question.Image,
                                    IsActive = question.IsActive,
-                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
+                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList(),
+                                   mediaFiles = _mediaService.GetMediaByQuestionId(question.Id).Select(m => new MediaModel
+                                   {
+                                       Id = m.Id,
+                                       QuestionId = m.QuestionId,
+                                       MediaName = m.MediaName,
+                                       MediaType = m.MediaType,
+                                       IsDeleted = false
+                                   }).ToList()
                                }
                                ).ToList();
+
 
             var data = from i in model.Questions
                        select new CorrectAnswer()

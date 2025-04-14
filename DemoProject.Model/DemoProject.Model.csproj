@@ -61,6 +61,7 @@
     <Compile Include="DemoProjectEntities.cs" />
     <Compile Include="ErrorLog.cs" />
     <Compile Include="LeaderBoardGridModel.cs" />
+    <Compile Include="Media.cs" />
     <Compile Include="UserExamAnswer.cs" />
     <Compile Include="UserExamRecord.cs" />
     <Compile Include="FormRoleMapping.cs" />

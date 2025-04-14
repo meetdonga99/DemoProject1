@@ -61,6 +61,31 @@
         margin-top: 10px;
         display: block;
     }
+
+   
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .image-preview-item {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+        .image-preview-item img {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+    .image-action-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 100;
+    }
 </style>
 
 @using (Html.BeginForm("Create", "Question", FormMethod.Post, new { id = "frm", enctype = "multipart/form-data" }))
@@ -68,7 +93,7 @@
     @Html.HiddenFor(m => m.Id)
 
     <div class="coman_content">
-        <!-- Title Section -->
+       
         <div class="subheader">
             <div class="left_title">
                 <h2>@(Model.Id > 0 ? "Edit Question" : "Add Question")</h2>
@@ -82,13 +107,13 @@
             </div>
         </div>
 
-        <!-- Content Box -->
+        
         <div class="content_box">
             <div class="common_white_box">
                 <div class="form_element">
                     <div class="row">
                         <div class="col-md-8">
-                            <!-- Subject Dropdown -->
+                        
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Subject <sup class="span_req"><i class="fa fa-star"></i></sup></label>
@@ -99,7 +124,7 @@
                                 </div>
                             </div>
 
-                            <!-- Question Type Dropdown -->
+                           
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Question Type <sup class="span_req"><i class="fa fa-star"></i></sup></label>
@@ -110,7 +135,7 @@
                                 </div>
                             </div>
 
-                            <!-- Question Text -->
+                           
                             <div class="form_input_box">
                                 <div class="form-group">
                                     <label>Question <sup class="span_req"><i class="fa fa-star"></i></sup></label>
@@ -121,7 +146,7 @@
                                 </div>
                             </div>
 
-                            <!-- Default Marks -->
+                            
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Default Marks <sup class="span_req"><i class="fa fa-star"></i></sup></label>
@@ -132,7 +157,7 @@
                                 </div>
                             </div>
 
-                            <!-- Difficulty Level Dropdown -->
+                           
                             <div class="form_input_box col-md-6">
                                 <div class="form-group">
                                     <label>Difficulty Level</label>
@@ -146,118 +171,116 @@
                                 </div>
                             </div>
 
-
-                            <div class="form_input_box col-md-6">
+                           
+                            <div class="form_input_box col-md-12">
                                 <div class="form-group">
-                                    <label for="file">Image</label>
+                                    <label for="files">Images</label>
                                     <div class="input_box">
                                         <div class="d-flex align-items-center">
-                                            <input type="file" id="file" name="file" class="form-control" style="width: 70%;" />
-                                            <span id="fileName" class="ml-2 text-muted"></span> <!-- File Name Display -->
+                                            <input type="file" id="files" name="files" class="form-control" style="width: 70%;" multiple accept="image/jpeg,image/png,image/jpg" />
+                                            <span id="fileCount" class="ml-2 text-muted">No files chosen</span>
                                         </div>
-                                        @Html.HiddenFor(model => model.Image) <!-- This will be set to null if removed -->
-                                        <input type="hidden" id="imageRemoved" name="imageRemoved" value="false" /> <!-- Track image removal -->
+                                        @Html.ValidationMessageFor(model => model.mediaFiles)
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- Image Preview Section -->
+                            
+                            <div class="form_input_box col-md-12">
                                 <div class="form-group">
                                     <label></label>
-                                    <div id="imagePreview" class="mt-2 d-flex align-items-center">
-                                        @if (!string.IsNullOrEmpty(Model.Image))
-                                        {
-                                            <img src="@Url.Content("~/Content/QuestionImages/" + Model.Image)"
-                                                 id="previewImg"
-                                                 alt="Previously added image"
-                                                 class="img-thumbnail"
-                                                 style="max-width: 150px; max-height: 150px; margin-right: 10px;" />
-
-                                            <button type="button" id="removeImage" class="btn btn-danger btn-sm">
-                                                Remove Image
-                                            </button>
-                                        }
-                                        else
-                                        {
-                                            <img id="previewImg" class="img-thumbnail"
-                                                 style="max-width: 150px; max-height: 150px; margin-right: 10px; display: none;" />
-
-                                            <button type="button" id="removeImage" class="btn btn-danger btn-sm" style="display: none;">
-                                                Remove Image
-                                            </button>
-                                        }
-                                    </div>
-                                    </div>
-                                </div>
-
-
-
-                                <!-- Is Active Toggle -->
-                                <div class="form_input_box col-md-6">
-                                    <div class="form-group">
-                                        <label>Is Active</label>
-                                        <div class="input_box">
-                                            <div class="on_off_btn sms_not">
-                                                @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
-                                                <i></i>
-                                                <span class="span_yes">Yes</span>
-                                                <span class="span_no">No</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <!-- Options Section -->
-                                <div class="form-group">
-                                    <label>Options</label>
-                                    <div id="optionsWrapper" class="d-flex flex-column">
-                                        <div id="optionsContainer">
-                                            @if (Model.options != null && Model.options.Any())
+                                    <div class="input_box">
+                                        <div id="imagePreviewContainer" class="image-preview-container mt-2 d-flex flex-wrap">
+                                            
+                                            @if (Model.mediaFiles != null && Model.mediaFiles.Any())
                                             {
-                                                for (int i = 0; i < Model.options.Count; i++)
+                                                for (int i = 0; i < Model.mediaFiles.Count; i++)
                                                 {
-                                                    <div class="row answer-item mb-2">
-                                                        <div class="col-md-8">
-                                                            @Html.TextAreaFor(m => m.options[i].OptionText, new { @class = "form-control", placeholder = "Enter answer" })
-                                                            @Html.ValidationMessageFor(m => m.options[i].OptionText, "", new { @class = "text-danger" })
-                                                        </div>
-                                                        <div class="col-md-3 d-flex align-items-center">
-                                                            <label class="switch">
-                                                                <input type="checkbox" id="IsCorrectToggle_@i" class="answer-toggle" @(Model.options[i].IsCorrect ? "checked" : "")>
-                                                                <span class="slider"></span>
-                                                            </label>
-                                                            <span class="status-text ml-4">Correct</span>
-                                                            @Html.HiddenFor(m => m.options[i].IsCorrect, new { @id = $"IsCorrect_{i}" })
-                                                            @Html.HiddenFor(m => m.options[i].Id)
-                                                        </div>
-                                                        <div class="col-md-1 mt-3">
-                                                            <button type="button" class="btn btn-danger remove-answer">Remove</button>
-                                                        </div>
+                                                    var media = Model.mediaFiles[i];
+                                                    <div class="image-preview-item mr-3 mb-3" data-id="@media.Id">
+                                                        <img src="@Url.Content("~/Content/QuestionImages/" + media.MediaName)"
+                                                             alt="Image"
+                                                             class="img-thumbnail"
+                                                             style="width: 150px; height: 150px; object-fit: cover;" />
+                                                        <button type="button" class="btn btn-danger btn-sm image-action-btn remove-media">
+                                                            <i class="fa fa-times"></i>
+                                                        </button>
+                                                        @Html.HiddenFor(m => m.mediaFiles[i].Id)
+                                                        @Html.HiddenFor(m => m.mediaFiles[i].MediaName)
+                                                        @Html.HiddenFor(m => m.mediaFiles[i].MediaType)
+                                                        @Html.HiddenFor(m => m.mediaFiles[i].IsDeleted, new { @class = "is-deleted-field" })
                                                     </div>
                                                 }
                                             }
                                         </div>
-
-                                        <!-- Button correctly placed below all options -->
-                                        <div class="text-right mb-2">
-                                            <button type="button" id="addOption" class="btn btn-primary">Add Option</button>
-                                            @Html.ValidationMessageFor(model => model.options, "", new { @class = "text-danger" })
-
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="button_div">
-                                    <div class="form-group">
-                                        <label for="">&nbsp;</label>
-                                        <div class="input_box">
-                                            <button type="submit" class="button button_primary">Save</button>
-                                            <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
+                            
+                            <div class="form_input_box col-md-6">
+                                <div class="form-group">
+                                    <label>Is Active</label>
+                                    <div class="input_box">
+                                        <div class="on_off_btn sms_not">
+                                            @Html.CheckBoxFor(model => model.IsActive, new { @class = "ch_btn" })
+                                            <i></i>
+                                            <span class="span_yes">Yes</span>
+                                            <span class="span_no">No</span>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
+
+                            
+                            <div class="form-group">
+                                <label>Options</label>
+                                <div id="optionsWrapper" class="d-flex flex-column">
+                                    <div id="optionsContainer">
+                                        @if (Model.options != null && Model.options.Any())
+                                        {
+                                            for (int i = 0; i < Model.options.Count; i++)
+                                            {
+                                                <div class="row answer-item mb-2">
+                                                    <div class="col-md-8">
+                                                        @Html.TextAreaFor(m => m.options[i].OptionText, new { @class = "form-control", placeholder = "Enter answer" })
+                                                        @Html.ValidationMessageFor(m => m.options[i].OptionText, "", new { @class = "text-danger" })
+                                                    </div>
+                                                    <div class="col-md-3 d-flex align-items-center">
+                                                        <label class="switch">
+                                                            <input type="checkbox" id="IsCorrectToggle_@i" class="answer-toggle" @(Model.options[i].IsCorrect ? "checked" : "")>
+                                                            <span class="slider"></span>
+                                                        </label>
+                                                        <span class="status-text ml-4">Correct</span>
+                                                        @Html.HiddenFor(m => m.options[i].IsCorrect, new { @id = $"IsCorrect_{i}" })
+                                                        @Html.HiddenFor(m => m.options[i].Id)
+                                                    </div>
+                                                    <div class="col-md-1 mt-3">
+                                                        <button type="button" class="btn btn-danger remove-answer">Remove</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+
+                                   
+                                    <div class="text-right mb-2">
+                                        <button type="button" id="addOption" class="btn btn-primary">Add Option</button>
+                                        @Html.ValidationMessageFor(model => model.options, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="button_div">
+                                <div class="form-group">
+                                    <label for="">&nbsp;</label>
+                                    <div class="input_box">
+                                        <button type="submit" class="button button_primary">Save</button>
+                                        <a href="@Url.Action("Index", "Question")" class="button button_cancel">Cancel</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -265,14 +288,130 @@
     </div>
 }
 
+
 <script>
+    $(document).ready(function () {
+        // Store all selected files
+        let allSelectedFiles = new DataTransfer();
+
+        // Handle file selection for multiple files
+        $("#files").change(function (event) {
+            let fileInput = event.target;
+            let fileCount = fileInput.files.length;
+
+            // Add newly selected files to our collection
+            for (let i = 0; i < fileInput.files.length; i++) {
+                allSelectedFiles.items.add(fileInput.files[i]);
+            }
+
+            // Update the file input with all files
+            fileInput.files = allSelectedFiles.files;
+
+            // Update the file count display
+            $("#fileCount").text(allSelectedFiles.files.length > 0 ?
+                allSelectedFiles.files.length + " file(s) selected" : "No files chosen");
+
+            // Preview new images
+            for (let i = 0; i < fileCount; i++) {
+                let file = fileInput.files[allSelectedFiles.files.length - fileCount + i];
+                let reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Create preview element with unique temporary ID
+                    let tempId = "new-" + new Date().getTime() + "-" + i;
+                    let previewHtml = `
+                    <div class="image-preview-item mr-3 mb-3" data-temp-id="${tempId}" data-file-index="${allSelectedFiles.files.length - fileCount + i}">
+                        <img src="${e.target.result}"
+                             alt="New Image"
+                             class="img-thumbnail"
+                             style="width: 150px; height: 150px; object-fit: cover;" />
+                        <button type="button" class="btn btn-danger btn-sm image-action-btn remove-new-media">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                    $("#imagePreviewContainer").append(previewHtml);
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove existing media item
+        $(document).on("click", ".remove-media", function () {
+            let container = $(this).closest(".image-preview-item");
+            let isDeletedField = container.find(".is-deleted-field");
+
+            // Mark as deleted by setting the IsDeleted field to true
+            isDeletedField.val("true");
+
+            // Visual indication that the image is marked for deletion
+            container.addClass("text-muted");
+            container.find("img").css("opacity", "0.5");
+            $(this).html("Undo").removeClass("btn-danger").addClass("btn-info");
+            $(this).removeClass("remove-media").addClass("restore-media");
+        });
+
+        $(document).on("click", ".restore-media", function () {
+            let container = $(this).closest(".image-preview-item");
+            let isDeletedField = container.find(".is-deleted-field");
+
+            // Mark as not deleted
+            isDeletedField.val("false");
+
+            // Restore visual appearance
+            container.removeClass("text-muted");
+            container.find("img").css("opacity", "1");
+            $(this).html('<i class="fa fa-times"></i>').removeClass("btn-info").addClass("btn-danger");
+            $(this).removeClass("restore-media").addClass("remove-media");
+        });
+
+        // Remove newly added media before upload
+        $(document).on("click", ".remove-new-media", function () {
+            let container = $(this).closest(".image-preview-item");
+            let fileIndex = parseInt(container.attr("data-file-index"));
+
+            // Remove file from the DataTransfer object
+            let updatedFiles = new DataTransfer();
+            let fileInput = document.getElementById("files");
+
+            for (let i = 0; i < fileInput.files.length; i++) {
+                if (i !== fileIndex) {
+                    updatedFiles.items.add(fileInput.files[i]);
+                }
+            }
+
+            // Update the file input
+            allSelectedFiles = updatedFiles;
+            fileInput.files = updatedFiles.files;
+
+            // Update file count display
+            $("#fileCount").text(fileInput.files.length > 0 ?
+                fileInput.files.length + " file(s) selected" : "No files chosen");
+
+            // Remove the preview
+            container.remove();
+
+            // Update indices for remaining previews
+            $(".image-preview-item[data-file-index]").each(function () {
+                let index = parseInt($(this).attr("data-file-index"));
+                if (index > fileIndex) {
+                    $(this).attr("data-file-index", index - 1);
+                }
+            });
+        });
+    });
+
+
+
     $(document).ready(function () {
         function updateOptionIndices() {
             $("#optionsContainer .answer-item").each(function (index) {
                 $(this).find("textarea")
                     .attr("name", `options[${index}].OptionText`)
                     .attr("id", `OptionText_${index}`)
-                    .addClass("validate-required"); // Adding validation class
+                    .addClass("validate-required"); 
 
                 $(this).find(".answer-toggle").attr("id", `IsCorrectToggle_${index}`);
                 $(this).find("label.switch").attr("for", `IsCorrectToggle_${index}`);
@@ -320,7 +459,6 @@
             hiddenField.val(this.checked ? "true" : "false");
         });
 
-        // Validate before form submit
         $("form").submit(function (event) {
             let isValid = true;
 
@@ -337,111 +475,58 @@
             });
 
             if (!isValid) {
-                event.preventDefault(); // Prevent form submission if validation fails
+                event.preventDefault(); 
             }
         });
 
-        // Hide error message on input change
         $(document).on("input", ".validate-required", function () {
             $(this).siblings(".error-message").hide();
         });
-
     });
-</script>
 
-<script>
     $(document).ready(function () {
         $("form").submit(function (event) {
             let isValid = true;
-            let questionType = $("#QuestionTypeId").val(); // Get selected question type
-            let options = $(".answer-item").length; // Get number of options
-            let correctAnswers = $(".answer-toggle:checked").length; // Count checked correct answers
-
-            $(".text-danger").text("").hide(); // Clear previous errors
-
+            let questionType = $("#QuestionTypeId").val(); 
+            let options = $(".answer-item").length; 
+            let correctAnswers = $(".answer-toggle:checked").length; 
+            $(".text-danger").text("").hide(); 
 
             if (options < 2 && (questionType == "1" || questionType == "2")) {
                 $("#optionsWrapper").append('<span class="text-danger">At least 2 options are required.</span>');
                 isValid = false;
             }
 
-            if (questionType == "1") { // Assuming 1 = Radio (Single Choice)
+            if (questionType == "1") { 
                 if (correctAnswers !== 1) {
                     $("#optionsWrapper").append('<span class="text-danger">For Radio questions, exactly 1 option must be correct.</span>');
                     isValid = false;
                 }
-            } else if (questionType == "2") { // Assuming 2 = Checkbox (Multiple Choice)
+            } else if (questionType == "2") { 
                 if (correctAnswers < 1) {
                     $("#optionsWrapper").append('<span class="text-danger">For Checkbox questions, at least 1 correct option is required.</span>');
                     isValid = false;
                 }
             }
-
             if (!isValid) {
-                event.preventDefault(); // Stop form submission if validation fails
+                event.preventDefault();
             }
         });
     });
-</script>
 
-<script>
     $(document).ready(function () {
-        // Handle switch behavior when Question Type is Radio
+
         $(document).on("change", ".answer-toggle", function () {
-            let questionType = $("#QuestionTypeId").val(); // Get selected question type
-
-            if (questionType == "1") { // Assuming 1 = Radio (Single Choice)
-                $(".answer-toggle").not(this).prop("checked", false); // Uncheck all other toggles
-
-                // Update hidden fields for all other options
+            let questionType = $("#QuestionTypeId").val();
+            if (questionType == "1") { 
+                $(".answer-toggle").not(this).prop("checked", false); 
                 $(".answer-toggle").not(this).each(function () {
                     $(this).closest(".answer-item").find("input[type='hidden'][name$='.IsCorrect']").val("false");
                 });
             }
-
-            // Update the corresponding hidden input field for the selected toggle
             let hiddenField = $(this).closest(".answer-item").find("input[type='hidden'][name$='.IsCorrect']");
             hiddenField.val(this.checked ? "true" : "false");
         });
-    });
 
-</script>
-<script>
-    $(document).ready(function () {
-        let existingImageName = "@Model.Image";  // Get the previously uploaded image name
-        $("#fileName").text(existingImageName ? existingImageName : "No file chosen");
-
-        $("#file").change(function (event) {
-            let fileInput = event.target;
-            let fileName = fileInput.value.split("\\").pop(); // Extract file name
-            $("#fileName").text(fileName ? fileName : "No file chosen");
-
-            // Preview new image
-            if (fileInput.files && fileInput.files[0]) {
-                let reader = new FileReader();
-                reader.onload = function (e) {
-                    $("#previewImg").attr("src", e.target.result).show(); // Show new preview
-                    $("#removeImage").show(); // Show remove button
-                    $("#imageRemoved").val("false"); // Reset remove status
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            }
-        });
-
-        // Remove image functionality
-        $("#removeImage").click(function () {
-            $("#previewImg").hide(); // Hide image preview
-            $("#file").val(""); // Clear file input field
-            $("#fileName").text("No file chosen"); // Reset file name display
-            $(this).hide(); // Hide remove button
-            $("#imageRemoved").val("true"); // Mark image as removed
-        });
-
-        // On form submission, set Model.Image to null if removed
-        $("form").submit(function () {
-            if ($("#imageRemoved").val() === "true") {
-                $('input[name="Image"]').val(""); // Clear Model.Image value
-            }
-        });
     });
 </script>

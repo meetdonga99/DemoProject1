@@ -25,6 +25,7 @@ namespace DemoProject.Controllers
         private readonly QuestionTypeService _questionTypeService;
         private readonly CommonLookupService _lookupService;
         private readonly OptionService _optionService;
+        private readonly MediaService _mediaService;
 
 
         public QuestionController()
@@ -34,6 +35,7 @@ namespace DemoProject.Controllers
             _subjectService = new SubjectService();
             _lookupService = new CommonLookupService();
             _optionService = new OptionService();
+            _mediaService = new MediaService();
         }
 
         // GET: Question
@@ -77,6 +79,15 @@ namespace DemoProject.Controllers
                     model.Image = getQuestion.Image;
                     model.IsActive = getQuestion.IsActive;
                     model.options = _optionService.GetOptionsByQuestionId(id.Value).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId,OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList();
+                    model.mediaFiles = _mediaService.GetMediaByQuestionId(id.Value)
+                .Select(m => new MediaModel
+                {
+                    Id = m.Id,
+                    QuestionId = m.QuestionId,
+                    MediaName = m.MediaName,
+                    MediaType = m.MediaType,
+                    IsDeleted = false
+                }).ToList();
                 }
             } 
             BindSubject(ref model);
@@ -86,7 +97,7 @@ namespace DemoProject.Controllers
 
 
         [HttpPost]
-        public ActionResult Create(QuestionModel model, HttpPostedFileBase file)
+        public ActionResult Create(QuestionModel model, IEnumerable<HttpPostedFileBase> files)
         {
             string actionPermission = "";
             if (model.Id == 0)
@@ -125,9 +136,22 @@ namespace DemoProject.Controllers
                 }
             }
 
+            if (files != null)
+            {
+                foreach (var file in files.Where(f => f != null && f.ContentLength > 0))
+                {
+                    string extension = Path.GetExtension(file.FileName).ToLower();
+                    if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                    {
+                        ModelState.AddModelError("mediaFiles", "Only JPG and PNG files are allowed.");
+                        break;
+                    }
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                SaveUpdateQuestion(model, file);
+                SaveUpdateQuestion(model, files);
                 return RedirectToAction("Index");
             }
             else
@@ -178,10 +202,10 @@ namespace DemoProject.Controllers
             return Json(_DifficultyLevel, JsonRequestBehavior.AllowGet);
         }
 
-        public QuestionModel SaveUpdateQuestion(QuestionModel model, HttpPostedFileBase file)
+        public QuestionModel SaveUpdateQuestion(QuestionModel model, IEnumerable<HttpPostedFileBase> files)
         {
             int userId = SessionHelper.UserId;
-            Question obj = new Question();
+            Question obj = new Question();  
             if(model.Id > 0)
             {
                 obj = _questionService.GetQuestionById(model.Id);
@@ -193,17 +217,14 @@ namespace DemoProject.Controllers
             obj.DefaultMarks = model.DefaultMarks;
             obj.DifficultyLevel = model.DifficultyLevel;
             obj.Image = model.Image;
-            if (file != null && file.ContentLength > 0)
-            {
-                string fileName = Path.GetFileName(file.FileName);
-                string filePath = Server.MapPath("~//Content//QuestionImages//") + fileName;
-                file.SaveAs(filePath); 
-                obj.Image = fileName; 
-            }
-            //else if (model.Id > 0)
+            //if (file != null && file.ContentLength > 0)
             //{
-            //    //obj.Image = model.Image; // Keep existing image if no new file is uploaded
+            //    string fileName = Path.GetFileName(file.FileName);
+            //    string filePath = Server.MapPath("~//Content//QuestionImages//") + fileName;
+            //    file.SaveAs(filePath); 
+            //    obj.Image = fileName; 
             //}
+            
             obj.IsActive = model.IsActive;
             if (obj.Id == 0)
             {
@@ -261,6 +282,69 @@ namespace DemoProject.Controllers
                 {
                     _optionService.DeleteOption(option.Id); 
                 }
+            }
+
+            if (model.mediaFiles != null && model.mediaFiles.Any())
+            {
+                var filesToDelete = model.mediaFiles.Where(m => m.IsDeleted && m.Id > 0).ToList();
+                var filesToDeleteList = new List<Media>();
+                foreach (var file in filesToDelete)
+                {
+                    var media = _mediaService.GetMediaById(file.Id);
+                    if (media != null)
+                    {
+                        filesToDeleteList.Add(media);
+                        // Delete the physical file
+                        var filePath = Server.MapPath("~/Content/QuestionImages/") + media.MediaName;
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                       
+                    }
+                }
+                _mediaService.RemoveMultiMedia(filesToDeleteList);
+            }
+
+            if (files != null)
+            {
+                var filesToBeCreate = new List<Media>();
+                foreach (var file in files)
+                {
+                    if (file != null && file.ContentLength > 0)
+                    {
+                        string extension = Path.GetExtension(file.FileName).ToLower();
+
+                        // Only process allowed file types
+                        if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
+                        {
+                            string fileName = Path.GetFileName(file.FileName);
+                            string filePath = Server.MapPath("~/Content/QuestionImages/") + fileName;
+
+                            // If the file already exists, add a timestamp to make it unique
+                            if (System.IO.File.Exists(filePath))
+                            {
+                                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                                extension = Path.GetExtension(fileName);
+                                fileName = $"{fileNameWithoutExtension}_{timestamp}{extension}";
+                                filePath = Server.MapPath("~/Content/QuestionImages/") + fileName;
+                            }
+
+                            file.SaveAs(filePath);
+
+                            // Save to media table
+                            Media media = new Media
+                            {
+                                QuestionId = obj.Id,
+                                MediaName = fileName,
+                                MediaType = extension
+                            };
+                            filesToBeCreate.Add(media);
+                        }
+                    }
+                }
+                _mediaService.CreateMultiMedia(filesToBeCreate);
             }
 
             return model;
@@ -327,6 +411,15 @@ namespace DemoProject.Controllers
                 model.Image = getQuestion.Image;
                 model.IsActive = getQuestion.IsActive;
                 model.options = _optionService.GetOptionsByQuestionId(id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList();
+            model.mediaFiles = _mediaService.GetMediaByQuestionId(id).Select(m => new MediaModel
+            {
+                Id = m.Id,
+                QuestionId = m.QuestionId,
+                MediaName = m.MediaName,
+                MediaType = m.MediaType,
+                IsDeleted = false
+            }).ToList();
+
 
             TempData["IsIsShowExtraFields"] = IsShowExtraFields;
 

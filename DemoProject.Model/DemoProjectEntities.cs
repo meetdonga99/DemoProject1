@@ -39,5 +39,6 @@ namespace DemoProject.Model
         public DbSet<PaperSetLink> PaperSetLink { get; set; }
         public DbSet<UserExamRecord> UserExamRecord { get; set; }
         public DbSet<UserExamAnswer> UserExamAnswer { get; set; }
+        public DbSet<Media> Media { get; set; }
     }
 }

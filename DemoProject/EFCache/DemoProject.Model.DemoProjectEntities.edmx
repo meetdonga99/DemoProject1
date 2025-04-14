@@ -112,6 +112,15 @@
           <Property Name="UpdatedBy" Type="Int32" />
           <Property Name="UpdatedOn" Type="DateTime" />
         </EntityType>
+        <EntityType Name="Media" customannotation:ClrType="DemoProject.Model.Media, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="QuestionId" Type="Int32" Nullable="false" />
+          <Property Name="MediaName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="MediaType" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
         <EntityType Name="Message_Mst" customannotation:ClrType="DemoProject.Model.Message_Mst, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -423,6 +432,7 @@
           <EntitySet Name="ErrorLog" EntityType="Self.ErrorLog" />
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" />
+          <EntitySet Name="Media" EntityType="Self.Media" />
           <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" />
           <EntitySet Name="Option" EntityType="Self.Option" />
           <EntitySet Name="Question" EntityType="Self.Question" />
@@ -586,6 +596,16 @@
                 <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
                 <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
                 <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Media">
+            <EntityTypeMapping TypeName="DemoProject.Model.Media">
+              <MappingFragment StoreEntitySet="Media">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="QuestionId" ColumnName="QuestionId" />
+                <ScalarProperty Name="MediaName" ColumnName="MediaName" />
+                <ScalarProperty Name="MediaType" ColumnName="MediaType" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -903,6 +923,15 @@
           <Property Name="UpdatedBy" Type="int" Nullable="true" />
           <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
         </EntityType>
+        <EntityType Name="Media">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="QuestionId" Type="int" Nullable="false" />
+          <Property Name="MediaName" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="MediaType" Type="nvarchar(max)" Nullable="true" />
+        </EntityType>
         <EntityType Name="Message_Mst">
           <Key>
             <PropertyRef Name="Id" />
@@ -1207,6 +1236,7 @@
           <EntitySet Name="ErrorLog" EntityType="Self.ErrorLog" Schema="dbo" Table="ErrorLog" />
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" Schema="dbo" Table="FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" Schema="dbo" Table="Forms" />
+          <EntitySet Name="Media" EntityType="Self.Media" Schema="dbo" Table="Media" />
           <EntitySet Name="Message_Mst" EntityType="Self.Message_Mst" Schema="dbo" Table="Message_Mst" />
           <EntitySet Name="Option" EntityType="Self.Option" Schema="dbo" Table="Option" />
           <EntitySet Name="Question" EntityType="Self.Question" Schema="dbo" Table="Question" />
