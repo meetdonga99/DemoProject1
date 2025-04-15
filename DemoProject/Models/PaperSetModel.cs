@@ -45,7 +45,6 @@ namespace DemoProject.Models
         public string QuestionText { get; set; }
         public int DefaultMarks { get; set; }
         public string DifficultyLevel { get; set; }
-        public string Image { get; set; }
         public bool IsSelected { get; set; }
     }
 

@@ -221,10 +221,10 @@ namespace DemoProject.Controllers
                 return Json(message, JsonRequestBehavior.AllowGet);
             }
             else
-            {
+            { 
                 return Json(true, JsonRequestBehavior.AllowGet);
             }
-        }
+        } 
 
         public JsonResult CheckDuplicateUserName(string UserName, int UserId)
         {

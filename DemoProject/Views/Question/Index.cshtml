@@ -108,11 +108,22 @@
                     <input type="text" id="globalSearch" placeholder="Search..." class="k-textbox" style="width: 200px;" />
                 </div>
 
+
+
+
                 <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
-                    <i class="fa fa-search"></i> Apply Filters
+                    <i class="fa fa-search"></i>&nbsp; Apply Filters
                 </button>
                 <button id="clearFilters" class="k-button" style="height: 31px;">
                     <i class="fa fa-times"></i> Clear Filters
+                </button>
+
+                <button id="exportToExcel" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-file-excel-o"></i>&nbsp; Export to Excel
+                </button>
+
+                <button id="importExcel" class="k-button k-primary" style="height: 31px;">
+                    <i class="fa fa-upload"></i> &nbsp;Import from Excel
                 </button>
             </div>
         </div>
@@ -125,16 +136,6 @@
         .Name("gridQuestion")
         .Columns(columns =>
         {
-            columns.Bound(c => c.Image)
-    .Width("10%")
-    .Title("Image")
-    .ClientTemplate("# if (Image) { # " +
-        "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
-        "<img src='/Content/QuestionImages/#=Image#' class='grid-image' />" +
-        "</a> # } else { # " +
-        "<img src='/Content/QuestionImages/no-image.jpg' class='grid-image' />" +
-        "# } #")
-    .HtmlAttributes(new { style = "text-align:center;" }).Filterable(false);
 
 
             columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name").Filterable(false);
@@ -318,6 +319,13 @@
             alert("Error loading question details.");
         }
     });
-}
+    }
 
+    $("#exportToExcel").click(function() {
+    var searchTerm = $("#globalSearch").val();
+    window.location.href = '@Url.Action("ExportToExcel", "Question")?searchTerm=' + encodeURIComponent(searchTerm);
+});
+      $("#importExcel").click(function() {
+        window.location.href = '@Url.Action("Import", "Question")';
+    });
 </script>

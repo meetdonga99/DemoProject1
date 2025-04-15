@@ -1,0 +1,91 @@
+﻿@using DemoProject.Model
+@using DemoProject.Helper
+
+@{
+    ViewBag.Title = "Import Questions";
+    string formCode = AuthorizeFormAccess.FormAccessCode.QUESTION.ToString();
+    var formName = FormUtility.GetFormName(formCode);
+    string parentFormname = FormUtility.GetParentFormName(formCode);
+}
+
+<div class="coman_content">
+    <div class="subheader">
+        <div class="left_title">
+            <h2 class="mr-3">Import Questions</h2>
+            <div class="left breadcrumb_list">
+                <ul>
+                    <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                    <li><a href="javascript:void(0)">@parentFormname</a></li>
+                    <li><a href="@Url.Action("Index", "Question")">@formName</a></li>
+                    <li>Import</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="common_white_box">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <h5>Import Instructions</h5>
+                    <p>Please download the template file or export existing questions first. The import file must follow the exact format.</p>
+                    <ul>
+                        <li>Subject must exist in the system</li>
+                        <li>Question Type must exist in the system (e.g., Radio, Checkbox)</li>
+                        <li>For Radio questions: At least 2 options with exactly 1 marked as correct</li>
+                        <li>For Checkbox questions: At least 2 options with at least 1 marked as correct</li>
+                        <li>For other question types: At least 1 option</li>
+                        <li>Difficulty Level must exist in the system</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Download Template</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Download the template file for importing questions:</p>
+                        <a href="@Url.Action("DownloadTemplate", "Question")?searchTerm=" class="btn btn-primary">
+                            <i class="fa fa-download"></i> Download Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Upload Excel File</h5>
+                    </div>
+                    <div class="card-body">
+                        @using (Html.BeginForm("Import", "Question", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                        {
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                            <div class="form-group">
+                                <label for="excelFile">Select Excel File:</label>
+                                <input type="file" name="excelFile" id="excelFile" class="form-control" required accept=".xlsx" />
+                                <small class="form-text text-muted">Only .xlsx files are supported</small>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <button type="submit" class="btn btn-success mr-2">
+                                    <i class="fa fa-upload"></i> Import Questions
+                                </button>
+                                <a href="@Url.Action("Index", "Question")" class="btn btn-secondary">
+                                    <i class="fa fa-arrow-left"></i> Back to Questions
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

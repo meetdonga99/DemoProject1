@@ -312,7 +312,6 @@ namespace DemoProject.Controllers
                        ? mappings[q.Id]
                        : q.DefaultMarks,
                 DifficultyLevel = q.DifficultyLevel,
-                Image = q.Image,
                 IsSelected = mappings.ContainsKey(q.Id)
             }).ToList().AsQueryable();
 
@@ -348,7 +347,6 @@ namespace DemoProject.Controllers
                    ? mappings[q.Id]
                    : q.DefaultMarks,
             DifficultyLevel = q.DifficultyLevel,
-            Image = q.Image,
             IsSelected = mappings.ContainsKey(q.Id)
         }).ToList().AsQueryable();
 
@@ -377,7 +375,6 @@ namespace DemoProject.Controllers
                                    QuestionText = question.QuestionText,
                                    DefaultMarks = mapping.CustomMarks,
                                    DifficultyLevel = question.DifficultyLevel,
-                                   Image = question.Image,
                                    IsActive = question.IsActive,
                                    options = _optionService.GetOptionsByQuestionId(id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
                                }

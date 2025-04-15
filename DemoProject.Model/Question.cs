@@ -13,7 +13,6 @@ namespace DemoProject.Model
         public string QuestionText { get; set; }
         public int DefaultMarks { get; set; }
         public string DifficultyLevel { get; set; }
-        public string Image { get; set; }
         public bool IsActive { get; set; }
         public int CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
@@ -38,7 +37,6 @@ namespace DemoProject.Model
         public string QuestionText { get; set; }
         public int DefaultMarks { get; set; }
         public string DifficultyLevel { get; set; }
-        public string Image { get; set; }
         public bool IsActive { get; set; }
         public string BadgeCode { get; set; }
 

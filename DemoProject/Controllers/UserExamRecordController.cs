@@ -146,7 +146,6 @@ namespace DemoProject.Controllers
                                    QuestionText = question.QuestionText,
                                    DefaultMarks = mapping.CustomMarks,
                                    DifficultyLevel = question.DifficultyLevel,
-                                   Image = question.Image,
                                    IsActive = question.IsActive,
                                    options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList(),
                                    mediaFiles = _mediaService.GetMediaByQuestionId(question.Id).Select(m => new MediaModel
@@ -391,7 +390,6 @@ namespace DemoProject.Controllers
                                    QuestionText = question.QuestionText,
                                    DefaultMarks = mapping.CustomMarks,
                                    DifficultyLevel = question.DifficultyLevel,
-                                   Image = question.Image,
                                    IsActive = question.IsActive,
                                    options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList(),
                                    mediaFiles = _mediaService.GetMediaByQuestionId(question.Id).Select(m => new MediaModel

@@ -198,12 +198,7 @@
     .ClientTemplate("<input type='checkbox' class='isSelectedCheckbox' #= IsSelected ? 'checked' : '' # />")
     .EditorTemplateName("Boolean");
 
-        columns.Bound(c => c.Image).Width("10%").Title("Image")
-.ClientTemplate("# if(Image) { # " +
-    "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
-    "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
-    "</a> # } else { # <span>No Image</span> # } #")
-.HtmlAttributes(new { style = "text-align:center;" });
+        
 
         columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
         columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");
@@ -270,12 +265,7 @@
     .ClientTemplate("<input type='checkbox' class='isSelectedCheckbox' #= IsSelected ? 'checked' : '' # />")
     .EditorTemplateName("Boolean");
 
-        columns.Bound(c => c.Image).Width("10%").Title("Image")
-.ClientTemplate("# if(Image) { # " +
-    "<a href='javascript:void(0);' onclick='showImagePreview(\"#=Image#\")'>" +
-    "<img src='" + Url.Content("~/Content/QuestionImages/") + "#=Image#' class='grid-image' />" +
-    "</a> # } else { # <span>No Image</span> # } #")
-.HtmlAttributes(new { style = "text-align:center;" });
+   
 
         columns.Bound(c => c.SubjectName).Width("10%").Title("Subject Name");
         columns.Bound(c => c.QuestionType).Width("7%").Title("Question Type");

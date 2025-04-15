@@ -43,12 +43,18 @@
                     @Html.Raw(question.QuestionText)
                 </div>
 
-                @if (!string.IsNullOrEmpty(question.Image))
+                @if (question.mediaFiles != null && question.mediaFiles.Any())
                 {
-                    <div class="question-image mb-3">
-                        <img src="@Url.Content("/Content/QuestionImages/"+question.Image)" alt="Question Image" class="img-fluid" />
+                    <div class="image-gallery mb-3">
+                        @foreach (var mediaFile in question.mediaFiles)
+                        {
+                            <a href="@Url.Content("/Content/QuestionImages/"+mediaFile.MediaName)" data-fancybox="gallery-question-@question.Id" class="gallery-item">
+                                <img src="@Url.Content("/Content/QuestionImages/"+mediaFile.MediaName)" class="gallery-thumbnail" alt="Question image">
+                            </a>
+                        }
                     </div>
                 }
+
 
                 @if (question.QuestionTypeId == 1) // Radio buttons (single choice)
                 {
@@ -148,12 +154,12 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            
-                                <h5>User's Answer:</h5>
-                                <div class="answer-content">
-                                    @Html.Raw(userAnswer?.DescriptiveAnswer ?? "No answer provided")
-                                </div>
-                            
+
+                            <h5>User's Answer:</h5>
+                            <div class="answer-content">
+                                @Html.Raw(userAnswer?.DescriptiveAnswer ?? "No answer provided")
+                            </div>
+
                         </div>
                     </div>
                 }
@@ -170,7 +176,40 @@
     }
 </div>
 
+
 <style>
+ 
+    .image-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .gallery-thumbnail {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+        .gallery-thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+    
+    .fancybox-thumbs {
+        background: rgba(0,0,0,0.8);
+    }
+
+    .fancybox-thumbs__list a::before {
+        border-color: #ff5268;
+    }
+
+   
     .correct-selected {
         background-color: rgba(40, 167, 69, 0.1);
         border-left: 4px solid #28a745;
@@ -288,5 +327,77 @@
         }
 </style>
 
-<!-- Add Font Awesome for the status icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<script>
+    if (typeof jQuery === 'undefined') {
+        document.write('<script src="https://code.jquery.com/jquery-3.6.0.min.js"><\/script>');
+    }
+
+    (function () {
+        var checkFancybox = function () {
+            if (typeof $.fn.fancybox === 'undefined') {
+                if (!document.querySelector('link[href*="jquery.fancybox.min.css"]')) {
+                    $('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />');
+                }
+                if (!document.querySelector('link[href*="jquery.fancybox.thumbs.css"]')) {
+                    $('head').append('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.thumbs.css" />');
+                }
+
+                $.getScript("https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js")
+                    .done(function () {
+                        $.getScript("https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.thumbs.js")
+                            .done(function () {
+                                initializeFancybox();
+                                if ($('.loader-container').length) {
+                                    $('.loader-container').fadeOut();
+                                }
+                            });
+                    });
+            } else {
+                initializeFancybox();
+                if ($('.loader-container').length) {
+                    $('.loader-container').fadeOut();
+                }
+            }
+        };
+
+        var initializeFancybox = function () {
+            $('[data-fancybox^="gallery-question-"]').fancybox({
+                buttons: [
+                    "zoom",
+                    "slideShow",
+                    "fullScreen",
+                    "close"
+                ],
+                loop: true,
+                protect: true,
+                thumbs: {
+                    autoStart: true,
+                    hideOnClose: true
+                }
+            });
+
+            $(document).trigger('content-loaded');
+        };
+
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+            setTimeout(checkFancybox, 1);
+        } else {
+            document.addEventListener("DOMContentLoaded", checkFancybox);
+        }
+    })();
+
+    $(document).ready(function () {
+        if (window.parent && window.parent.hideLoader) {
+            window.parent.hideLoader();
+        }
+
+        if (typeof hideLoader === 'function') {
+            hideLoader();
+        }
+
+        $(document).trigger('partial-view-loaded');
+        $('.loader-container, #pageLoader, .page-loader').fadeOut();
+    });
+</script>

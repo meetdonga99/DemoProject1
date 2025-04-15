@@ -12,7 +12,6 @@
     bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
     bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
     bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
-
 }
 @Html.Hidden("hdnFormAccessCode", formCode)
 <div class="coman_content">
@@ -34,10 +33,39 @@
             }
         </div>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            @Html.Raw(TempData["SuccessMessage"])
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            @Html.Raw(TempData["ErrorMessage"])
+        </div>
+    }
+
     <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
 
             <div style="flex-grow: 1;">
+                @if (AllowedAdd)
+                {
+                    <button id="btnImportExcel" class="k-button k-primary" style="margin-right: 10px;">
+                        <i class="fa fa-file-excel-o"></i> &nbsp;Import Excel
+                    </button>
+                }
+                @if (AllowedEdit)
+                {
+                    <button id="btnExportExcel" class="k-button k-primary" style="margin-right: 10px;">
+                        <i class="fa fa-download"></i> &nbsp;Export Excel
+                    </button>
+                }
             </div>
 
             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
@@ -46,7 +74,7 @@
                 </div>
 
                 <button id="applyFilters" class="k-button k-primary" style="height: 31px;">
-                    <i class="fa fa-search"></i> Apply Filters
+                    <i class="fa fa-search"></i> &nbsp;Apply Filters
                 </button>
                 <button id="clearFilters" class="k-button" style="height: 31px;">
                     <i class="fa fa-times"></i> Clear Filters
@@ -62,12 +90,10 @@
           .AutoBind(false)
           .Columns(columns =>
           {
-
-              columns.Bound(c => c.Name).Title("Name").Filterable(false); 
+              columns.Bound(c => c.Name).Title("Name").Filterable(false);
               columns.Bound(c => c.Code).Title("Subject Code").Filterable(false);
               columns.Bound(c => c.IsActive).Width("5%").HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center-text" }).ClientTemplate("# if(IsActive == true) {#<i class='fa fa-check'></i># } else { #<i class='fa fa-close'></i># } #").Title("Active").Filterable(filterable => filterable.Messages(m => m.IsFalse("No").IsTrue("Yes")));
               columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + (AllowedEdit ? "<a title='Edit' href='" + Url.Action("Create", "Subject") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>" : "") + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
-
           })
           .Events(evt => evt
               .DataBinding("fnKendoGridCommonDataBinding")
@@ -92,13 +118,110 @@
           ))
     </div>
 </div>
+
+<!-- Import Excel Modal -->
+<div id="importExcelModal" style="display:none;">
+    @using (Html.BeginForm("ImportExcel", "Subject", FormMethod.Post, new { enctype = "multipart/form-data", id = "frmImportExcel" }))
+    {
+        <div style="padding: 20px;">
+            <h3>Import Subjects from Excel</h3>
+            <p>Please upload an Excel file with the following columns: Name, Code, IsActive</p>
+            <div style="margin: 15px 0;">
+                <input name="excelFile" id="excelFile" type="file" accept=".xls,.xlsx" />
+            </div>
+            <div style="margin-top: 20px;">
+                <a href="@Url.Action("DownloadTemplate", "Subject")" class="k-button">
+                    <i class="fa fa-download"></i> &nbsp;Download Template
+                </a>
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button type="button" id="btnCancelImport" class="k-button">Cancel</button>
+                <button type="submit" id="btnSubmitImport" class="k-button k-primary">Import</button>
+            </div>
+        </div>
+    }
+</div>
+
 <script>
     $(document).ready(function () {
         initializeGridFilter('#gridSubjects', '#globalSearch', '#applyFilters', '#clearFilters');
 
-
         $('#gridSubjects').data('kendoGrid').dataSource.read();
         $('#gridSubjects').data('kendoGrid').refresh();
+
+        // Initialize import modal as a Kendo Window
+        var importWindow = $("#importExcelModal").kendoWindow({
+            title: "Import Subjects",
+            modal: true,
+            visible: false,
+            resizable: false,
+            width: 500
+        }).data("kendoWindow");
+
+        // Show import modal when button is clicked
+        $("#btnImportExcel").click(function (e) {
+            e.preventDefault();
+            importWindow.center().open();
+        });
+
+        // Close import modal when cancel button is clicked
+        $("#btnCancelImport").click(function () {
+            importWindow.close();
+        });
+
+        // Initialize Kendo Upload for the file input
+        $("#excelFile").kendoUpload({
+            multiple: false,
+            showFileList: true,
+            localization: {
+                select: "Select Excel file"
+            },
+            validation: {
+                allowedExtensions: [".xls", ".xlsx"]
+            }
+        });
+
+        // Handle form submission
+        $("#frmImportExcel").submit(function (e) {
+            // Check if a file is selected using the Kendo Upload widget's API
+            var upload = $("#excelFile").data("kendoUpload");
+            var files = upload.getFiles();
+
+            if (files.length === 0) {
+                e.preventDefault();
+                alert("Please select an Excel file to import.");
+                return false;
+            }
+
+            return true;
+        });
+
+        // Close alerts automatically
+        setTimeout(function () {
+            $(".alert").fadeOut("slow");
+        }, 5000);
     });
 
+    function getFilterData() {
+        return {
+            searchTerm: $("#globalSearch").val()
+        };
+    }
+
+    // Add this to your existing JavaScript code
+$("#btnExportExcel").click(function(e) {
+    e.preventDefault();
+
+    // Get the current search term
+    var searchTerm = $("#globalSearch").val();
+
+    // Build the URL with the search parameter
+    var exportUrl = "@Url.Action("ExportToExcel", "Subject")";
+    if (searchTerm) {
+        exportUrl += "?searchTerm=" + encodeURIComponent(searchTerm);
+    }
+
+    // Redirect to the export action
+    window.location.href = exportUrl;
+});
 </script>

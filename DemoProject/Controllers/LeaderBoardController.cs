@@ -21,6 +21,7 @@ namespace DemoProject.Controllers
         private readonly PaperSetQuestionMappingService _paperSetQuestionMappingService;
         private readonly OptionService _optionService;
         private readonly UserExamAnswerService _userExamAnswerService;
+        private readonly MediaService _mediaService;
 
         public LeaderBoardController()
         {
@@ -31,6 +32,7 @@ namespace DemoProject.Controllers
             _paperSetQuestionMappingService = new PaperSetQuestionMappingService();
             _optionService = new OptionService();
             _userExamAnswerService = new UserExamAnswerService();
+            _mediaService = new MediaService();
         }
 
         public ActionResult Index()
@@ -116,9 +118,16 @@ namespace DemoProject.Controllers
                                    QuestionText = question.QuestionText,
                                    DefaultMarks = mapping.CustomMarks,
                                    DifficultyLevel = question.DifficultyLevel,
-                                   Image = question.Image,
                                    IsActive = question.IsActive,
-                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
+                                   options = _optionService.GetOptionsByQuestionId(question.Id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList(),
+                                   mediaFiles = _mediaService.GetMediaByQuestionId(question.Id).Select(m => new MediaModel
+                                   {
+                                       Id = m.Id,
+                                       QuestionId = m.QuestionId,
+                                       MediaName = m.MediaName,
+                                       MediaType = m.MediaType,
+                                       IsDeleted = false
+                                   }).ToList()
                                }
                                ).ToList();
 

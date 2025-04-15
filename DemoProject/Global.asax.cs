@@ -28,19 +28,19 @@ namespace DemoProject
 
         private async void StartQuartzScheduler()
         {
-            // Create a scheduler factory
+            
             var schedulerFactory = new StdSchedulerFactory();
             var scheduler = await schedulerFactory.GetScheduler();
 
-            // Start the scheduler
+           
             await scheduler.Start();
 
-            // Create and schedule the job
+           
             IJobDetail job = JobBuilder.Create<MyJob>()
                                        .WithIdentity("myJob", "group1")
                                        .Build();
 
-            // Create a trigger to run every 5 seconds
+         
             ITrigger trigger = TriggerBuilder.Create()
                                              .WithIdentity("myTrigger", "group1")
                                              .StartNow()
@@ -49,7 +49,7 @@ namespace DemoProject
                                                  .RepeatForever())
                                              .Build();
 
-            // Schedule the job with the trigger
+           
             await scheduler.ScheduleJob(job, trigger);
         }
     }

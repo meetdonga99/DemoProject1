@@ -159,7 +159,6 @@
           <Property Name="QuestionText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="DefaultMarks" Type="Int32" Nullable="false" />
           <Property Name="DifficultyLevel" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Image" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="IsActive" Type="Boolean" Nullable="false" />
           <Property Name="CreatedBy" Type="Int32" Nullable="false" />
           <Property Name="CreatedOn" Type="DateTime" />
@@ -647,7 +646,6 @@
                 <ScalarProperty Name="QuestionText" ColumnName="QuestionText" />
                 <ScalarProperty Name="DefaultMarks" ColumnName="DefaultMarks" />
                 <ScalarProperty Name="DifficultyLevel" ColumnName="DifficultyLevel" />
-                <ScalarProperty Name="Image" ColumnName="Image" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
                 <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
@@ -969,7 +967,6 @@
           <Property Name="QuestionText" Type="nvarchar(max)" Nullable="true" />
           <Property Name="DefaultMarks" Type="int" Nullable="false" />
           <Property Name="DifficultyLevel" Type="nvarchar(max)" Nullable="true" />
-          <Property Name="Image" Type="nvarchar(max)" Nullable="true" />
           <Property Name="IsActive" Type="bit" Nullable="false" />
           <Property Name="CreatedBy" Type="int" Nullable="false" />
           <Property Name="CreatedOn" Type="datetime" Nullable="true" />

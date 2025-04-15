@@ -33,7 +33,6 @@ namespace DemoProject.Data
                         QuestionText = question.QuestionText,
                         DefaultMarks = question.DefaultMarks,
                         DifficultyLevel = question.DifficultyLevel,
-                        Image = question.Image,
                         IsActive = question.IsActive,
                         BadgeCode = (from c in _db.CommonLookup where c.Name == question.DifficultyLevel select c.BadgeCode).FirstOrDefault(),
                     }).AsQueryable();
