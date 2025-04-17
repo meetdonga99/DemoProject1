@@ -191,6 +191,127 @@ namespace DemoProject.Controllers
             return model;
         }
 
+        public JsonResult GetSubjects()
+        {
+            var subjects = _subjectService.GetAllSubjects()
+                .Where(s => s.IsActive)
+                .Select(s => new SelectListItem
+                {
+                    Text = s.Name,
+                    Value = s.Id.ToString()
+                })
+                .ToList();
+
+            return Json(subjects, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult GetDifficultyLevels()
+        {
+            var difficultyLevels = _lookupService.GetLookupByType(LookupType.DifficultyLevel)
+                .Select(l => new SelectListItem
+                {
+                    Text = l.Name,
+                    Value = l.Code.ToString()
+                })
+                .ToList();
+
+            return Json(difficultyLevels, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult AutoGeneratePaperSet(string paperSetName, int subjectId, string difficultyLevel, int totalMarks, int durationInMinutes)
+        {
+            try
+            {
+                if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.PAPERSET.ToString(), AccessPermission.IsAdd))
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+
+                if (string.IsNullOrEmpty(paperSetName) || subjectId <= 0 || string.IsNullOrEmpty(difficultyLevel) || totalMarks <= 0 || durationInMinutes <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid input parameters." });
+                }
+
+                
+                var availableQuestions = _questionService.GetAllQuestions()
+                    .Where(q => q.IsActive && !q.IsDeleted && q.SubjectId == subjectId && q.DifficultyLevel == difficultyLevel)
+                    .ToList();
+
+                if (!availableQuestions.Any())
+                {
+                    return Json(new { success = false, message = "No questions available for the selected criteria." });
+                }
+
+                
+                var paperSet = new PaperSet
+                {
+                    PaperSetName = paperSetName,
+                    TotalMarks = totalMarks,
+                    DurationInMinutes = durationInMinutes,
+                    IsActive = true,
+                    CreatedBy = SessionHelper.UserId,
+                    CreatedOn = DateTime.UtcNow
+                };
+
+                
+                var selectedQuestions = new List<Question>();
+                int currentMarks = 0;
+
+               
+                var sortedQuestions = availableQuestions.OrderBy(q => q.DefaultMarks).ToList();
+
+                
+                foreach (var question in sortedQuestions.ToList())
+                {
+                    if (currentMarks + question.DefaultMarks <= totalMarks)
+                    {
+                        selectedQuestions.Add(question);
+                        currentMarks += question.DefaultMarks;
+                        sortedQuestions.Remove(question);
+
+                        if (currentMarks == totalMarks)
+                            break;
+                    }
+                }
+
+                
+                if (currentMarks < totalMarks && sortedQuestions.Any())
+                {
+                    foreach (var question in sortedQuestions.OrderBy(q => totalMarks - (currentMarks + q.DefaultMarks)))
+                    {
+                        if (currentMarks + question.DefaultMarks <= totalMarks)
+                        {
+                            selectedQuestions.Add(question);
+                            currentMarks += question.DefaultMarks;
+
+                            if (currentMarks == totalMarks)
+                                break;
+                        }
+                    }
+                }
+
+                paperSet.Status = currentMarks == totalMarks ? "COMPLETED" : "DRAFT";
+                
+                int paperSetId = _paperSetService.CreatePaperSet(paperSet);
+                
+                var mappings = selectedQuestions.Select(q => new PaperSetQuestionMapping
+                {
+                    PaperSetId = paperSetId,
+                    QuestionId = q.Id,
+                    CustomMarks = q.DefaultMarks
+                }).ToList();
+
+                _paperSetQuestionMappingService.AddQuestionsInPaper(mappings);
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+            }
+        }
+
         [HttpPost]
         public JsonResult Clone(int paperSetId)
         {

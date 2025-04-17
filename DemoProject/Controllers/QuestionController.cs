@@ -545,17 +545,17 @@ public ActionResult ExportToExcel(string searchTerm)
             }
 
             List<string> errorMessages = new List<string>();
-            int successCount = 0;
+            int successCount = 0; 
             int errorCount = 0;
 
             try
             {
                 using (var workbook = new XLWorkbook(excelFile.InputStream))
                 {
-                    var worksheet = workbook.Worksheet(1); // Assuming data is in the first worksheet
+                    var worksheet = workbook.Worksheet(1); 
                     var rows = worksheet.RowsUsed();
 
-                    // Skip header row
+                 
                     bool isFirstRow = true;
                     foreach (var row in rows)
                     {
@@ -567,7 +567,7 @@ public ActionResult ExportToExcel(string searchTerm)
 
                         try
                         {
-                            // Extract values from Excel
+                            
                             string subjectName = row.Cell(1).GetString().Trim();
                             string questionType = row.Cell(2).GetString().Trim();
                             string questionText = row.Cell(3).GetString().Trim();
@@ -585,7 +585,7 @@ public ActionResult ExportToExcel(string searchTerm)
                             bool isActive = row.Cell(6).GetString().Trim().ToLower() == "yes";
                             string optionsJson = row.Cell(7).GetString().Trim();
 
-                            // Find corresponding IDs for Subject and QuestionType
+                           
                             var subject = _subjectService.GetAllSubjects().FirstOrDefault(s => s.Name.Trim().Equals(subjectName, StringComparison.OrdinalIgnoreCase));
                             if (subject == null)
                             {
@@ -602,7 +602,7 @@ public ActionResult ExportToExcel(string searchTerm)
                                 continue;
                             }
 
-                            // Find difficulty level code
+                            
                             var difficultyLevelData = _lookupService.GetLookupByType(LookupType.DifficultyLevel)
                                 .FirstOrDefault(d => d.Name.Equals(difficultyLevel, StringComparison.OrdinalIgnoreCase));
                             if (difficultyLevelData == null)
@@ -612,7 +612,7 @@ public ActionResult ExportToExcel(string searchTerm)
                                 continue;
                             }
 
-                            // Parse options
+                            
                             List<OptionModel> options = new List<OptionModel>();
                             try
                             {
@@ -633,7 +633,7 @@ public ActionResult ExportToExcel(string searchTerm)
                                 continue;
                             }
 
-                            // Validate options based on question type
+                           
                             if (options.Count < 2 && (qType.Id == 1 || qType.Id == 2))
                             {
                                 errorMessages.Add($"Row {row.RowNumber()}: At least 2 options are required for {questionType}");
@@ -643,7 +643,7 @@ public ActionResult ExportToExcel(string searchTerm)
 
                             int correctAnswers = options.Count(o => o.IsCorrect);
 
-                            if (qType.Id == 1) // Radio (Single Choice)
+                            if (qType.Id == 1) 
                             {
                                 if (correctAnswers != 1)
                                 {
@@ -652,7 +652,7 @@ public ActionResult ExportToExcel(string searchTerm)
                                     continue;
                                 }
                             }
-                            else if (qType.Id == 2) // Checkbox (Multiple Choice)
+                            else if (qType.Id == 2) 
                             {
                                 if (correctAnswers < 1)
                                 {
@@ -663,7 +663,7 @@ public ActionResult ExportToExcel(string searchTerm)
                             }
                             else
                             {
-                                // For other question types, ensure at least 1 option exists
+                                
                                 if (options.Count < 1)
                                 {
                                     errorMessages.Add($"Row {row.RowNumber()}: At least 1 option is required");
@@ -672,7 +672,7 @@ public ActionResult ExportToExcel(string searchTerm)
                                 }
                             }
 
-                            // Create Question Model
+                           
                             QuestionModel model = new QuestionModel
                             {
                                 SubjectId = subject.Id,
@@ -684,7 +684,7 @@ public ActionResult ExportToExcel(string searchTerm)
                                 options = options
                             };
 
-                            // Save the question to the database
+                           
                             SaveUpdateQuestion(model, null);
                             successCount++;
                         }
@@ -696,7 +696,7 @@ public ActionResult ExportToExcel(string searchTerm)
                     }
                 }
 
-                // Store results in TempData for display on the page
+               
                 TempData["SuccessCount"] = successCount;
                 TempData["ErrorCount"] = errorCount;
                 TempData["ErrorMessages"] = errorMessages;
@@ -710,7 +710,7 @@ public ActionResult ExportToExcel(string searchTerm)
             }
         }
 
-        // Add this method to your QuestionController class
+       
 
         public ActionResult DownloadTemplate()
         {
@@ -719,12 +719,11 @@ public ActionResult ExportToExcel(string searchTerm)
                 return RedirectToAction("AccessDenied", "Base");
             }
 
-            // Create Excel workbook
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("Template");
 
-                // Set headers
+                
                 worksheet.Cell(1, 1).Value = "Subject";
                 worksheet.Cell(1, 2).Value = "Question Type";
                 worksheet.Cell(1, 3).Value = "Question Text";
@@ -733,20 +732,19 @@ public ActionResult ExportToExcel(string searchTerm)
                 worksheet.Cell(1, 6).Value = "Active";
                 worksheet.Cell(1, 7).Value = "Options";
 
-                // Format header row
+               
                 var headerRow = worksheet.Row(1);
                 headerRow.Style.Font.Bold = true;
                 headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
 
-                // Add sample data (optional)
                 worksheet.Cell(2, 1).Value = "[Subject Name]";
                 worksheet.Cell(2, 2).Value = "Radio";
                 worksheet.Cell(2, 3).Value = "[Your question text here]";
-                worksheet.Cell(2, 4).Value = "1.0";
+                worksheet.Cell(2, 4).Value = "1";
                 worksheet.Cell(2, 5).Value = "Easy";
                 worksheet.Cell(2, 6).Value = "Yes";
 
-                // Sample options in JSON format
+                
                 string sampleOptionsRadio = @"[
   {
     ""optionText"": ""Option 1"",
@@ -759,7 +757,7 @@ public ActionResult ExportToExcel(string searchTerm)
 ]";
                 worksheet.Cell(2, 7).Value = sampleOptionsRadio;
 
-                // Add another sample for Checkbox type
+                
                 worksheet.Cell(3, 1).Value = "[Subject Name]";
                 worksheet.Cell(3, 2).Value = "Checkbox";
                 worksheet.Cell(3, 3).Value = "[Your multiple choice question here]";
@@ -767,7 +765,7 @@ public ActionResult ExportToExcel(string searchTerm)
                 worksheet.Cell(3, 5).Value = "Medium";
                 worksheet.Cell(3, 6).Value = "Yes";
 
-                // Sample options for checkbox
+                
                 string sampleOptionsCheckbox = @"[
   {
     ""optionText"": ""Option 1"",
@@ -784,10 +782,10 @@ public ActionResult ExportToExcel(string searchTerm)
 ]";
                 worksheet.Cell(3, 7).Value = sampleOptionsCheckbox;
 
-                // Add information tab
+                
                 var infoSheet = workbook.Worksheets.Add("Instructions");
 
-                // Add subject list
+               
                 infoSheet.Cell(1, 1).Value = "Available Subjects:";
                 infoSheet.Cell(1, 1).Style.Font.Bold = true;
 
@@ -797,7 +795,7 @@ public ActionResult ExportToExcel(string searchTerm)
                     infoSheet.Cell(i + 2, 1).Value = subjects[i].Name;
                 }
 
-                // Add question types
+               
                 infoSheet.Cell(1, 3).Value = "Available Question Types:";
                 infoSheet.Cell(1, 3).Style.Font.Bold = true;
 
@@ -807,7 +805,7 @@ public ActionResult ExportToExcel(string searchTerm)
                     infoSheet.Cell(i + 2, 3).Value = questionTypes[i].TypeName;
                 }
 
-                // Add difficulty levels
+                
                 infoSheet.Cell(1, 5).Value = "Available Difficulty Levels:";
                 infoSheet.Cell(1, 5).Style.Font.Bold = true;
 
@@ -817,7 +815,7 @@ public ActionResult ExportToExcel(string searchTerm)
                     infoSheet.Cell(i + 2, 5).Value = difficultyLevels[i].Name;
                 }
 
-                // Add validation rules
+               
                 infoSheet.Cell(1, 7).Value = "Validation Rules:";
                 infoSheet.Cell(1, 7).Style.Font.Bold = true;
 
@@ -826,11 +824,11 @@ public ActionResult ExportToExcel(string searchTerm)
                 infoSheet.Cell(4, 7).Value = "3. For other question types: At least 1 option";
                 infoSheet.Cell(5, 7).Value = "4. Subject, Question Type, and Difficulty Level must exist in the system";
 
-                // Auto-fit columns on both sheets
+                
                 worksheet.Columns().AdjustToContents();
                 infoSheet.Columns().AdjustToContents();
 
-                // Prepare for download
+               
                 var stream = new MemoryStream();
                 workbook.SaveAs(stream);
                 stream.Position = 0;

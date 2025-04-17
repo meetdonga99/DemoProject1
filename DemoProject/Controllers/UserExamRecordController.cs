@@ -409,7 +409,6 @@ namespace DemoProject.Controllers
                        {
                            QuestionId = i.Id,
                            CorrectOptions = i.options.Where(o => o.IsCorrect).Select(o => o.Id).ToList()
-
                        };
 
             model.Answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId).Select(a => new SaveAnswerModel
@@ -428,7 +427,7 @@ namespace DemoProject.Controllers
         a.SelectedOptions.Split(',')
         .Where(s => !string.IsNullOrEmpty(s))
         .Select(int.Parse) 
-        .OrderBy(x => x) 
+        .OrderBy(x => x)  
     )
     ? model.Questions.Where(o => o.Id == a.QuestionId && (o.QuestionTypeId == 1 || o.QuestionTypeId == 2))
                      .Select(o => o.DefaultMarks)
