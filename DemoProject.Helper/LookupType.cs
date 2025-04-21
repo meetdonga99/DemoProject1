@@ -19,6 +19,7 @@ namespace DemoProject.Helper
         public static string DifficultyLevel = "DifficultyLevel";
         public static string PaperSetStatus = "PaperSetStatus";
         public static string ExamStatus = "ExamStatus";
+        public static string PaperSetDifficulty = "PaperSetDifficulty";
 
 
     }

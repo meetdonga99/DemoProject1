@@ -32,6 +32,7 @@ namespace DemoProject.Model
             //CPSCREEN = 19,
             COMMONLOOKUP = 20,
             STATUS = 21,
+            CONFIGURATION = 22,
             //SCHEDULEINTR = 22,
             //SENDCALINVITE = 23,
             EMAILLOG = 24,

@@ -149,27 +149,23 @@
         $('#gridSubjects').data('kendoGrid').dataSource.read();
         $('#gridSubjects').data('kendoGrid').refresh();
 
-        // Initialize import modal as a Kendo Window
         var importWindow = $("#importExcelModal").kendoWindow({
             title: "Import Subjects",
             modal: true,
             visible: false,
             resizable: false,
-            width: 500
+            width: 500           
         }).data("kendoWindow");
 
-        // Show import modal when button is clicked
         $("#btnImportExcel").click(function (e) {
             e.preventDefault();
             importWindow.center().open();
         });
 
-        // Close import modal when cancel button is clicked
         $("#btnCancelImport").click(function () {
             importWindow.close();
         });
 
-        // Initialize Kendo Upload for the file input
         $("#excelFile").kendoUpload({
             multiple: false,
             showFileList: true,
@@ -181,9 +177,7 @@
             }
         });
 
-        // Handle form submission
         $("#frmImportExcel").submit(function (e) {
-            // Check if a file is selected using the Kendo Upload widget's API
             var upload = $("#excelFile").data("kendoUpload");
             var files = upload.getFiles();
 
@@ -196,7 +190,6 @@
             return true;
         });
 
-        // Close alerts automatically
         setTimeout(function () {
             $(".alert").fadeOut("slow");
         }, 5000);
@@ -208,20 +201,16 @@
         };
     }
 
-    // Add this to your existing JavaScript code
-$("#btnExportExcel").click(function(e) {
+$("#btnExportExcel").click(function(e) { 
     e.preventDefault();
 
-    // Get the current search term
     var searchTerm = $("#globalSearch").val();
 
-    // Build the URL with the search parameter
     var exportUrl = "@Url.Action("ExportToExcel", "Subject")";
     if (searchTerm) {
         exportUrl += "?searchTerm=" + encodeURIComponent(searchTerm);
     }
 
-    // Redirect to the export action
     window.location.href = exportUrl;
 });
 </script>

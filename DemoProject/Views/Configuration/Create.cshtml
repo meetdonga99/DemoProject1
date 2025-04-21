@@ -1,0 +1,104 @@
+﻿@model DemoProject.Models.ConfigurationModel
+@using Kendo.Mvc.UI
+@using DemoProject.Model;
+@{
+    string formCode = AuthorizeFormAccess.FormAccessCode.CONFIGURATION.ToString();
+    if (Model.Id > 0)
+    {
+        ViewBag.Title = "Edit Configuration";
+    }
+    else
+    {
+        ViewBag.Title = "Add Configuration";
+    }
+}
+@Html.Hidden("hdnFormAccessCode", formCode)
+
+@using (Html.BeginForm("Create", "Configuration", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="coman_content">
+        <div class="subheader">
+            <div class="left_title">
+                @if (Model.Id > 0)
+                {
+                    <h2>Edit Configuration</h2>
+                }
+                else
+                {
+                      <h2>Add Configuration</h2>
+                }
+                <div class="left breadcrumb_list">
+                    <ul>
+                        <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                        <li><a href="@Url.Action("Index","Configuration")">Configuration</a></li>
+                        @if (Model.Id > 0)
+                        {
+                            <li>Edit Configuration</li>
+                        }
+                        else
+                        {
+                    <li>Add Configuration</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+       
+        @Html.HiddenFor(model => model.Id)
+        <div class="content_box">
+            <div class="common_white_box">
+                <div class="form_element">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Key <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.ConfigurationKey, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.ConfigurationKey)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Value <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextAreaFor(model => model.Value, new { @class = "form-control", rows = "5", style = "resize: vertical; min-height: 100px;" })
+                                        @Html.ValidationMessageFor(model => model.Value)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Comment </label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Comment, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Comment)
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="button_div">
+                        <div class="form-group">
+                            <label for="">&nbsp;</label>
+                            <div class="input_box">
+                                <button type="submit" class="button button_primary">Save</button>
+                                <a href="@Url.Action("Index", "Configuration")" class="button button_cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    
+</script>

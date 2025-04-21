@@ -52,6 +52,19 @@
           <Property Name="ModifiedBy" Type="Int32" />
           <Property Name="ModifiedOn" Type="DateTime" />
         </EntityType>
+        <EntityType Name="Configuration" customannotation:ClrType="DemoProject.Model.Configuration, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ConfigurationKey" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Value" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CreatedOn" Type="DateTime" />
+          <Property Name="CreatedBy" Type="Int32" />
+          <Property Name="UpdatedOn" Type="DateTime" />
+          <Property Name="UpdatedBy" Type="Int32" />
+        </EntityType>
         <EntityType Name="ErrorLog" customannotation:ClrType="DemoProject.Model.ErrorLog, DemoProject.Model, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
           <Key>
             <PropertyRef Name="Id" />
@@ -428,6 +441,7 @@
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" />
           <EntitySet Name="CommonLookup" EntityType="Self.CommonLookup" />
+          <EntitySet Name="Configurations" EntityType="Self.Configuration" />
           <EntitySet Name="ErrorLog" EntityType="Self.ErrorLog" />
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" />
@@ -532,6 +546,20 @@
                 <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
                 <ScalarProperty Name="ModifiedBy" ColumnName="ModifiedBy" />
                 <ScalarProperty Name="ModifiedOn" ColumnName="ModifiedOn" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Configurations">
+            <EntityTypeMapping TypeName="DemoProject.Model.Configuration">
+              <MappingFragment StoreEntitySet="Configuration">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ConfigurationKey" ColumnName="ConfigurationKey" />
+                <ScalarProperty Name="Value" ColumnName="Value" />
+                <ScalarProperty Name="Comment" ColumnName="Comment" />
+                <ScalarProperty Name="CreatedOn" ColumnName="CreatedOn" />
+                <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
+                <ScalarProperty Name="UpdatedOn" ColumnName="UpdatedOn" />
+                <ScalarProperty Name="UpdatedBy" ColumnName="UpdatedBy" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -860,6 +888,19 @@
           <Property Name="CreatedOn" Type="datetime" Nullable="true" />
           <Property Name="ModifiedBy" Type="int" Nullable="true" />
           <Property Name="ModifiedOn" Type="datetime" Nullable="true" />
+        </EntityType>
+        <EntityType Name="Configuration">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ConfigurationKey" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Value" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="Comment" Type="nvarchar(max)" Nullable="true" />
+          <Property Name="CreatedOn" Type="datetime" Nullable="true" />
+          <Property Name="CreatedBy" Type="int" Nullable="true" />
+          <Property Name="UpdatedOn" Type="datetime" Nullable="true" />
+          <Property Name="UpdatedBy" Type="int" Nullable="true" />
         </EntityType>
         <EntityType Name="ErrorLog">
           <Key>
@@ -1230,6 +1271,7 @@
           <EntitySet Name="ActivityLog" EntityType="Self.ActivityLog" Schema="dbo" Table="ActivityLog" />
           <EntitySet Name="UserProfile" EntityType="Self.UserProfile" Schema="dbo" Table="UserProfile" />
           <EntitySet Name="CommonLookup" EntityType="Self.CommonLookup" Schema="dbo" Table="CommonLookup" />
+          <EntitySet Name="Configuration" EntityType="Self.Configuration" Schema="dbo" Table="Configuration" />
           <EntitySet Name="ErrorLog" EntityType="Self.ErrorLog" Schema="dbo" Table="ErrorLog" />
           <EntitySet Name="FormRoleMapping" EntityType="Self.FormRoleMapping" Schema="dbo" Table="FormRoleMapping" />
           <EntitySet Name="Forms" EntityType="Self.Forms" Schema="dbo" Table="Forms" />

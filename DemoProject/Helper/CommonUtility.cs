@@ -1,4 +1,5 @@
 ﻿using DemoProject.Model;
+using DemoProject.Service;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -262,7 +263,6 @@ namespace DemoProject.Helper
                 return 0;
             }
         }
-
 
         public static TimeZoneInfo OlsonTimeZoneToTimeZoneInfo(string olsonTimeZoneId)
         {
@@ -545,6 +545,13 @@ namespace DemoProject.Helper
         {
             string value = ConfigurationStaticValues.VideoExtension;
             return value;
+        }
+
+        public static string GetConfigurationValueByKey(ConfigurationKeys.Keys key)
+        {
+            ConfigurationService _configurationService = new ConfigurationService();
+            var data = _configurationService.GetConfigurationValueByKey(key.ToString());
+            return data;
         }
     }
 }

@@ -133,23 +133,19 @@
                 <div class="modal-body">
                     <form id="autoGenerateForm">
                         <div class="form-group">
-                            <label for="paperSetName">Paper Set Name</label>
-                            <input type="text" class="form-control" id="paperSetName" name="paperSetName" required>
-                        </div>
-                        <div class="form-group">
                             <label for="subjectId">Subject</label>
-                            @(Html.Kendo().DropDownList()
-                            .Name("subjectId")
-                            .DataTextField("Text")
-                            .DataValueField("Value")
-                            .OptionLabel("Select Subject")
-                            .DataSource(source => {
-                                source.Read(read => {
-                                    read.Action("GetSubjects", "PaperSet");
-                                });
-                            })
-                            .HtmlAttributes(new { style = "width: 100%" })
-                        )
+                            @(Html.Kendo().MultiSelect()
+        .Name("subjectId")
+        .DataTextField("Text")
+        .DataValueField("Value")
+        .Placeholder("Select Subjects")
+        .DataSource(source => {
+            source.Read(read => {
+                read.Action("GetSubjects", "PaperSet");
+            });
+        })
+        .HtmlAttributes(new { style = "width: 100%" })
+    )
                         </div>
                         <div class="form-group">
                             <label for="difficultyLevel">Difficulty Level</label>
@@ -414,12 +410,12 @@ $(document).on("click", function(e) {
 
 function clonePaperSet(paperSetId) {
     $.ajax({
-        url: '@Url.Action("Clone", "PaperSet")', 
+        url: '@Url.Action("Clone", "PaperSet")',
         type: 'POST',
         data: { paperSetId: paperSetId },
         success: function(response) {
             if (response.success) {
-               
+
                 $('#cloneSuccessModal').modal('show');
             } else {
                 alert('Failed to clone the paper set.');
@@ -431,60 +427,52 @@ function clonePaperSet(paperSetId) {
     });
     }
 
-    
+
         $("#btnAutoGenerate").click(function() {
             $("#autoGenerateModal").modal("show");
         });
 
-      
+
         $("#btnSubmitAutoGenerate").click(function() {
-            var form = $("#autoGenerateForm");
+    var form = $("#autoGenerateForm");
 
-          
-            if (!form[0].checkValidity()) {
-                form[0].reportValidity();
-                return;
+    if (!form[0].checkValidity()) {
+        form[0].reportValidity();
+        return;
+    }
+
+    var data = {
+        subjectId: $("#subjectId").data("kendoMultiSelect").value(),
+        difficultyLevel: $("#difficultyLevel").val(),
+        totalMarks: $("#totalMarks").val(),
+        durationInMinutes: $("#durationInMinutes").val()
+    };
+
+    $.ajax({
+        url: '@Url.Action("AutoGeneratePaperSet", "PaperSet")',
+        type: 'POST',
+        data: data,
+        beforeSend: function() {
+            $(".page-loader").show();
+        },
+        success: function(response) {
+            if (response.success) {
+                $("#autoGenerateModal").modal("hide");
+                showToast("Paper set successfully generated!" + "\n" + response.message, "success");
+                var grid = $("#gridPaperSet").data("kendoGrid");
+                grid.dataSource.read();
+            } else {
+                showToast("Failed to generate paper set. Please try again." + "\n" + response.message, "error");
             }
-
-            
-            var data = {
-                paperSetName: $("#paperSetName").val(),
-                subjectId: $("#subjectId").val(),
-                difficultyLevel: $("#difficultyLevel").val(),
-                totalMarks: $("#totalMarks").val(),
-                durationInMinutes: $("#durationInMinutes").val()
-            };
-
-            $.ajax({
-                url: '@Url.Action("AutoGeneratePaperSet", "PaperSet")',
-                type: 'POST',
-                data: data,
-                beforeSend: function() {
-                    
-                    $(".page-loader").show();
-                },
-                success: function(response) {
-                    if (response.success) {
-                        
-                        $("#autoGenerateModal").modal("hide");
-                        showToast("Paper set successfully generated!", "success");
-                        var grid = $("#gridPaperSet").data("kendoGrid");
-                        grid.dataSource.read();
-                    } else {
-
-                        showToast("Failed to generate paper set. Please try again." + "\n" + response.message, "error");
-                    }
-                },
-                error: function() {
-                    
-                    showToast("An error occurred while generating the paper set." + "\n" + response.message,"error");
-                },
-                complete: function() {
-                    
-                    $(".page-loader").hide();
-                }
-            });
-        });
+        },
+        error: function() {
+            showToast("An error occurred while generating the paper set." + "\n" + response.message,"error");
+        },
+        complete: function() {
+            $(".page-loader").hide();
+        }
+    });
+});
 
 
     $(document).ready(function () {

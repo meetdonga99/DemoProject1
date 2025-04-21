@@ -207,7 +207,7 @@ namespace DemoProject.Controllers
 
         public JsonResult GetDifficultyLevels()
         {
-            var difficultyLevels = _lookupService.GetLookupByType(LookupType.DifficultyLevel)
+            var difficultyLevels = _lookupService.GetLookupByType(LookupType.PaperSetDifficulty)
                 .Select(l => new SelectListItem
                 {
                     Text = l.Name,
@@ -219,7 +219,7 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult AutoGeneratePaperSet(string paperSetName, int subjectId, string difficultyLevel, int totalMarks, int durationInMinutes)
+        public ActionResult AutoGeneratePaperSet(int[] subjectId, string difficultyLevel, int totalMarks, int durationInMinutes)
         {
             try
             {
@@ -228,22 +228,53 @@ namespace DemoProject.Controllers
                     return Json(new { success = false, message = "Access denied." });
                 }
 
-                if (string.IsNullOrEmpty(paperSetName) || subjectId <= 0 || string.IsNullOrEmpty(difficultyLevel) || totalMarks <= 0 || durationInMinutes <= 0)
+                if (subjectId == null || subjectId.Length == 0 || string.IsNullOrEmpty(difficultyLevel) || totalMarks <= 0 || durationInMinutes <= 0)
                 {
                     return Json(new { success = false, message = "Invalid input parameters." });
                 }
 
+                var weightageConfig = CommonUtility.GetConfigurationValueByKey(ConfigurationKeys.Keys.MARKWEIGHTAGE);
+
+                if (weightageConfig == null)
+                {
+                    return Json(new { success = false, message = "Difficulty weightage configuration not found." });
+                }
+
+                var weightageObject = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, int>>>(weightageConfig);
+
+                if (weightageObject == null || !weightageObject.ContainsKey(difficultyLevel))
+                {
+                    return Json(new { success = false, message = "Invalid difficulty level or configuration." });
+                }
+
+                var weightages = weightageObject[difficultyLevel];
+
+                var subjects = subjectId.Select(id => _subjectService.GetSubjectById(id)).Where(s => s != null).ToList();
+                if (subjects.Count == 0)
+                {
+                    return Json(new { success = false, message = "Invalid subjects." });
+                }
+
+                string subjectNames = string.Join("_", subjects.Select(s => s.Name));
+                string timestamp = DateTime.Now.ToString("yyyy/MM/dd_HH:mm:ss");
+                string paperSetName = $"{subjectNames}_{difficultyLevel}_{timestamp}";
                 
-                var availableQuestions = _questionService.GetAllQuestions()
-                    .Where(q => q.IsActive && !q.IsDeleted && q.SubjectId == subjectId && q.DifficultyLevel == difficultyLevel)
+                var allSubjectQuestions = _questionService.GetAllQuestions()
+                    .Where(q => q.IsActive && !q.IsDeleted && subjectId.Contains(q.SubjectId))
                     .ToList();
 
-                if (!availableQuestions.Any())
+                if (!allSubjectQuestions.Any())
                 {
-                    return Json(new { success = false, message = "No questions available for the selected criteria." });
+                    return Json(new { success = false, message = "No questions available for the selected subjects." });
                 }
 
                 
+                var marksPerDifficulty = new Dictionary<string, int>();
+                foreach (var kv in weightages)
+                {
+                    marksPerDifficulty[kv.Key] = (totalMarks * kv.Value) / 100;
+                }
+
                 var paperSet = new PaperSet
                 {
                     PaperSetName = paperSetName,
@@ -254,46 +285,68 @@ namespace DemoProject.Controllers
                     CreatedOn = DateTime.UtcNow
                 };
 
-                
                 var selectedQuestions = new List<Question>();
                 int currentMarks = 0;
 
                
-                var sortedQuestions = availableQuestions.OrderBy(q => q.DefaultMarks).ToList();
+                var questionsByDifficulty = allSubjectQuestions.GroupBy(q => q.DifficultyLevel)
+                    .ToDictionary(g => g.Key, g => g.ToList());
 
-                
-                foreach (var question in sortedQuestions.ToList())
+             
+                foreach (var kv in marksPerDifficulty)
                 {
-                    if (currentMarks + question.DefaultMarks <= totalMarks)
-                    {
-                        selectedQuestions.Add(question);
-                        currentMarks += question.DefaultMarks;
-                        sortedQuestions.Remove(question);
+                    string diffLevel = kv.Key;
+                    int targetMarks = kv.Value;
+                    int difficultyMarks = 0;
 
-                        if (currentMarks == totalMarks)
-                            break;
-                    }
-                }
+                    if (!questionsByDifficulty.ContainsKey(diffLevel))
+                        continue;
 
-                
-                if (currentMarks < totalMarks && sortedQuestions.Any())
-                {
-                    foreach (var question in sortedQuestions.OrderBy(q => totalMarks - (currentMarks + q.DefaultMarks)))
+                    var difficultyQuestions = new List<Question>(questionsByDifficulty[diffLevel]);
+
+                   
+                    foreach (var question in difficultyQuestions.OrderBy(q => q.DefaultMarks).ToList())
                     {
-                        if (currentMarks + question.DefaultMarks <= totalMarks)
+                        if (difficultyMarks + question.DefaultMarks <= targetMarks)
                         {
                             selectedQuestions.Add(question);
+                            difficultyMarks += question.DefaultMarks;
                             currentMarks += question.DefaultMarks;
+                            difficultyQuestions.Remove(question);
 
-                            if (currentMarks == totalMarks)
+                            if (difficultyMarks == targetMarks)
                                 break;
+                        }
+                    }
+
+                    if (difficultyMarks < targetMarks && difficultyQuestions.Any())
+                    {
+                        var bestQuestion = difficultyQuestions
+                            .Where(q => difficultyMarks + q.DefaultMarks <= targetMarks)
+                            .OrderByDescending(q => q.DefaultMarks)
+                            .FirstOrDefault();
+
+                        if (bestQuestion != null)
+                        {
+                            selectedQuestions.Add(bestQuestion);
+                            difficultyMarks += bestQuestion.DefaultMarks;
+                            currentMarks += bestQuestion.DefaultMarks;
                         }
                     }
                 }
 
-                paperSet.Status = currentMarks == totalMarks ? "COMPLETED" : "DRAFT";
+            
+                if (selectedQuestions.Count == 0)
+                {
+                    return Json(new { success = false, message = "Could not find suitable questions to meet the marks criteria." });
+                }
+
                 
+                paperSet.Status = currentMarks == totalMarks ? "COMPLETED" : "DRAFT";
+
+               
                 int paperSetId = _paperSetService.CreatePaperSet(paperSet);
+
                 
                 var mappings = selectedQuestions.Select(q => new PaperSetQuestionMapping
                 {
@@ -302,9 +355,15 @@ namespace DemoProject.Controllers
                     CustomMarks = q.DefaultMarks
                 }).ToList();
 
+            
                 _paperSetQuestionMappingService.AddQuestionsInPaper(mappings);
 
-                return Json(new { success = true });
+                return Json(new
+                {
+                    success = true,
+                    message = $"Paper set generated with {selectedQuestions.Count} questions totaling {currentMarks} marks." +
+                             (currentMarks < totalMarks ? $" (Requested: {totalMarks} marks) Set is in DRAFT status." : "")
+                });
             }
             catch (Exception ex)
             {
@@ -374,36 +433,6 @@ namespace DemoProject.Controllers
             return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
-        //[HttpPost]
-        //public ActionResult GetLeaderBoardGridData([DataSourceRequest] DataSourceRequest request, string paperSetName, string searchTerm)
-        //{
-        //    if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.LEADERBOARD.ToString(), AccessPermission.IsView))
-        //    {
-        //        return RedirectToAction("AccessDenied", "Base");
-        //    }
-
-        //    var data = _leaderBoardService.GetLeaderBoardGrid();
-
-        //    if (!string.IsNullOrEmpty(paperSetName))
-        //    {
-        //        data = data.Where(x => x.PaperSetName == paperSetName);
-        //    }
-        //    var materializedData = data.ToList().AsQueryable();
-
-        //    if (!string.IsNullOrEmpty(searchTerm))
-        //    {
-        //        materializedData = materializedData.Where(x =>
-        //            (x.Email != null && x.Email.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
-        //            (x.PaperSetName != null && x.PaperSetName.IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0) ||
-        //            x.Score.ToString().Contains(searchTerm) ||
-        //            (x.Date != null && x.Date.ToString("yyyy-MM-dd").IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
-        //        );
-        //    }
-        //    return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
-        //}
-
-
-
         [HttpPost]
         public ActionResult GetUnselectedQuestionsGridData([DataSourceRequest] DataSourceRequest request, int paperSetId)
         {
@@ -435,8 +464,6 @@ namespace DemoProject.Controllers
                 DifficultyLevel = q.DifficultyLevel,
                 IsSelected = mappings.ContainsKey(q.Id)
             }).ToList().AsQueryable();
-
-
             return Json(allQuestions.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 
@@ -568,11 +595,8 @@ namespace DemoProject.Controllers
 
                     examRecords.Add(new { email, token = encryptedToken });
                 }
-                
             }
-
             return Json(new { success = true, records = examRecords });
         }
-
     }
 }

@@ -54,6 +54,7 @@
     <Compile Include="ActivityLogProvider.cs" />
     <Compile Include="BaseProvider.cs" />
     <Compile Include="CommonLookupProvider.cs" />
+    <Compile Include="ConfigurationProvider.cs" />
     <Compile Include="ErrorLogProvider.cs" />
     <Compile Include="LeaderBoardProvider.cs" />
     <Compile Include="MediaProvider.cs" />

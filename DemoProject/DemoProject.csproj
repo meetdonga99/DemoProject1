@@ -2297,6 +2297,7 @@
     <Compile Include="Controllers\ActivityLogController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\CommonLookupController.cs" />
+    <Compile Include="Controllers\ConfigurationController.cs" />
     <Compile Include="Controllers\ErrorLogController.cs" />
     <Compile Include="Controllers\FormController.cs" />
     <Compile Include="Controllers\FormRoleMappingController.cs" />
@@ -2324,6 +2325,7 @@
     <Compile Include="Helper\FormUtility.cs" />
     <Compile Include="Helper\MyJob.cs" />
     <Compile Include="Models\CommonLookupModel.cs" />
+    <Compile Include="Models\ConfigurationModel.cs" />
     <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\FormModel.cs" />
     <Compile Include="Models\MediaModel.cs" />
@@ -3099,6 +3101,8 @@
     <Content Include="Views\LeaderBoard\_ViewExam.cshtml" />
     <Content Include="Views\Question\Import.cshtml" />
     <Content Include="Views\Question\ImportResult.cshtml" />
+    <Content Include="Views\Configuration\Index.cshtml" />
+    <Content Include="Views\Configuration\Create.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

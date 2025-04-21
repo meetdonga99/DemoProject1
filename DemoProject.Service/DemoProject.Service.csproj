@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="ActivityLogService.cs" />
     <Compile Include="CommonLookupService.cs" />
+    <Compile Include="ConfigurationService.cs" />
     <Compile Include="ErrorLogService.cs" />
     <Compile Include="FormRoleMappingService.cs" />
     <Compile Include="FormsService.cs" />

@@ -57,6 +57,8 @@
     <Compile Include="ActivityLog.cs" />
     <Compile Include="AuthorizeFormAccess.cs" />
     <Compile Include="CommonLookup.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="ConfigurationKeys.cs" />
     <Compile Include="DemoProjectContextConfiguration.cs" />
     <Compile Include="DemoProjectEntities.cs" />
     <Compile Include="ErrorLog.cs" />

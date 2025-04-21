@@ -122,6 +122,13 @@ namespace DemoProject.Helper
             public const string MEDIUM = "MEDIUM";
             public const string HARD = "HARD";
         }
+
+        public static class PaperSetDifficulty
+        {
+            public const string BEGINNER = "BEGINNER";
+            public const string INTERMEDIATE = "INTERMEDIATE";
+            public const string ADVANCED = "ADVANCED";
+        }
         public static class PaperSetStatus
         {
             public const string DRAFT = "DRAFT";
@@ -136,5 +143,6 @@ namespace DemoProject.Helper
             public const string RESULT_PUBLISHED = "RESULT_PUBLISHED";
             public const string EXPIRED = "EXPIRED";
         }
+
     }
 }

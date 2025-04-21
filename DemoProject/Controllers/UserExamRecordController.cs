@@ -411,34 +411,44 @@ namespace DemoProject.Controllers
                            CorrectOptions = i.options.Where(o => o.IsCorrect).Select(o => o.Id).ToList()
                        };
 
-            model.Answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId).Select(a => new SaveAnswerModel
+            var answers = _userExamAnswerService.GetAnswersByExamId(model.UserExamRecordId) ?? new List<UserExamAnswer>();
+
+            model.Answers = answers.Select(a =>
             {
-                UserExamRecordId = a.UserExamRecordId,
-                QuestionId = a.QuestionId,
-                SelectedOptions = a.SelectedOptions.Split(',').Where(s => !string.IsNullOrEmpty(s)).Select(int.Parse).ToList(),
-                DescriptiveAnswer = a.DescriptiveAnswer,
-                ObtainedMarks = (int)(a.ObtainedMarks != 0 ? a.ObtainedMarks :
-    (from i in data
-     where i.QuestionId == a.QuestionId
-     select i.CorrectOptions)
-    .FirstOrDefault() 
-    .OrderBy(x => x) 
-    .SequenceEqual(
-        a.SelectedOptions.Split(',')
-        .Where(s => !string.IsNullOrEmpty(s))
-        .Select(int.Parse) 
-        .OrderBy(x => x)  
-    )
-    ? model.Questions.Where(o => o.Id == a.QuestionId && (o.QuestionTypeId == 1 || o.QuestionTypeId == 2))
-                     .Select(o => o.DefaultMarks)
-                     .FirstOrDefault()
-    : 0) ,
+                var selectedOptions = (a.SelectedOptions ?? "")
+                                        .Split(',')
+                                        .Where(s => !string.IsNullOrEmpty(s))
+                                        .Select(int.Parse)
+                                        .OrderBy(x => x)
+                                        .ToList();
 
-                IsEvaluated =  a.IsEvaluated == false? (model.Questions.Where(o => o.Id == a.QuestionId).Select(o => o.QuestionTypeId == 1 || o.QuestionTypeId == 2).FirstOrDefault() ? true : false) : a.IsEvaluated,
+                var correctOptions = data.FirstOrDefault(i => i.QuestionId == a.QuestionId)?.CorrectOptions;
 
+                bool isCorrect = correctOptions != null && correctOptions.OrderBy(x => x).SequenceEqual(selectedOptions);
+
+                int? defaultMarks = model.Questions
+                                         .Where(o => o.Id == a.QuestionId && (o.QuestionTypeId == 1 || o.QuestionTypeId == 2))
+                                         .Select(o => o.DefaultMarks)
+                                         .FirstOrDefault();
+
+                bool shouldBeEvaluated = model.Questions
+                                              .Where(o => o.Id == a.QuestionId)
+                                              .Select(o => o.QuestionTypeId == 1 || o.QuestionTypeId == 2)
+                                              .FirstOrDefault();
+
+                return new SaveAnswerModel
+                {
+                    UserExamRecordId = a.UserExamRecordId,
+                    QuestionId = a.QuestionId,
+                    SelectedOptions = selectedOptions,
+                    DescriptiveAnswer = a.DescriptiveAnswer,
+                    ObtainedMarks = (int)(a.ObtainedMarks != 0 ? a.ObtainedMarks : (isCorrect ? defaultMarks : 0)),
+                    IsEvaluated = a.IsEvaluated == false ? shouldBeEvaluated : a.IsEvaluated
+                };
             }).ToList();
 
-            
+
+
             TempData["CorrectAnswers"] = data;
 
             return View("EvaluateTestPaper", model);

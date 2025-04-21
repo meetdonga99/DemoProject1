@@ -15,5 +15,7 @@ namespace DemoProject.Models
         public List<int> ExamsPerMonthData { get; set; }
         public int PassedCount { get; set; }
         public int FailedCount { get; set; }
+        public List<string> PaperSetLabels { get; set; }
+        public List<int> PaperSetData { get; set; }
     }
 }
