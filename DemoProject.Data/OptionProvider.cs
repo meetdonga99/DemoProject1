@@ -1,6 +1,7 @@
 ﻿using DemoProject.Model;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,5 +74,40 @@ namespace DemoProject.Data
             var data = (from a in _db.Option where a.QuestionId == id select a).ToList();
             return data;
         }
+
+        public void BulkCreateOptions(List<Option> options)
+        {
+            if (options == null || !options.Any())
+            {
+                return; 
+            }
+
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                   
+                    _db.Option.AddRange(options);
+
+                    
+                    _db.SaveChanges();
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Failed to bulk create options: " + ex.Message, ex);
+                }
+            }
+        }
+
+        public List<Option> GetOptionsByQuestionIds(List<int> questionIds)
+        {
+            return _db.Option
+                .Where(o => questionIds.Contains(o.QuestionId))
+                .ToList();
+        }
+
     }
 }

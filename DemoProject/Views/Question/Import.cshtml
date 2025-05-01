@@ -1,5 +1,6 @@
 ﻿@using DemoProject.Model
 @using DemoProject.Helper
+@using Kendo.Mvc.UI
 
 @{
     ViewBag.Title = "Import Questions";
@@ -68,11 +69,28 @@
                         {
                             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-                            <div class="form-group">
-                                <label for="excelFile">Select Excel File:</label>
-                                <input type="file" name="excelFile" id="excelFile" class="form-control mr-2" required accept=".xlsx" />
-                                <small class="form-text text-muted">Only .xlsx files are supported</small>
-                            </div>
+                        <div class="form-group">
+                            <label for="excelFile">Select Excel File:</label>
+                            @(Html.Kendo().Upload()
+    .Name("excelFile")
+    .Multiple(false) 
+    .ShowFileList(true)
+    .Validation(validation => validation
+        .AllowedExtensions(new string[] { ".xlsx" })
+        .MaxFileSize(10485760) // 10MB in bytes 
+    )
+    .Messages(messages => messages
+        .Select("Drop Excel file here or click to browse...")
+        .InvalidFileExtension("Only .xlsx files are allowed!")
+        .InvalidMaxFileSize("File size exceeds the maximum allowed size (10MB)!")
+    )
+    .Async(async => async
+        .AutoUpload(false)
+        .SaveField("excelFile") 
+    ) 
+    .HtmlAttributes(new { style = "width: 100%" })
+)                                <small class="form-text text-muted">Only .xlsx files are supported</small>
+                        </div>
 
                             <div class="form-group mt-3">
                                 <button type="submit" class="btn btn-success mr-2">
@@ -89,3 +107,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    $("#importForm").on("submit", function () {
+        var upload = $("#excelFile").data("kendoUpload");
+        if (upload.getFiles().length === 0) {
+            alert("Please select an Excel file to import.");
+            return false;
+        }
+        return true;
+    });
+</script>

@@ -136,20 +136,13 @@
 
     function sendEmailLink() {
         var token = $('#token').val();
-        $.ajax({
-            url: '/UserExamRecord/SendLinkByEmail',
-            type: 'POST',
-            data: { token: token },
-            success: function (response) {
-                if (response.success) {
-                    alert("Email sent successfully!");
-                } else {
-                    alert("Failed to send email: " + response.message);
-                }
-            },
-            error: function () {
-                alert("Error sending email.");
-            }
+       
+        fnCallAjaxHttpPostEvent('@Url.Action("SendLinkByEmail", "UserExamRecord")', { token: token }, true, true, function (response) {
+            if (response.success) {
+                        alert("Email sent successfully!");
+                    } else {
+                        alert("Failed to send email: " + response.message);
+                    }
         });
     }
 
@@ -157,14 +150,9 @@
 
     function copyLink(token) {
         $('#token').val(token);
-        $.ajax({
-            url: '/UserExamRecord/GenerateLinkByToken', 
-            type: 'GET',
-            data: { token: token },
-            success: function (response) {
-                $('#linkToCopy').val(response.link);
-                $('#copyLinkModal').modal('show');
-            }
+        fnCallAjaxHttpGetEvent('@Url.Action("GenerateLinkByToken", "UserExamRecord")', { token: token }, true, true, function (response) {
+            $('#linkToCopy').val(response.link);
+                    $('#copyLinkModal').modal('show');
         });
     }
 

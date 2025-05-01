@@ -191,6 +191,16 @@
                 $("#alertid").html("Error in update permission.");
             }
         });
+        @*fnCallAjaxHttpPostEvent('@Url.Action("UpdatePermission", "FormRoleMapping")', JSON.stringify(RoleMapping), true, true, function (data) {
+            if (data = true) {
+                $("#alertid").show();
+                $("#alertid").fadeIn(1000);
+                $("#alertid").html("Permission save successfully.");
+                $("#alertid").fadeOut(5000);
+                console.log("success.......");
+            }
+        });*@
+
         return false;
 
     });

@@ -51,8 +51,8 @@ function fnHideWaitImage() {
     //document.getElementById('loaderContainer').style.display = 'none';
     $(".page-loader").css("display", "hide");
 }
-function fnCallAjaxHttpGetEvent(url, param, isAsync, showLoader, successCallback) {
-    var args = Array.prototype.slice.call(arguments).slice(5);
+function fnCallAjaxHttpGetEvent(url, param, isAsync, showLoader, successCallback, errorCallback) {
+    var args = Array.prototype.slice.call(arguments).slice(6); // Adjusting the argument slice index
     return $.ajax({
         async: isAsync,
         type: "GET",
@@ -68,7 +68,7 @@ function fnCallAjaxHttpGetEvent(url, param, isAsync, showLoader, successCallback
         },
         success: function (data, textStatus, jqXHR) {
             var callbackArgs = [];
-            callbackArgs.push(data)
+            callbackArgs.push(data);
             callbackArgs = callbackArgs.concat(args);
             try {
                 successCallback.apply(this, callbackArgs);
@@ -76,10 +76,13 @@ function fnCallAjaxHttpGetEvent(url, param, isAsync, showLoader, successCallback
                 console.error(ex);
             }
         },
-        failure: function (response) {            
-            console.error(response);
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("Error:", textStatus, errorThrown);
+            if (typeof errorCallback === 'function') {
+                errorCallback(jqXHR, textStatus, errorThrown);
+            }
         },
-        complete: function () {            
+        complete: function () {
             if (showLoader) {
                 ACTIVE_REQ_CNT--;
                 ACTIVE_REQ_CNT === 0 && fnHideWaitImage();
@@ -88,8 +91,8 @@ function fnCallAjaxHttpGetEvent(url, param, isAsync, showLoader, successCallback
     });
 }
 
-function fnCallAjaxHttpPostEvent(url, postData, isAsync, showLoader, successCallback) {
-    var args = Array.prototype.slice.call(arguments).slice(5);
+function fnCallAjaxHttpPostEvent(url, postData, isAsync, showLoader, successCallback, errorCallback) {
+    var args = Array.prototype.slice.call(arguments).slice(6); 
     return $.ajax({
         async: isAsync,
         type: "POST",
@@ -105,7 +108,7 @@ function fnCallAjaxHttpPostEvent(url, postData, isAsync, showLoader, successCall
         },
         success: function (data, textStatus, jqXHR) {
             var callbackArgs = [];
-            callbackArgs.push(data)
+            callbackArgs.push(data);
             callbackArgs = callbackArgs.concat(args);
             try {
                 successCallback.apply(this, callbackArgs);
@@ -113,8 +116,12 @@ function fnCallAjaxHttpPostEvent(url, postData, isAsync, showLoader, successCall
                 console.error(ex);
             }
         },
-        failure: function (response) {
-            console.error(response);
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error('Error:', textStatus, errorThrown);
+            
+            if (typeof errorCallback === 'function') {
+                errorCallback(jqXHR, textStatus, errorThrown);
+            }
         },
         complete: function () {
             if (showLoader) {
@@ -124,6 +131,7 @@ function fnCallAjaxHttpPostEvent(url, postData, isAsync, showLoader, successCall
         }
     });
 }
+
 
 function fnNumericFilter(args) {
     args.element.kendoNumericTextBox({ format: "#", decimals: 0, spinners: false });

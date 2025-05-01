@@ -260,7 +260,6 @@
             $("#confirmDeleteModal").modal("show");
         });
 
-        // Confirm delete action
         $("#confirmDeleteBtn").click(function () {
             if (deleteId) {
                 $.ajax({
@@ -275,10 +274,16 @@
                         alert("Error occurred while deleting.");
                     }
                 });
+                @*fnCallAjaxHttpPostEvent('@Url.Action("Delete", "Question")', { deleteId: deleteId }, true, true, function () {
+                    $("#confirmDeleteModal").modal("hide");
+                    grid.dataSource.read(); // Refresh grid
+                    grid.refresh();
+                }, function () {
+                    alert("Error occurred while deleting.");
+                });*@
             }
         });
 
-        // Refresh grid on page load
         grid.dataSource.read();
         grid.refresh();
     });

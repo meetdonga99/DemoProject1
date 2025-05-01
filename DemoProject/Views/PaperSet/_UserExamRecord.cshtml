@@ -125,5 +125,17 @@
                 alert("Error submitting data.");
             }
         });
+        @*fnCallAjaxHttpPostEvent('@Url.Action("SubmitUserExam", "PaperSet")', JSON.stringify({ PaperSetId: $("#paperSetId").val(), UserEmails: emails }), true, true, function (response) {
+            if (response.success) {
+                        let message = "Exam records created:\n";
+                        response.records.forEach(record => {
+                            message += `Email: ${record.email} | Token: ${record.token}\n`;
+                        });
+                        alert(message);
+                        $("#userExamModal").modal("hide");
+                    } else {
+                        alert(response.message);
+            }
+        });*@
     }
 </script>

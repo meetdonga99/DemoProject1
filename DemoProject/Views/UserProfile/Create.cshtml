@@ -203,7 +203,7 @@
             }
         });
         $("#Role").on("change", function () {
-            $.ajax({
+            @*$.ajax({
                 url: '@Url.Action("CasCadeForm", "UserProfile")',
                 type: 'GET',
                 datatype: 'JSON',
@@ -214,6 +214,12 @@
                         $('#DefaultFormId').append($('<option></option>').val(item.Value).html(item.Text));
                     });
                 }
+            });*@
+            fnCallAjaxHttpGetEvent('@Url.Action("CasCadeForm", "UserProfile")', { Role: $(this).val() }, true, true, function (result) {
+                $('#DefaultFormId').html('');
+                $.each(result, function (i, item) {
+                    $('#DefaultFormId').append($('<option></option>').val(item.Value).html(item.Text));
+                });
             });
         });
     });

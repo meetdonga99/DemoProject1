@@ -40,7 +40,7 @@ namespace DemoProject.Controllers
             _mediaService = new MediaService();
         }
 
-        // GET: Question
+       
         public ActionResult Index()
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.QUESTION.ToString(), AccessPermission.IsView))
@@ -122,14 +122,14 @@ namespace DemoProject.Controllers
 
             int correctAnswers = model.options.Count(o => o.IsCorrect);
 
-            if (model.QuestionTypeId == 1) // Radio (Single Choice)
+            if (model.QuestionTypeId == 1) 
             {
                 if (correctAnswers != 1)
                 {
                     ModelState.AddModelError("options", "For Radio questions, exactly 1 option must be correct.");
                 }
             }
-            else if (model.QuestionTypeId == 2) // Checkbox (Multiple Choice)
+            else if (model.QuestionTypeId == 2) 
             {
                 if (correctAnswers < 1)
                 {
@@ -288,7 +288,6 @@ namespace DemoProject.Controllers
                     if (media != null)
                     {
                         filesToDeleteList.Add(media);
-                        // Delete the physical file
                         var filePath = Server.MapPath("~/Content/QuestionImages/") + media.MediaName;
                         if (System.IO.File.Exists(filePath))
                         {
@@ -309,13 +308,11 @@ namespace DemoProject.Controllers
                     {
                         string extension = Path.GetExtension(file.FileName).ToLower();
 
-                        // Only process allowed file types
                         if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
                         {
                             string fileName = Path.GetFileName(file.FileName);
                             string filePath = Server.MapPath("~/Content/QuestionImages/") + fileName;
 
-                            // If the file already exists, add a timestamp to make it unique
                             if (System.IO.File.Exists(filePath))
                             {
                                 string timestamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
@@ -327,7 +324,6 @@ namespace DemoProject.Controllers
 
                             file.SaveAs(filePath);
 
-                            // Save to media table
                             Media media = new Media
                             {
                                 QuestionId = obj.Id,
@@ -447,12 +443,12 @@ public ActionResult ExportToExcel(string searchTerm)
             ).ToList();
         }
 
-        // Create Excel workbook
+        
         using (var workbook = new XLWorkbook())
         {
             var worksheet = workbook.Worksheets.Add("Questions");
 
-            // Set headers
+            
             worksheet.Cell(1, 1).Value = "Subject";
             worksheet.Cell(1, 2).Value = "Question Type";
             worksheet.Cell(1, 3).Value = "Question Text";
@@ -461,12 +457,12 @@ public ActionResult ExportToExcel(string searchTerm)
             worksheet.Cell(1, 6).Value = "Active";
             worksheet.Cell(1, 7).Value = "Options";
 
-            // Format header row
+           
             var headerRow = worksheet.Row(1);
             headerRow.Style.Font.Bold = true;
             headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
 
-            // Add data rows
+            
             int rowIndex = 2;
             foreach (var question in materializedData)
             {
@@ -477,32 +473,31 @@ public ActionResult ExportToExcel(string searchTerm)
                 worksheet.Cell(rowIndex, 5).Value = question.DifficultyLevel;
                 worksheet.Cell(rowIndex, 6).Value = question.IsActive ? "Yes" : "No";
 
-                // Get options for this question
+                
                 var options = _optionService.GetOptionsByQuestionId(question.Id);
 
-                // Convert options to the requested JSON format
+                
                 var optionsJson = options.Select(o => new {
                     optionText = o.OptionText,
                     IsCorrect = o.IsCorrect
                 }).ToList();
 
-                // Serialize to JSON
+                
                 string jsonOptions = JsonConvert.SerializeObject(optionsJson, Formatting.Indented);
                 worksheet.Cell(rowIndex, 7).Value = jsonOptions;
 
                 rowIndex++;
             }
 
-            // Auto-fit columns
+          
             worksheet.Columns().AdjustToContents();
 
-            // Ensure the options column isn't too wide
+            
             worksheet.Column(7).Width = 100;
 
-            // Set wrap text for options column
+            
             worksheet.Column(7).Style.Alignment.WrapText = true;
 
-            // Prepare for download
             var stream = new MemoryStream();
             workbook.SaveAs(stream);
             stream.Position = 0;
@@ -511,8 +506,7 @@ public ActionResult ExportToExcel(string searchTerm)
         }
     }
 
-        // Add these methods to your QuestionController class
-
+  
         [HttpGet]
         public ActionResult Import()
         {
@@ -545,36 +539,43 @@ public ActionResult ExportToExcel(string searchTerm)
             }
 
             List<string> errorMessages = new List<string>();
-            int successCount = 0; 
+            int successCount = 0;
             int errorCount = 0;
 
             try
             {
+                // Pre-load reference data for faster lookups
+                var allSubjects = _subjectService.GetAllSubjects()
+                    .ToDictionary(s => s.Name.Trim().ToLower(), s => s);
+
+                var allQuestionTypes = _questionTypeService.GetAllQuestionTypes()
+                    .ToDictionary(qt => qt.TypeName.Trim().ToLower(), qt => qt);
+
+                var difficultyLevels = _lookupService.GetLookupByType(LookupType.DifficultyLevel)
+                    .ToDictionary(d => d.Name.ToLower(), d => d);
+
+                // Batch processing variables
+                List<Question> questionBatch = new List<Question>();
+                List<Option> optionsBatch = new List<Option>();
+                int batchSize = 100; // Adjust based on your system performance
+                int userId = SessionHelper.UserId;
+                DateTime currentTime = DateTime.UtcNow;
+
                 using (var workbook = new XLWorkbook(excelFile.InputStream))
                 {
-                    var worksheet = workbook.Worksheet(1); 
-                    var rows = worksheet.RowsUsed();
+                    var worksheet = workbook.Worksheet(1);
+                    var rows = worksheet.RowsUsed().Skip(1); // Skip header row
 
-                 
-                    bool isFirstRow = true;
                     foreach (var row in rows)
                     {
-                        if (isFirstRow)
-                        {
-                            isFirstRow = false;
-                            continue;
-                        }
-
                         try
                         {
-                            
+                            // Extract data from row
                             string subjectName = row.Cell(1).GetString().Trim();
                             string questionType = row.Cell(2).GetString().Trim();
                             string questionText = row.Cell(3).GetString().Trim();
 
-                            int defaultMarks;
-                            bool validMarks = int.TryParse(row.Cell(4).GetString(), out defaultMarks);
-                            if (!validMarks)
+                            if (!int.TryParse(row.Cell(4).GetString(), out int defaultMarks))
                             {
                                 errorMessages.Add($"Row {row.RowNumber()}: Invalid Default Marks format");
                                 errorCount++;
@@ -585,34 +586,31 @@ public ActionResult ExportToExcel(string searchTerm)
                             bool isActive = row.Cell(6).GetString().Trim().ToLower() == "yes";
                             string optionsJson = row.Cell(7).GetString().Trim();
 
-                           
-                            var subject = _subjectService.GetAllSubjects().FirstOrDefault(s => s.Name.Trim().Equals(subjectName, StringComparison.OrdinalIgnoreCase));
-                            if (subject == null)
+                            // Find subject (case-insensitive)
+                            if (!allSubjects.TryGetValue(subjectName.ToLower(), out var subject))
                             {
                                 errorMessages.Add($"Row {row.RowNumber()}: Subject '{subjectName}' not found");
-                                errorCount++;
+                                errorCount++; 
                                 continue;
                             }
 
-                            var qType = _questionTypeService.GetAllQuestionTypes().FirstOrDefault(qt => qt.TypeName.Trim().Equals(questionType, StringComparison.OrdinalIgnoreCase));
-                            if (qType == null)
+                            // Find question type (case-insensitive)
+                            if (!allQuestionTypes.TryGetValue(questionType.ToLower(), out var qType))
                             {
                                 errorMessages.Add($"Row {row.RowNumber()}: Question Type '{questionType}' not found");
                                 errorCount++;
                                 continue;
                             }
 
-                            
-                            var difficultyLevelData = _lookupService.GetLookupByType(LookupType.DifficultyLevel)
-                                .FirstOrDefault(d => d.Name.Equals(difficultyLevel, StringComparison.OrdinalIgnoreCase));
-                            if (difficultyLevelData == null)
+                            // Find difficulty level (case-insensitive)
+                            if (!difficultyLevels.TryGetValue(difficultyLevel.ToLower(), out var difficultyLevelData))
                             {
                                 errorMessages.Add($"Row {row.RowNumber()}: Difficulty Level '{difficultyLevel}' not found");
                                 errorCount++;
                                 continue;
                             }
 
-                            
+                            // Parse options
                             List<OptionModel> options = new List<OptionModel>();
                             try
                             {
@@ -633,7 +631,6 @@ public ActionResult ExportToExcel(string searchTerm)
                                 continue;
                             }
 
-                           
                             if (options.Count < 2 && (qType.Id == 1 || qType.Id == 2))
                             {
                                 errorMessages.Add($"Row {row.RowNumber()}: At least 2 options are required for {questionType}");
@@ -661,19 +658,14 @@ public ActionResult ExportToExcel(string searchTerm)
                                     continue;
                                 }
                             }
-                            else
+                            else if (options.Count < 1) 
                             {
-                                
-                                if (options.Count < 1)
-                                {
-                                    errorMessages.Add($"Row {row.RowNumber()}: At least 1 option is required");
-                                    errorCount++;
-                                    continue;
-                                }
-                            }
+                                errorMessages.Add($"Row {row.RowNumber()}: At least 1 option is required");
+                                errorCount++;
+                                continue;
+                            }   
 
-                           
-                            QuestionModel model = new QuestionModel
+                            Question question = new Question
                             {
                                 SubjectId = subject.Id,
                                 QuestionTypeId = qType.Id,
@@ -681,22 +673,35 @@ public ActionResult ExportToExcel(string searchTerm)
                                 DefaultMarks = defaultMarks,
                                 DifficultyLevel = difficultyLevelData.Code,
                                 IsActive = isActive,
-                                options = options
+                                CreatedBy = userId,
+                                CreatedOn = currentTime
                             };
 
-                           
-                            SaveUpdateQuestion(model, null);
-                            successCount++;
+                            questionBatch.Add(question);
+
+                            // Process batch when size threshold is reached
+                            if (questionBatch.Count >= batchSize)
+                            {
+                                ProcessQuestionBatch(questionBatch, options, optionsBatch, userId, currentTime);
+                                successCount += questionBatch.Count;
+                                questionBatch.Clear();
+                                optionsBatch.Clear();
+                            }
                         }
                         catch (Exception ex)
                         {
-                            errorMessages.Add($"Row {row.RowNumber()}: {ex.Message}");
+                            errorMessages.Add($"Row {row.RowNumber()}: {ex.Message}"); 
                             errorCount++;
                         }
                     }
+
+                    if (questionBatch.Count > 0)
+                    {
+                        ProcessQuestionBatch(questionBatch, null, optionsBatch, userId, currentTime);
+                        successCount += questionBatch.Count;
+                    }
                 }
 
-               
                 TempData["SuccessCount"] = successCount;
                 TempData["ErrorCount"] = errorCount;
                 TempData["ErrorMessages"] = errorMessages;
@@ -710,7 +715,42 @@ public ActionResult ExportToExcel(string searchTerm)
             }
         }
 
-       
+        private void ProcessQuestionBatch(List<Question> questions, List<OptionModel> optionModels, List<Option> optionsBatch, int userId, DateTime currentTime)
+        {         
+           
+            var questionIds = _questionService.BulkCreateQuestions(questions);
+
+           
+            for (int i = 0; i < questions.Count; i++)
+            {
+                int questionId = questionIds[i];
+
+                if (optionModels != null && optionModels.Any())
+                {
+                    foreach (var optionModel in optionModels)
+                    {
+                        Option option = new Option
+                        {
+                            QuestionId = questionId,
+                            OptionText = optionModel.OptionText,
+                            IsCorrect = optionModel.IsCorrect,
+                            CreatedBy = userId,
+                            CreatedOn = currentTime
+                        };
+
+                        optionsBatch.Add(option);
+                    }
+                }
+            }
+
+            
+            if (optionsBatch.Count > 0)
+            {
+                _optionService.BulkCreateOptions(optionsBatch);
+            }
+        }
+
+
 
         public ActionResult DownloadTemplate()
         {

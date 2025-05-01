@@ -14,6 +14,8 @@ using System.Web;
 using System.Web.ApplicationServices;
 using System.Web.Mvc;
 using WebMatrix.WebData;
+using DocumentFormat.OpenXml.Bibliography;
+using System.Threading.Tasks;
 
 namespace DemoProject.Controllers
 {
@@ -501,36 +503,81 @@ namespace DemoProject.Controllers
              
             return Json(allQuestions.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
-
+        
         public ActionResult ViewPaperSet(int id)
         {
-            var getPaperSet = _paperSetService.GetPaperSetById(id);
-            var mappings = _paperSetQuestionMappingService.GetMappingsByPaperSetId(id);
-            var questions = _questionService.GetAllQuestions();
-            ViewPaperSetModel model = new ViewPaperSetModel();
-            model.Id = id;
-            model.PaperSetName = getPaperSet.PaperSetName;
-            model.TotalMarks = getPaperSet.TotalMarks;
-            model.DurationInMinutes = getPaperSet.DurationInMinutes;
-            model.Questions = (from mapping in mappings
-                               join question in questions
-                               on mapping.QuestionId equals question.Id
-                               select new QuestionModel()
-                               {
-                                   Id = question.Id,
-                                   SubjectId = question.Subjects.Id,
-                                   QuestionTypeId = question.QuestionTypes.Id,
-                                   QuestionText = question.QuestionText,
-                                   DefaultMarks = mapping.CustomMarks,
-                                   DifficultyLevel = question.DifficultyLevel,
-                                   IsActive = question.IsActive,
-                                   options = _optionService.GetOptionsByQuestionId(id).Select(o => new OptionModel { Id = o.Id, QuestionId = o.QuestionId, OptionText = o.OptionText, IsCorrect = o.IsCorrect }).ToList()
-                               }
-                               ).ToList();
-            
+            // Get paper set and mappings in parallel to reduce wait time
+            var paperSetTask = Task.Run(() => _paperSetService.GetPaperSetById(id));
+            var mappingsTask = Task.Run(() => _paperSetQuestionMappingService.GetMappingsByPaperSetId(id));
+
+            // Wait for both to complete
+            Task.WaitAll(paperSetTask, mappingsTask);
+
+            var paperSet = paperSetTask.Result;
+            var mappings = mappingsTask.Result;
+
+            // Get only the questions we need by their IDs instead of loading all questions
+            var questionIds = mappings.Select(m => m.QuestionId).ToList();
+            var questions = _questionService.GetQuestionsByIds(questionIds);
+
+            // Create a dictionary for faster lookups
+            var questionLookup = questions.ToDictionary(q => q.Id);
+            var mappingLookup = mappings.ToDictionary(m => m.QuestionId);
+
+            // Pre-fetch all options for these questions in a single query
+            var allOptions = _optionService.GetOptionsByQuestionIds(questionIds);
+
+            // Group options by question ID for efficient lookup
+            var optionsByQuestion = allOptions.GroupBy(o => o.QuestionId)
+                                              .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Create the model
+            ViewPaperSetModel model = new ViewPaperSetModel
+            {
+                Id = id,
+                PaperSetName = paperSet.PaperSetName,
+                TotalMarks = paperSet.TotalMarks,
+                DurationInMinutes = paperSet.DurationInMinutes,
+                Questions = new List<QuestionModel>()
+            };
+
+            // Build the questions list without repeated queries
+            foreach (var questionId in questionIds)
+            {
+                if (questionLookup.TryGetValue(questionId, out var question) &&
+                    mappingLookup.TryGetValue(questionId, out var mapping))
+                {
+                    var questionModel = new QuestionModel
+                    {
+                        Id = question.Id,
+                        SubjectId = question.Subjects.Id,
+                        QuestionTypeId = question.QuestionTypes.Id,
+                        QuestionText = question.QuestionText,
+                        DefaultMarks = mapping.CustomMarks,
+                        DifficultyLevel = question.DifficultyLevel,
+                        IsActive = question.IsActive,
+                        options = new List<OptionModel>()
+                    };
+
+                    // Add options if they exist for this question
+                    if (optionsByQuestion.TryGetValue(questionId, out var options))
+                    {
+                        questionModel.options = options.Select(o => new OptionModel
+                        {
+                            Id = o.Id,
+                            QuestionId = o.QuestionId,
+                            OptionText = o.OptionText,
+                            IsCorrect = o.IsCorrect
+                        }).ToList();
+                    }
+
+                    model.Questions.Add(questionModel);
+                }
+            }
 
             return PartialView("_ViewPaperSet", model);
         }
+
 
         public ActionResult GetUserExamRecord(int paperSetId)
         {

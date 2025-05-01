@@ -41,5 +41,15 @@ namespace DemoProject.Service
         {
             return _optionProvider.GetOptionsByQuestionId(id);
         }
+
+        public void BulkCreateOptions(List<Option> options)
+        {
+            _optionProvider.BulkCreateOptions(options);
+        }
+
+        public List<Option> GetOptionsByQuestionIds(List<int> questionIds)
+        {
+            return _optionProvider.GetOptionsByQuestionIds(questionIds);
+        }
     }
 }

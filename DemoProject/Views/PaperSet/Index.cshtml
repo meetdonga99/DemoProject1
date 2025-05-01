@@ -4,6 +4,8 @@
 @using DemoProject.Helper
 @using DemoProject.Service
 @model IEnumerable<DemoProject.Model.PaperSetGridModel>
+
+
 @{
     string formCode = AuthorizeFormAccess.FormAccessCode.PAPERSET.ToString();
     var formName = FormUtility.GetFormName(formCode);
@@ -72,6 +74,9 @@
     .modal-fullscreen {
         max-width: 75%;
         margin: 150px;
+    }
+    .modal-footer .k-button {
+        margin-left: 10px;
     }
 </style>
 
@@ -162,19 +167,66 @@
                             .HtmlAttributes(new { style = "width: 100%" })
                         )
                         </div>
+                        
                         <div class="form-group">
                             <label for="totalMarks">Total Marks</label>
-                            <input type="number" class="form-control" id="totalMarks" name="totalMarks" min="1" required>
+                            <div class="input_box">
+
+                                @(Html.Kendo().NumericTextBox<int>()
+    .Name("totalMarks")
+    .HtmlAttributes(new {
+        id = "totalMarks",
+        style = "width: 100%;",
+        @class = "kendo-input",
+        required = "required"
+    })
+    .Min(1)
+)
+                            </div>
                         </div>
+
                         <div class="form-group">
                             <label for="durationInMinutes">Duration (minutes)</label>
-                            <input type="number" class="form-control" id="durationInMinutes" name="durationInMinutes" min="1" required>
+
+                            <div class="input_box">
+                                @(Html.Kendo().NumericTextBox()
+    .Name("durationInMinutes")
+    .HtmlAttributes(new
+    {
+        id = "durationInMinutes",
+        style = "width: 100%;",
+        @class = "kendo-input",
+        required = "required"
+    })
+    .Min(1)
+
+)
+                            </div>
                         </div>
+                        
+
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" id="btnSubmitAutoGenerate" class="btn btn-primary">Generate</button>
+                    @(Html.Kendo().Button()
+        .Name("btnCloseAutoGenerate")
+        .HtmlAttributes(new {
+            type = "button",
+            @class = "k-button k-secondary",
+            data_dismiss = "modal"
+        })
+        .Content("Close")
+    )
+                    @(Html.Kendo().Button()
+        .Name("btnSubmitAutoGenerate")
+        .HtmlAttributes(new {
+            type = "button",
+            @class = "k-button k-primary",
+            id = "btnSubmitAutoGenerate"
+        })
+        .Icon("check")
+        .Content("Generate")
+    )
                 </div>
             </div>
         </div>
@@ -282,19 +334,11 @@
 
 <script>
     function viewPaperSet(id) {
-    $.ajax({
-        url: '@Url.Action("ViewPaperSet", "PaperSet")',
-        type: 'GET',
-        data: { id: id },
-        success: function (response) {
+        fnCallAjaxHttpGetEvent('@Url.Action("ViewPaperSet", "PaperSet")', { id: id }, true, true, function (response) {
             $("#viewPaperSetSlideout .slideout-body").html(response);
             $("#viewPaperSetSlideout").addClass("open");
             $("body").addClass("slideout-open");
-        },
-        error: function () {
-            alert("Error loading paper set details.");
-        }
-    });
+        });
 }
 
 
@@ -376,56 +420,36 @@ $(document).on("click", function(e) {
 
 <script>
     function openUserExamModal(paperSetId) {
-        $.ajax({
-            url: '/PaperSet/GetUserExamRecord',
-            type: 'GET',
-            data: { paperSetId: paperSetId },
-            success: function (response) {
-                $("#userExamModal .modal-body").html(response);
-                $("#userExamModal").modal("show");
-            },
-            error: function () {
-                alert("Failed to load data.");
-            }
+        var getData = {
+            paperSetId: paperSetId
+        };
+        fnCallAjaxHttpGetEvent('@Url.Action("GetUserExamRecord", "PaperSet")', getData, true, true, function (data) {
+            $("#userExamModal .modal-body").html(data);
+                    $("#userExamModal").modal("show");
         });
     }
 
     function checkIfUsed(paperSetId) {
-    $.ajax({
-        url: '@Url.Action("CheckIfUsed", "PaperSet")',
-        type: 'GET',
-        data: { id: paperSetId },
-        success: function (response) {
-            if (response === true) {
+        fnCallAjaxHttpGetEvent('@Url.Action("CheckIfUsed", "PaperSet")', { id: paperSetId }, true, true, function (data) {
+            if (data === true) {
                 $('#myModal').modal('show');
-            } else {
-                window.location.href = '@Url.Action("Create", "PaperSet")/' + paperSetId;
             }
-        },
-        error: function () {
-            alert('An error occurred while checking the paper set status.');
-        }
-    });
+            else {
+                    window.location.href = '@Url.Action("Create", "PaperSet")/' + paperSetId;
+            }
+        });
 }
 
 function clonePaperSet(paperSetId) {
-    $.ajax({
-        url: '@Url.Action("Clone", "PaperSet")',
-        type: 'POST',
-        data: { paperSetId: paperSetId },
-        success: function(response) {
-            if (response.success) {
 
-                $('#cloneSuccessModal').modal('show');
-            } else {
-                alert('Failed to clone the paper set.');
-            }
-        },
-        error: function() {
-            alert('An error occurred while cloning the paper set.');
+    fnCallAjaxHttpPostEvent('@Url.Action("Clone", "PaperSet")', { paperSetId: paperSetId }, true, true, function (data) {
+        if (data.success) {
+            $('#cloneSuccessModal').modal('show');
+        } else {
+            alert('Failed to clone the paper set.');
         }
     });
-    }
+}
 
 
         $("#btnAutoGenerate").click(function() {
@@ -448,30 +472,16 @@ function clonePaperSet(paperSetId) {
         durationInMinutes: $("#durationInMinutes").val()
     };
 
-    $.ajax({
-        url: '@Url.Action("AutoGeneratePaperSet", "PaperSet")',
-        type: 'POST',
-        data: data,
-        beforeSend: function() {
-            $(".page-loader").show();
-        },
-        success: function(response) {
-            if (response.success) {
-                $("#autoGenerateModal").modal("hide");
-                showToast("Paper set successfully generated!" + "\n" + response.message, "success");
-                var grid = $("#gridPaperSet").data("kendoGrid");
-                grid.dataSource.read();
-            } else {
-                showToast("Failed to generate paper set. Please try again." + "\n" + response.message, "error");
-            }
-        },
-        error: function() {
-            showToast("An error occurred while generating the paper set." + "\n" + response.message,"error");
-        },
-        complete: function() {
-            $(".page-loader").hide();
-        }
-    });
+            fnCallAjaxHttpPostEvent('@Url.Action("AutoGeneratePaperSet", "PaperSet")', data, true, true, function (response) {
+                if (response.success) {
+                    $("#autoGenerateModal").modal("hide");
+                    showToast("Paper set successfully generated!" + "\n" + response.message, "success");
+                    var grid = $("#gridPaperSet").data("kendoGrid");
+                    grid.dataSource.read();
+                } else {
+                    showToast("Failed to generate paper set. Please try again." + "\n" + response.message, "error");
+                }
+            });
 });
 
 

@@ -44,5 +44,15 @@ namespace DemoProject.Service
         {
             return _questionProvider.DeleteQuestion(questionId);
         }
+
+        public List<int> BulkCreateQuestions(List<Question> questions)
+        {
+            return _questionProvider.BulkCreateQuestions(questions);
+        }
+
+        public List<Question> GetQuestionsByIds(List<int> questionIds)
+        {
+            return _questionProvider.GetQuestionsByIds(questionIds);
+        }
     }
 }

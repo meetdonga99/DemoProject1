@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace DemoProject.Data
 {
@@ -83,6 +84,9 @@ namespace DemoProject.Data
                 var questionOptions = (from a in _db.Option where a.QuestionId == questionId select a).ToList();
                 _db.Option.RemoveRange(questionOptions);
 
+                var mediaToBeDelete = (from a in _db.Media where a.QuestionId == questionId select a).ToList();
+                _db.Media.RemoveRange(mediaToBeDelete);
+
                 _db.Question.Remove(question);
                 _db.SaveChanges();
 
@@ -92,6 +96,43 @@ namespace DemoProject.Data
             {
                 throw e;
             }
+        }
+
+        public List<int> BulkCreateQuestions(List<Question> questions)
+        {
+            List<int> questionIds = new List<int>();
+
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    _db.Question.AddRange(questions);
+                    _db.SaveChanges();
+
+                    
+                    foreach (var question in questions)
+                    {
+                        questionIds.Add(question.Id);
+                    }
+
+                    transaction.Commit();
+                    return questionIds;
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Failed to bulk create questions: " + ex.Message, ex);
+                }
+            }
+        }
+
+        public List<Question> GetQuestionsByIds(List<int> questionIds)
+        {
+            return _db.Question
+                .Include(q => q.Subjects)
+                .Include(q => q.QuestionTypes)
+                .Where(q => questionIds.Contains(q.Id))
+                .ToList();
         }
 
     }

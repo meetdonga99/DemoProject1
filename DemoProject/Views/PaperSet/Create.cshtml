@@ -329,19 +329,12 @@
 
 <script>
     function viewQuestion(id, isShowExtraFields) {
-    $.ajax({
-        url: '@Url.Action("ViewQuestion", "Question")',
-        type: 'GET',
-        data: { id: id, isShowExtraFields: isShowExtraFields },
-        success: function (response) {
-            // Assuming response contains HTML content for modal
+        fnCallAjaxHttpGetEvent('@Url.Action("ViewQuestion", "Question")', { id: id, isShowExtraFields: isShowExtraFields }, true, true, function (response) {
             $("#viewQuestionModal .modal-body").html(response);
             $("#viewQuestionModal").modal("show");
-        },
-        error: function () {
+        }, function () {
             alert("Error loading question details.");
-        }
-    });
+        });
 }
 
     function showImagePreview(imageName) {
@@ -531,6 +524,10 @@ $("#btnSave").click(function (e) {
             console.error("Error submitting form:", error);
         }
     });
+    @*fnCallAjaxHttpPostEvent('@Url.Action("Create", "PaperSet")', formData, true, true, function (response) {
+        window.location.href = "@Url.Action("Index", "PaperSet")";
+    });*@
+
 });
 
 var paperSetId = @Model.Id;

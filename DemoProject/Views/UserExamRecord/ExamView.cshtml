@@ -319,12 +319,32 @@
                         $('#username').after('<div id="usernameError" class="invalid-feedback">' + "Username is not available." + '</div>');
                         $('#startExamBtn').prop('disabled', true);
                     }
-                },
+                }, 
                 error: function () {
 
                     alert('Error checking username availability. Please try again.');
                 }
             });
+
+            @*fnCallAjaxHttpGetEvent('@Url.Action("CheckDuplicateUserName", "UserProfile")', {
+                    UserName: username,
+                    UserId: userId
+            }, true, true, function (response) {
+                if (response === true) {
+
+                    $('#username').removeClass('is-invalid').addClass('is-valid');
+                    $('#usernameError').remove();
+                    $('#startExamBtn').prop('disabled', false);
+                } else {
+
+                    $('#username').removeClass('is-valid').addClass('is-invalid');
+
+
+                    $('#usernameError').remove();
+                    $('#username').after('<div id="usernameError" class="invalid-feedback">' + "Username is not available." + '</div>');
+                    $('#startExamBtn').prop('disabled', true);
+                }
+            } );*@
         }
 
         $(document).ready(function () {
