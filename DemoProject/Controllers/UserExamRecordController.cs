@@ -325,16 +325,17 @@ namespace DemoProject.Controllers
         }
 
         [HttpPost]
-        public ActionResult GetCompletedExamGridData([DataSourceRequest] DataSourceRequest request, string searchTerm)
+        public ActionResult GetCompletedExamGridData([DataSourceRequest] DataSourceRequest request, string searchTerm, string fromDate, string toDate)
         {
             if (!CheckPermission(AuthorizeFormAccess.FormAccessCode.COMPLETEDUSEREXAM.ToString(), AccessPermission.IsView))
             {
                 return RedirectToAction("AccessDenied", "Base");
             }
-            var data = _userExamRecordService.GetAllUserExamRecordGrid().Where(a => (a.ExamStatus != "PENDING" && a.ExamStatus != "INPROGRESS"));
 
+            var data = _userExamRecordService.GetAllUserExamRecordGrid().Where(a => (a.ExamStatus != "PENDING" && a.ExamStatus != "INPROGRESS"));
             var materializedData = data.ToList().AsQueryable();
 
+            
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 materializedData = materializedData.Where(x =>
@@ -344,6 +345,24 @@ namespace DemoProject.Controllers
                     x.Score.ToString().Contains(searchTerm) ||
                     (x.ExpiryDate != null && x.ExpiryDate.ToString("yyyy-MM-dd").IndexOf(searchTerm, StringComparison.OrdinalIgnoreCase) >= 0)
                 );
+            }
+
+          
+            if (!string.IsNullOrEmpty(fromDate) && !string.IsNullOrEmpty(toDate))
+            {
+                DateTime fromDateTime, toDateTime;
+
+                if (DateTime.TryParse(fromDate, out fromDateTime) && DateTime.TryParse(toDate, out toDateTime))
+                {
+                    
+                    toDateTime = toDateTime.AddDays(1).AddSeconds(-1);
+
+                    materializedData = materializedData.Where(x =>
+                        x.StartTime != null &&
+                        x.StartTime >= fromDateTime &&
+                        x.StartTime <= toDateTime
+                    );
+                }
             }
 
             return Json(materializedData.ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
@@ -421,6 +440,7 @@ namespace DemoProject.Controllers
                                         .Select(int.Parse)
                                         .OrderBy(x => x)
                                         .ToList();
+
 
                 var correctOptions = data.FirstOrDefault(i => i.QuestionId == a.QuestionId)?.CorrectOptions;
 

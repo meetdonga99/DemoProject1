@@ -11,14 +11,7 @@
     string formCode = AuthorizeFormAccess.FormAccessCode.COMPLETEDUSEREXAM.ToString();
     var formName = FormUtility.GetFormName(formCode);
     string parentFormname = FormUtility.GetParentFormName(formCode);
-    //ViewBag.Title = formName;
-    //BaseController _base = new BaseController();
-    //bool AllowedEdit = _base.CheckPermission(formCode, AccessPermission.IsEdit);
-    //bool AllowedAdd = _base.CheckPermission(formCode, AccessPermission.IsAdd);
-    //bool AllowedDelete = _base.CheckPermission(formCode, AccessPermission.IsDelete);
-
 }
-@*@Html.Hidden("hdnFormAccessCode", formCode)*@
 <div class="coman_content">
     <div class="subheader">
         <div class="left_title">
@@ -36,7 +29,36 @@
     <div class="filter-panel" style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: center;">
 
-            <div style="flex-grow: 1;">
+            <div style="flex-grow: 1; display: flex; align-items: center; gap: 15px;">
+              
+                <div class="date-filter-container">
+                    <span class="k-button k-button-md k-rounded-md k-button-solid k-button-solid-base" id="dateFilterButton">
+                        <span class="k-icon k-i-calendar"></span>
+                        <span>Date Filter</span>
+                    </span>
+                    <div id="dateFilterTreeView" style="display: none; position: absolute; z-index: 1000; background: white; padding: 15px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); width: 300px;">
+                        <div style="margin-bottom: 10px;">
+                            <label for="fromDate">From Date:</label>
+                            <input id="fromDate" style="width: 100%" />
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label for="toDate">To Date:</label>
+                            <input id="toDate" style="width: 100%" />
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <button id="applyDateFilter" class="k-button k-primary">Apply</button>
+                            <button id="clearDateFilter" class="k-button">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+               
+                <div id="activeDateFilter" style="display: none;">
+                    <span class="k-chip k-chip-filled">
+                        <span class="k-chip-content">Date Filter: <span id="dateRangeText"></span></span>
+                        <span class="k-chip-action k-icon k-i-close" id="removeDateFilter"></span>
+                    </span>
+                </div>
             </div>
 
             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; justify-content: flex-end;">
@@ -61,7 +83,7 @@
           .AutoBind(false)
           .Columns(columns =>
           {
-
+              columns.Bound(c => c.StartTime).Hidden(true).IncludeInMenu(false);
               columns.Bound(c => c.PaperSetName).Title("Paper Set Name").Filterable(false);
               columns.Bound(c => c.UserEmail).Title("User Email").Filterable(false);
               columns.Bound(c => c.ExamStatus).Title("Exam Status")
@@ -70,12 +92,12 @@
               columns.Bound(c => c.ExpiryDate).Title("Expiry Date").Format("{0:yyyy-MM-dd}").Filterable(false);
               columns.Bound(c => c.Score).Title("Score").Width("3%").Filterable(false);
               columns.Bound(c => c.Token).Title("Actions").Width("5%").ClientTemplate(
-    "# if (ExamStatus !== 'RESULT_PUBLISHED') { #" +
-        "<a href='javascript:void(0);' onclick='evaluateTest(\"#= Token #\")' class='btn btn-primary'>Evaluate Test</a>" +
-    "# } else { #" +
-        "<button class='btn btn-secondary' disabled>Test Evaluated</button>" +
-    "# } #"
-).Filterable(false);
+                "# if (ExamStatus !== 'RESULT_PUBLISHED') { #" +
+                    "<a href='javascript:void(0);' onclick='evaluateTest(\"#= Token #\")' class='btn btn-primary'>Evaluate Test</a>" +
+                "# } else { #" +
+                    "<button class='btn btn-secondary' disabled>Test Evaluated</button>" +
+                "# } #"
+              ).Filterable(false);
           })
           .Events(evt => evt
               .DataBinding("fnKendoGridCommonDataBinding")
@@ -101,26 +123,92 @@
     </div>
 </div>
 
-
-
 <script>
     $(document).ready(function () {
+        $("#fromDate").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: null
+        });
 
+        $("#toDate").kendoDatePicker({
+            format: "yyyy-MM-dd",
+            value: null
+        });
+
+        $("#dateFilterButton").click(function(e) {
+            e.stopPropagation();
+            $("#dateFilterTreeView").toggle();
+        });
+
+        $(document).click(function(e) {
+            if (!$(e.target).closest('#dateFilterTreeView, #dateFilterButton').length) {
+                $("#dateFilterTreeView").hide();
+            }
+        });
+
+        $("#applyDateFilter").click(function() {
+            var fromDate = $("#fromDate").data("kendoDatePicker").value();
+            var toDate = $("#toDate").data("kendoDatePicker").value();
+
+            if (fromDate && toDate) {
+                var fromFormatted = kendo.toString(fromDate, "yyyy-MM-dd");
+                var toFormatted = kendo.toString(toDate, "yyyy-MM-dd"); 
+
+                $("#dateRangeText").text(fromFormatted + " to " + toFormatted);
+                $("#activeDateFilter").show();
+
+                $('#gridCompletedExams').data('kendoGrid').dataSource.read();
+            }
+
+            $("#dateFilterTreeView").hide();
+        });
+
+        
+        $("#clearDateFilter, #removeDateFilter").click(function() {
+            $("#fromDate").data("kendoDatePicker").value(null);
+            $("#toDate").data("kendoDatePicker").value(null);
+            $("#activeDateFilter").hide();
+
+            $('#gridCompletedExams').data('kendoGrid').dataSource.read();
+
+            $("#dateFilterTreeView").hide();
+        });
+
+        
         initializeGridFilter('#gridCompletedExams', '#globalSearch', '#applyFilters', '#clearFilters');
 
-
+       
         $('#gridCompletedExams').data('kendoGrid').dataSource.read();
         $('#gridCompletedExams').data('kendoGrid').refresh();
     });
 
+    
+    function getFilterData() {
+        var fromDate = $("#fromDate").data("kendoDatePicker").value();
+        var toDate = $("#toDate").data("kendoDatePicker").value();
+        var searchTerm = $("#globalSearch").val();
 
-    function evaluateTest(token) {
-    if (token) {
-        window.location.href = '@Url.Action("EvaluateTestPaper", "UserExamRecord")' + '?token=' + encodeURIComponent(token);
+        return {
+            searchTerm: searchTerm,
+            fromDate: fromDate ? kendo.toString(fromDate, "yyyy-MM-dd") : null,
+            toDate: toDate ? kendo.toString(toDate, "yyyy-MM-dd") : null
+        };
     }
-}
-
+     
+    function evaluateTest(token) {
+        if (token) {
+            window.location.href = '@Url.Action("EvaluateTestPaper", "UserExamRecord")' + '?token=' + encodeURIComponent(token);
+        }
+    }
 </script>
+
+
+
+
+
+
+
+
 
 
 

@@ -38,6 +38,8 @@ namespace DemoProject.Model
         public int Id { get; set; }
         public string Token { get; set; }
         public string PaperSetName { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public string UserEmail { get; set; }
         public string ExamStatus { get; set; }
         public DateTime ExpiryDate { get; set; }

@@ -58,6 +58,8 @@ namespace DemoProject.Data
                         Id = userExamRecord.Id,
                         Token = userExamRecord.Token,
                         PaperSetName = userExamRecord.PaperSet.PaperSetName,
+                        StartTime = userExamRecord.StartTime,
+                        EndTime = userExamRecord.EndTime,
                         UserEmail = userExamRecord.User.Email,
                         ExamStatus = userExamRecord.ExamStatus,
                         ExpiryDate = userExamRecord.ExpiryDate.Value,

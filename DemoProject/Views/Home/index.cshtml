@@ -290,7 +290,7 @@
                                 @(Html.Kendo().ProgressBar()
                             .Name("failProgressBar")
                             .Type(ProgressBarType.Value)
-                            .ShowStatus(true) 
+                            .ShowStatus(true)
                             .Animation(a => a.Duration(600))
                             .Min(0)
                             .Max(100)
@@ -330,6 +330,48 @@
                 .HtmlAttributes(new { style = "width: 100%;" })
             )
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-4">
+            <div class="col-12">
+                <div class="card chart-container">
+                    <div class="card-header bg-white">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-video me-2" style="color: var(--main-color);"></i>
+                            <h5 class="mb-0">Tutorial Videos</h5>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        @(Html.Kendo().TabStrip()
+                            .Name("tutorialTabStrip")
+                            .Animation(animation => animation.Open(open => open.Duration(200)))
+                            .Items(items =>
+                            {
+                                items.Add().Text("Exam Analytics Tutorial")
+                                    .Selected(true)
+                                    .Content(@<div class="tab-video-container">
+                                        <iframe src="https://www.youtube.com/embed/gfkTfcpWqAY" frameborder="0" width="100%" height="500px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>);
+
+                                items.Add().Text("Dashboard Overview")
+                                    .Content(@<div class="tab-video-container">
+                                        <iframe src="https://www.youtube.com/embed/VIDEO_ID_2" frameborder="0" width="100%" height="500px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>);
+
+                                items.Add().Text("Advanced Features")
+                                    .Content(@<div class="tab-video-container">
+                                        <iframe src="https://www.youtube.com/embed/VIDEO_ID_3" frameborder="0" width="100%" height="500px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>);
+
+                                items.Add().Text("User Guide")
+                                    .Content(@<div class="tab-video-container">
+                                        <iframe src="https://www.youtube.com/embed/VIDEO_ID_4" frameborder="0" width="100%" height="500px" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>);
+                            })
+                        )
                     </div>
                 </div>
             </div>
@@ -634,6 +676,13 @@
                 $("#passProgressBar .k-state-selected").css("background-color", "#10b981");
                 $("#failProgressBar .k-state-selected").css("background-color", "#ef4444");
             }, 100);
+
+            var tabStrip = $("#tutorialTabStrip").data("kendoTabStrip");
+            if (tabStrip) {
+                tabStrip.select(0);
+            }
+
+
         });
     </script>
 </body>
