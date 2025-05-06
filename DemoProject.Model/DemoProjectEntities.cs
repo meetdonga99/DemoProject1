@@ -41,5 +41,6 @@ namespace DemoProject.Model
         public DbSet<UserExamAnswer> UserExamAnswer { get; set; }
         public DbSet<Media> Media { get; set; }
         public DbSet<Configuration> Configurations { get; set; }
+        public DbSet<Article> Article { get; set; }
     }
 }

@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivityLogProvider.cs" />
+    <Compile Include="ArticleProvider.cs" />
     <Compile Include="BaseProvider.cs" />
     <Compile Include="CommonLookupProvider.cs" />
     <Compile Include="ConfigurationProvider.cs" />

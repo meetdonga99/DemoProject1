@@ -1,0 +1,123 @@
+﻿@model DemoProject.Models.ArticleModel
+@using DemoProject.Model
+@using Kendo.Mvc.UI
+
+@{
+    // Add necessary scripts and styles for Kendo UI controls
+    Html.Kendo().DatePicker();
+    Html.Kendo().Editor();
+}
+
+@using (Html.BeginForm("Create", "Article", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="coman_content">
+        <div class="subheader">
+            <div class="left_title">
+                @if (Model.Id > 0)
+                {
+                    <h2>Edit Article</h2>
+                }
+                else
+                {
+                    <h2>Add Article</h2>
+                }
+                <div class="left breadcrumb_list">
+                    <ul>
+                        <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
+                        <li><a href="@Url.Action("Index","Article")">Articles</a></li>
+                        @if (Model.Id > 0)
+                        {
+                            <li>Edit Article</li>
+                        }
+                        else
+                        {
+                            <li>Add Article</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--END Title div-->
+        @Html.HiddenFor(model => model.Id)
+        <div class="content_box">
+            <div class="common_white_box">
+                <div class="form_element">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Title <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @Html.TextBoxFor(model => model.Title, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Title)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Publication Date <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @(Html.Kendo().DatePickerFor(model => model.PublicationDate)
+                                            .Format("yyyy-MM-dd")
+                                            .HtmlAttributes(new { @class = "form-control" })
+                                        )
+                                        @Html.ValidationMessageFor(model => model.PublicationDate)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form_input_box">
+                                <div class="form-group">
+                                    <label>Article Content <sup class="span_req"><i class="fa fa-star" aria-hidden="true"></i></sup></label>
+                                    <div class="input_box">
+                                        @(Html.Kendo().EditorFor(model => model.ArticleContent)
+                                            .HtmlAttributes(new { style = "height:400px" })
+                                            .Tools(tools => tools
+                                                .Clear()
+                                                .Bold().Italic().Underline().Strikethrough()
+                                                .JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
+                                                .InsertUnorderedList().InsertOrderedList()
+                                                .Outdent().Indent()
+                                                .CreateLink().Unlink()
+                                                .InsertImage()
+                                                .ViewHtml()
+                                                .Formatting()
+                                                .FontName()
+                                                .FontSize()
+                                                .FontColor().BackColor()
+                                            )
+                                        )
+                                        @Html.ValidationMessageFor(model => model.ArticleContent)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button_div">
+                        <div class="form-group">
+                            <label for="">&nbsp;</label>
+                            <div class="input_box">
+                                <button type="submit" class="button button_primary">Save</button>
+                                <a href="@Url.Action("Index", "Article")" class="button button_cancel">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Any additional initialization for Kendo controls can go here
+        });
+    </script>
+}

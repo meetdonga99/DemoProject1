@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivityLogService.cs" />
+    <Compile Include="ArticleService.cs" />
     <Compile Include="CommonLookupService.cs" />
     <Compile Include="ConfigurationService.cs" />
     <Compile Include="ErrorLogService.cs" />
