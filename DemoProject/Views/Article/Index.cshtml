@@ -1,41 +1,52 @@
-﻿@using Kendo.Mvc.UI 
+﻿@using Kendo.Mvc.UI
 @using DemoProject.Model
 @using DemoProject.Controllers
 @using DemoProject.Helper
 @using DemoProject.Service
 
 <div class="coman_content">
-    <!--This is Title div -->
+   
     <div class="subheader">
         <div class="left_title">
             <h2>@ViewBag.Title</h2>
             <div class="left breadcrumb_list">
                 <ul>
                     <li><a href="@Url.Action("Index","Home")"><i class="fa fa-home"></i></a></li>
-                    <li><a href="javascript:void(0)">System</a></li> 
+                    <li><a href="javascript:void(0)">System</a></li>
                     <li>Articles</li>
                 </ul>
             </div>
         </div>
         <div class="subheader_right">
-            
-                <a class="button button_primary button_rounded" href="@Url.Action("Create", "Article")">Add New Article</a>
+            <a class="button button_primary button_rounded" href="@Url.Action("Create", "Article")">Add New Article</a>
         </div>
     </div>
-    <!--END Title div-->
+   
     <div class="common_white_box listingpage">
+       
+        <div class="date-filter-panel">
+            <div class="date-filter-row">
+                <div class="date-filter-col">
+                    <label>Filter by Month:</label>
+                    <div id="dateTreeView" class="k-treeview-wrapper"></div>
+                </div>
+                <div class="date-filter-col filter-actions">
+                    <button id="applyDateFilter" class="button button_primary">Apply Filter</button>
+                    <button id="clearDateFilter" class="button">Clear Filter</button>
+                </div>
+            </div>
+        </div>
+
         <div class="page-loader k-loading-image"></div>
         @(Html.Kendo().Grid<DemoProject.Model.ArticleGridModel>()
           .Name("gridArticles")
           .AutoBind(false)
           .Columns(columns =>
           {
-
               columns.Bound(c => c.Title).Title("Title");
               columns.Bound(c => c.ArticleContent).Title("Article Content").ClientTemplate("#= (ArticleContent && ArticleContent.length > 70) ? ArticleContent.substring(0, 70).concat('...') : ArticleContent #");
               columns.Bound(c => c.PublicationDate).Title("Publication Date").Format("{0:yyyy-MM-dd}");
               columns.Bound(c => c.Id).HeaderHtmlAttributes(new { @class = "center_text" }).HtmlAttributes(new { @class = "kendogrid_Action center_text" }).ClientTemplate("<div class='k_action_table'>" + "<a title='Edit' href='" + Url.Action("Create", "Article") + "/#=Id#'" + "><i class='fa fa-edit'></i></a>"  + "</div>").Filterable(false).Title("Action").Width("5%").Sortable(false);
-
           })
           .Events(evt => evt
               .DataBinding("fnKendoGridCommonDataBinding")
@@ -60,11 +71,194 @@
           ))
     </div>
 </div>
+
+<style>
+    .date-filter-panel {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+    }
+
+    .date-filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .date-filter-col {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-actions {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    #dateTreeView {
+        height: 300px;
+        overflow: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-top: 5px;
+        background-color: white;
+    }
+
+    .k-treeview-wrapper .k-item {
+        padding: 5px 0;
+    }
+
+    .selected-date-info {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .k-treeview .k-icon {
+        font-size: 16px;
+        color: #0066cc;
+    }
+</style>
+
 <script>
+    
+    var selectedYearMonths = [];
+
     $(document).ready(function () {
+        initializeTreeView();
+
+        
+        $("#applyDateFilter").click(function () {
+            applyDateFilter();
+        });
+
+        $("#clearDateFilter").click(function () {
+            clearDateFilter();
+        });
+
         $('#gridArticles').data('kendoGrid').dataSource.read();
         $('#gridArticles').data('kendoGrid').refresh();
     });
-</script>
 
- 
+    function initializeTreeView() {
+        var currentYear = new Date().getFullYear();
+        var years = [];
+
+        for (var y = currentYear; y >= currentYear - 4; y--) {
+            var monthItems = [];
+
+            
+            for (var m = 0; m < 12; m++) {
+                var monthNames = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"];
+                var monthValue = m + 1;
+                var monthFormatted = monthValue < 10 ? "0" + monthValue : monthValue.toString();
+
+                monthItems.push({
+                    id: y + "-" + monthFormatted,
+                    text: monthNames[m],
+                    yearMonth: y + "-" + monthFormatted,
+                    spriteCssClass: "k-icon k-i-calendar"
+                });
+            }
+
+          
+            years.push({
+                id: "year-" + y,
+                text: y.toString(),
+                expanded: false,
+                items: monthItems,
+                spriteCssClass: "k-icon k-i-calendar-date"
+            });
+        }
+
+       
+        $("#dateTreeView").kendoTreeView({
+            dataSource: years,
+            checkboxes: {
+                checkChildren: true
+            },
+            check: onTreeViewCheck,
+            expand: function (e) {
+                console.log("Node expanded:", $(e.node).find("> .k-in").text());
+            }
+        });
+    }
+
+    function onTreeViewCheck(e) {
+        var treeView = $("#dateTreeView").data("kendoTreeView");
+        var checkedNodes = [];
+
+        
+        selectedYearMonths = [];
+
+        
+        $(treeView.element).find(".k-item[role='treeitem']").each(function () {
+            var node = $(this);
+            var checkbox = node.find("> div > .k-checkbox-wrapper input[type=checkbox]");
+
+            if (checkbox.prop("checked")) {
+                var dataItem = treeView.dataItem(node);
+
+                if (dataItem && dataItem.yearMonth) {
+                    selectedYearMonths.push(dataItem.yearMonth);
+                    checkedNodes.push(dataItem);
+                }
+            }
+        });
+
+        updateSelectedInfo();
+    }
+
+    
+    function updateSelectedInfo() {
+        $(".selected-date-info").remove();
+
+        if (selectedYearMonths.length > 0) {
+            
+            selectedYearMonths.sort();
+
+            var displayMonths = selectedYearMonths.length <= 3 ?
+                selectedYearMonths.join(", ") :
+                selectedYearMonths.length + " months selected";
+
+            $("#dateTreeView").after("<div class='selected-date-info'>Selected: " + displayMonths + "</div>");
+        }
+    }
+
+   
+    function applyDateFilter() {
+        if (selectedYearMonths.length === 0) {
+            alert("Please select at least one month to filter.");
+            return;
+        }
+
+        var grid = $("#gridArticles").data("kendoGrid");
+        var dataSource = grid.dataSource;
+
+        dataSource.transport.options.read.data = {
+            selectedMonths: selectedYearMonths.join(",")
+        };
+
+        dataSource.read();
+    }
+
+    function clearDateFilter() {
+        
+        var treeView = $("#dateTreeView").data("kendoTreeView");
+        $(treeView.element).find("input[type=checkbox]").prop("checked", false);
+
+        selectedYearMonths = [];
+
+        $(".selected-date-info").remove();
+
+        var grid = $("#gridArticles").data("kendoGrid");
+        var dataSource = grid.dataSource;
+
+        dataSource.transport.options.read.data = {};
+        dataSource.read();
+    }
+</script>

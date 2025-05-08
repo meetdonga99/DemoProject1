@@ -213,7 +213,6 @@
     <Content Include="Content\images\login2.jpg" />
     <Content Include="Content\images\login1.jpg" />
     <Content Include="bin\Kendo.Mvc.dll" />
-    <Content Include="bin\Kendo.Mvc.xml" />
     <Content Include="Content\css\fancybox_loading%402x.gif" />
     <Content Include="Content\css\fancybox_loading.gif" />
     <Content Include="Content\css\fancybox_overlay.png" />
